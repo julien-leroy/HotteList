@@ -1,0 +1,151 @@
+// HotteList — modèle de données (cf. docs/architecture.md, §7)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  firstName    String
+  lastName     String?
+  /// e-mail ou pseudo ; vide pour un compte géré
+  login        String?  @unique
+  passwordHash String?
+  avatarColor  String   @default("#1F4D36")
+  /// compte administré « en procuration » par un autre utilisateur
+  managedById  String?
+  managedBy    User?    @relation("Managed", fields: [managedById], references: [id], onDelete: Cascade)
+  managed      User[]   @relation("Managed")
+  createdAt    DateTime @default(now())
+
+  sessions       Session[]
+  memberships    Membership[]
+  familiesMade   Family[]             @relation("FamilyCreator")
+  giftsFor       Gift[]               @relation("GiftRecipient")
+  giftsWritten   Gift[]               @relation("GiftAuthor")
+  participations GiftParticipant[]
+  comments       Comment[]
+  resetTokens    PasswordResetToken[]
+  notifications  Notification[]
+}
+
+model Session {
+  /// empreinte SHA-256 du jeton stocké dans le cookie
+  id        String   @id
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Family {
+  id          String       @id @default(cuid())
+  name        String
+  slug        String       @unique
+  createdById String
+  createdBy   User         @relation("FamilyCreator", fields: [createdById], references: [id])
+  eventDate   DateTime
+  createdAt   DateTime     @default(now())
+  memberships Membership[]
+  gifts       Gift[]
+}
+
+model Membership {
+  id       String   @id @default(cuid())
+  userId   String
+  familyId String
+  /// ADMIN | MEMBRE
+  role     String   @default("MEMBRE")
+  joinedAt DateTime @default(now())
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  family   Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, familyId])
+  @@index([familyId])
+}
+
+model Gift {
+  id               String    @id @default(cuid())
+  familyId         String
+  family           Family    @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  recipientId      String
+  recipient        User      @relation("GiftRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  createdById      String
+  createdBy        User      @relation("GiftAuthor", fields: [createdById], references: [id], onDelete: Cascade)
+  /// SOUHAIT | IDEE
+  kind             String
+  title            String
+  description      String?
+  url              String?
+  price            String?
+  /// adresse externe de l'image (jamais stockée sur le serveur)
+  imageUrl         String?
+  siteOrigin       String?
+  favorite         Boolean   @default(false)
+  position         Int       @default(0)
+  /// AUCUN | SEUL | A_PLUSIEURS
+  takeMode         String    @default("AUCUN")
+  /// date de la dernière modification du contenu (titre, prix, lien…)
+  contentUpdatedAt DateTime  @default(now())
+  archivedAt       DateTime?
+  archiveYear      Int?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  participants GiftParticipant[]
+  comments     Comment[]
+
+  @@index([familyId, archivedAt])
+  @@index([recipientId])
+}
+
+model GiftParticipant {
+  giftId    String
+  userId    String
+  createdAt DateTime @default(now())
+  gift      Gift     @relation(fields: [giftId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([giftId, userId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  giftId    String
+  authorId  String
+  text      String
+  createdAt DateTime @default(now())
+  gift      Gift     @relation(fields: [giftId], references: [id], onDelete: Cascade)
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([giftId])
+}
+
+model PasswordResetToken {
+  /// empreinte SHA-256 du jeton
+  id        String    @id
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  text      String
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, readAt])
+}
