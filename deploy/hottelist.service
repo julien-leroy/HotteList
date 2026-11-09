@@ -1,0 +1,25 @@
+# /etc/systemd/system/hottelist.service
+# Lance HotteList avec le Node de nvm (version lue dans .nvmrc) pour l'utilisateur hottelist.
+[Unit]
+Description=HotteList (Next.js)
+After=network.target
+
+[Service]
+Type=simple
+User=hottelist
+Group=hottelist
+WorkingDirectory=/opt/hottelist
+EnvironmentFile=/opt/hottelist/.env
+Environment=NODE_ENV=production
+ExecStart=/bin/bash -c '. "$HOME/.nvm/nvm.sh" && nvm use --silent && exec node node_modules/next/dist/bin/next start -p 9000 -H 127.0.0.1'
+Restart=always
+RestartSec=5
+
+# Durcissement
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/opt/hottelist/data /opt/hottelist/.next
+
+[Install]
+WantedBy=multi-user.target

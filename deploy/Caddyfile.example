@@ -1,0 +1,5 @@
+# À ajouter dans le Caddyfile existant, puis : sudo systemctl reload caddy
+hottelist.julienfluenceur.online {
+	encode zstd gzip
+	reverse_proxy 127.0.0.1:9000
+}
