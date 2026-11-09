@@ -1,7 +1,7 @@
 # HotteList — architecture technique (version simplifiée)
 
 _Document de référence. Dernière mise à jour : 9 novembre 2026._
-_Développement lancé le 9 novembre 2026. Code : https://github.com/julien-leroy/HotteList_
+_Développement lancé le 9 novembre 2026. Ajout de souhait et d'idée en popup depuis la v1.1. Code : https://github.com/julien-leroy/HotteList_
 
 ## 1. Décisions prises
 
@@ -119,7 +119,7 @@ Droits d'écriture vérifiés côté serveur, dans chaque action :
 - Page `/profil` : une colonne par famille, plus un sélecteur pour les comptes que je gère (`/profil?pour=ID`).
 - **Glisser** une carte (par sa poignée) vers une autre famille la **déplace**. **Maintenir Alt / Option** pendant le glisser, ou utiliser le menu « ⋯ → Copier vers… », la **copie**. Le menu propose aussi « Déplacer vers… » (accessible sans souris).
 - **Copier** crée un souhait indépendant, sans réservation ni commentaire.
-- **Déplacer** ne révèle rien : toujours autorisé, sans avertissement. Le souhait part avec ses réservations et commentaires ; ceux qui l'avaient réservé reçoivent une **notification** (cloche dans l'en-tête).
+- **Déplacer** ne révèle rien : toujours autorisé, sans avertissement. Le souhait part avec ses réservations et commentaires ; ceux qui l'avaient réservé reçoivent une **notification** (cloche dans l'en-tête). Si l'un d'eux n'est pas membre de la famille d'arrivée, il ne pourrait plus voir le souhait : sa participation est libérée et sa notification le lui dit.
 - L'ordre dans une colonne se change aussi par glisser-déposer.
 
 ## 10. Routes

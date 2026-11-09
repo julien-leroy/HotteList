@@ -1,6 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
+import * as Dialog from "@radix-ui/react-dialog";
+import { IconClose } from "./icons";
 import { createGift, updateGift } from "@/app/actions/gifts";
 import { formatPrice } from "@/lib/format";
 import { GiftVisual, SourceBadge } from "./gift-ui";
@@ -17,6 +19,8 @@ type Props =
       title: string;
       hint: string;
       onDone: () => void;
+      /** dans une popup : pas de cadre ni de titre (la popup les affiche) */
+      bare?: boolean;
     }
   | {
       mode: "edit";
@@ -101,15 +105,16 @@ export function GiftForm(props: Props) {
 
   const idBase = props.mode === "create" ? `n-${props.recipientId}` : `e-${props.giftId}`;
   const compact = props.mode === "edit" && props.compact;
+  const bare = props.mode === "create" && props.bare;
 
   return (
     <form
       onSubmit={submit}
-      className={compact ? "flex flex-col gap-3" : "flex flex-wrap gap-6 rounded-[20px] bg-papier p-6"}
-      style={compact ? undefined : { border: "2px solid #B3202E", boxShadow: "0 18px 40px -26px rgba(90,20,25,.6)" }}
+      className={compact ? "flex flex-col gap-3" : bare ? "flex flex-wrap gap-6" : "flex flex-wrap gap-6 rounded-[20px] bg-papier p-6"}
+      style={compact || bare ? undefined : { border: "2px solid #B3202E", boxShadow: "0 18px 40px -26px rgba(90,20,25,.6)" }}
     >
       <div className="flex min-w-0 flex-[2_1_360px] flex-col gap-4">
-        {props.mode === "create" ? (
+        {bare ? null : props.mode === "create" ? (
           <div className="flex flex-col gap-1">
             <h3 className="font-display m-0 text-2xl font-bold">{props.title}</h3>
             <p className="m-0 text-sm text-gris">{props.hint}</p>
@@ -125,6 +130,7 @@ export function GiftForm(props: Props) {
             type="url"
             inputMode="url"
             value={d.url}
+            autoFocus={bare}
             onChange={set("url")}
             onBlur={(e) => lookup(e.target.value)}
             onPaste={(e) => {
@@ -189,5 +195,54 @@ export function GiftForm(props: Props) {
         </div>
       )}
     </form>
+  );
+}
+
+/** Popup d'ajout d'un souhait ou d'une idée. */
+export function AddGiftDialog(props: {
+  open: boolean;
+  onClose: () => void;
+  familyId: string;
+  recipientId: string;
+  kind: "SOUHAIT" | "IDEE";
+  title: string;
+  hint: string;
+}) {
+  return (
+    <Dialog.Root open={props.open} onOpenChange={(o) => !o && props.onClose()}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="veil">
+          <Dialog.Content className="modal flex max-w-[860px] flex-col gap-5 p-7" aria-describedby={undefined} onOpenAutoFocus={(e) => {
+            // laisser autoFocus placer le curseur dans le champ du lien
+            const el = (e.currentTarget as HTMLElement | null)?.querySelector("input");
+            if (el) { e.preventDefault(); el.focus(); }
+          }}>
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex flex-col gap-1">
+                <Dialog.Title className="font-display m-0 text-[28px] font-bold">{props.title}</Dialog.Title>
+                <p className="m-0 text-sm text-gris">{props.hint}</p>
+              </div>
+              <Dialog.Close asChild>
+                <button className="btn b-soft b-icon" type="button" aria-label="Fermer" style={{ borderRadius: "50%", flex: "none" }}>
+                  <IconClose size={18} />
+                </button>
+              </Dialog.Close>
+            </div>
+            {props.open && (
+              <GiftForm
+                mode="create"
+                bare
+                familyId={props.familyId}
+                recipientId={props.recipientId}
+                kind={props.kind}
+                title={props.title}
+                hint={props.hint}
+                onDone={props.onClose}
+              />
+            )}
+          </Dialog.Content>
+        </Dialog.Overlay>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }

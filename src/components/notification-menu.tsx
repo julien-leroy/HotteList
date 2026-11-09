@@ -36,16 +36,28 @@ export function NotificationMenu({ items }: { items: Item[] }) {
           {items.length === 0 && <p className="m-0 px-3 py-2 text-sm text-gris">Rien de nouveau pour l&apos;instant.</p>}
           {items.map((n) => (
             <Dropdown.Item key={n.id} asChild className="menu-item !h-auto !items-start py-2.5">
-              <Link href={n.link ?? "#"} className="no-underline" style={{ color: "#1F3A2C" }}>
-                <span className="flex flex-col gap-0.5">
-                  <span className={`text-sm leading-snug ${n.unread ? "font-semibold" : ""}`}>{n.text}</span>
-                  <span className="text-xs text-gris-clair">{relativeDate(n.createdAt)}</span>
-                </span>
-              </Link>
+              {n.link ? (
+                <Link href={n.link} className="no-underline" style={{ color: "#1F3A2C" }}>
+                  <Body n={n} />
+                </Link>
+              ) : (
+                <div>
+                  <Body n={n} />
+                </div>
+              )}
             </Dropdown.Item>
           ))}
         </Dropdown.Content>
       </Dropdown.Portal>
     </Dropdown.Root>
+  );
+}
+
+function Body({ n }: { n: Item }) {
+  return (
+    <span className="flex flex-col gap-0.5">
+      <span className={`text-sm leading-snug ${n.unread ? "font-semibold" : ""}`}>{n.text}</span>
+      <span className="text-xs text-gris-clair">{relativeDate(n.createdAt)}</span>
+    </span>
   );
 }

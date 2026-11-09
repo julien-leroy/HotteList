@@ -20,7 +20,7 @@ export function LoginForm({ next, signupHref = "/inscription" }: { next?: string
       {next && <input type="hidden" name="next" value={next} />}
       <div className="flex flex-col gap-1.5">
         <label className="label" htmlFor="login">E-mail ou pseudo</label>
-        <input className="input" id="login" name="login" autoComplete="username" required />
+        <input className="input" id="login" name="login" autoComplete="username" defaultValue={state?.values?.login} key={state?.values?.login} required />
       </div>
       <div className="flex flex-col gap-1.5">
         <label className="label" htmlFor="password">Mot de passe</label>
@@ -59,16 +59,16 @@ export function SignupForm({
       <div className="flex flex-wrap gap-4">
         <div className="flex flex-[1_1_180px] flex-col gap-1.5">
           <label className="label" htmlFor="firstName">Prénom</label>
-          <input className="input" id="firstName" name="firstName" placeholder="Ex. Sophie" autoComplete="given-name" required />
+          <input className="input" id="firstName" name="firstName" placeholder="Ex. Sophie" autoComplete="given-name" defaultValue={state?.values?.firstName} key={`f${state?.values?.firstName}`} required />
         </div>
         <div className="flex flex-[1_1_180px] flex-col gap-1.5">
           <label className="label" htmlFor="lastName">Nom <span className="opt">(facultatif)</span></label>
-          <input className="input" id="lastName" name="lastName" autoComplete="family-name" />
+          <input className="input" id="lastName" name="lastName" autoComplete="family-name" defaultValue={state?.values?.lastName} key={`l${state?.values?.lastName}`} />
         </div>
       </div>
       <div className="flex flex-col gap-1.5">
         <label className="label" htmlFor="login">E-mail ou pseudo</label>
-        <input className="input" id="login" name="login" placeholder="vous@exemple.fr ou sophie42" autoComplete="username" required />
+        <input className="input" id="login" name="login" placeholder="vous@exemple.fr ou sophie42" autoComplete="username" defaultValue={state?.values?.login} key={`u${state?.values?.login}`} required />
         <span className="text-xs text-gris-clair">Sert seulement à vous connecter. Aucun e-mail ne vous sera envoyé.</span>
       </div>
       <div className="flex flex-col gap-1.5">

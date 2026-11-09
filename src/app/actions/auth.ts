@@ -15,7 +15,8 @@ import {
 import { clientIp, hit } from "@/lib/rate-limit";
 import { randomColor } from "@/lib/utils";
 
-export type FormState = { error?: string; ok?: string } | undefined;
+/** `values` : champs déjà saisis, réaffichés après une erreur (React vide le formulaire après envoi). */
+export type FormState = { error?: string; ok?: string; values?: Record<string, string> } | undefined;
 
 const signupSchema = z.object({
   firstName: z.string().trim().min(1, "Indiquez votre prénom.").max(40),
@@ -39,11 +40,16 @@ export async function signup(_: FormState, formData: FormData): Promise<FormStat
     login: formData.get("login"),
     password: formData.get("password"),
   });
-  if (!parsed.success) return { error: parsed.error.issues[0].message };
+  const values = {
+    firstName: String(formData.get("firstName") ?? ""),
+    lastName: String(formData.get("lastName") ?? ""),
+    login: String(formData.get("login") ?? ""),
+  };
+  if (!parsed.success) return { error: parsed.error.issues[0].message, values };
 
   const login = normalizeLogin(parsed.data.login);
   const exists = await db.user.findUnique({ where: { login } });
-  if (exists) return { error: "Cet identifiant est déjà pris." };
+  if (exists) return { error: "Cet identifiant est déjà pris.", values };
 
   const user = await db.user.create({
     data: {
@@ -69,11 +75,11 @@ export async function login(_: FormState, formData: FormData): Promise<FormState
   const loginValue = normalizeLogin(String(formData.get("login") ?? ""));
   const password = String(formData.get("password") ?? "");
   if (!hit(`login:${ip}`, 20, 15 * 60_000) || !hit(`login:${ip}:${loginValue}`, 8, 15 * 60_000)) {
-    return { error: "Trop de tentatives. Patientez quelques minutes." };
+    return { error: "Trop de tentatives. Patientez quelques minutes.", values: { login: String(formData.get("login") ?? "") } };
   }
   const user = await db.user.findUnique({ where: { login: loginValue } });
   const ok = user && !user.managedById && (await verifyPassword(password, user.passwordHash));
-  if (!ok || !user) return { error: "Identifiant ou mot de passe incorrect." };
+  if (!ok || !user) return { error: "Identifiant ou mot de passe incorrect.", values: { login: String(formData.get("login") ?? "") } };
   await createSession(user.id);
   redirect(safeNext(formData.get("next")) ?? "/familles");
 }

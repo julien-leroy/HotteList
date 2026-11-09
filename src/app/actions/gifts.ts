@@ -279,15 +279,36 @@ export async function moveWish(giftId: string, toFamilyId: string, orderedIds?: 
       where: { familyId: toFamilyId, recipientId: gift.recipientId, archivedAt: null },
       _max: { position: true },
     });
-    await db.gift.update({
-      where: { id: giftId },
-      data: { familyId: toFamilyId, position: (last._max.position ?? -1) + 1 },
+    // Les participants qui ne sont pas dans la famille d'arrivée ne pourraient plus voir
+    // le souhait : leur participation est libérée. Les autres la gardent.
+    const others = gift.participants.map((p) => p.userId).filter((id) => id !== user.id);
+    const stillMembers = new Set(
+      (await db.membership.findMany({ where: { familyId: toFamilyId, userId: { in: others } }, select: { userId: true } })).map(
+        (m) => m.userId,
+      ),
+    );
+    const dropped = gift.participants.map((p) => p.userId).filter((id) => id !== user.id && !stillMembers.has(id));
+    await db.$transaction(async (tx) => {
+      await tx.gift.update({
+        where: { id: giftId },
+        data: { familyId: toFamilyId, position: (last._max.position ?? -1) + 1 },
+      });
+      if (dropped.length) {
+        await tx.giftParticipant.deleteMany({ where: { giftId, userId: { in: dropped } } });
+        const left = await tx.giftParticipant.count({ where: { giftId } });
+        if (left === 0) await tx.gift.update({ where: { id: giftId }, data: { takeMode: "AUCUN" } });
+      }
     });
     if (orderedIds) await applyOrder(toFamilyId, gift.recipientId, orderedIds);
+    const who = displayName(recipient);
     await notify(
-      gift.participants.map((p) => p.userId).filter((id) => id !== user.id),
-      `${displayName(recipient)} a déplacé « ${gift.title} » vers la famille ${target.name}. Votre réservation suit le souhait.`,
+      [...stillMembers],
+      `${who} a déplacé « ${gift.title} » vers la famille ${target.name}. Votre réservation suit le souhait.`,
       `/f/${target.slug}?cadeau=${gift.id}`,
+    );
+    await notify(
+      dropped,
+      `${who} a retiré « ${gift.title} » de sa liste dans votre famille. Votre réservation a été annulée.`,
     );
     return done();
   } catch (e) {

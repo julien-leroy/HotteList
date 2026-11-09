@@ -6,7 +6,7 @@ import type { PersonLite, VisibleGift } from "@/lib/visibility";
 import { formatPrice } from "@/lib/format";
 import { Avatar } from "./avatar";
 import { GiftVisual, SourceBadge, statusOf, tintFor, type Status } from "./gift-ui";
-import { GiftForm } from "./gift-form";
+import { AddGiftDialog } from "./gift-form";
 import { GiftDialog } from "./gift-dialog";
 import { IconBookmark, IconComment, IconGrid, IconGroup, IconHidden, IconList, IconPlus } from "./icons";
 import { useAction } from "./toaster";
@@ -112,7 +112,7 @@ export function FamilyBoard({ familyId, familySlug, sections, openGiftId }: Prop
                     <span className="text-sm text-gris">{sub}</span>
                   </div>
                 </div>
-                <button className="btn b-soft" type="button" onClick={() => setAdding(isAdding ? null : s.person.id)}>
+                <button className="btn b-soft" type="button" onClick={() => setAdding(s.person.id)}>
                   <IconPlus /> {plusShort}
                 </button>
               </div>
@@ -124,19 +124,17 @@ export function FamilyBoard({ familyId, familySlug, sections, openGiftId }: Prop
                 </p>
               )}
 
-              {isAdding && (
-                <GiftForm
-                  mode="create"
-                  familyId={familyId}
-                  recipientId={s.person.id}
-                  kind={canWish ? "SOUHAIT" : "IDEE"}
-                  title={canWish ? (s.isMe ? "Nouveau souhait" : `Nouveau souhait pour ${s.person.firstName}`) : `Une idée pour ${s.person.firstName}`}
-                  hint={canWish ? "Collez un lien, on s'occupe du titre, de l'image et du prix." : `${s.person.firstName} ne verra jamais cette idée. Les autres membres, si.`}
-                  onDone={() => setAdding(null)}
-                />
-              )}
+              <AddGiftDialog
+                open={isAdding}
+                onClose={() => setAdding(null)}
+                familyId={familyId}
+                recipientId={s.person.id}
+                kind={canWish ? "SOUHAIT" : "IDEE"}
+                title={canWish ? (s.isMe ? "Nouveau souhait" : `Nouveau souhait pour ${s.person.firstName}`) : `Une idée pour ${s.person.firstName}`}
+                hint={canWish ? (s.isMe ? "Collez un lien : le titre, l'image et le prix se remplissent tout seuls. Toute la famille le verra." : `Collez un lien : le titre, l'image et le prix se remplissent tout seuls.`) : `${s.person.firstName} ne verra jamais cette idée. Le reste de la famille pourra la réserver et la commenter.`}
+              />
 
-              {gifts.length === 0 && !isAdding && onlyFree && (
+              {gifts.length === 0 && onlyFree && (
                 <p className="m-0 text-sm text-gris">Tout est déjà pris ici.</p>
               )}
 
@@ -145,19 +143,17 @@ export function FamilyBoard({ familyId, familySlug, sections, openGiftId }: Prop
                   {gifts.map((g) => (
                     <GiftCard key={g.id} gift={g} onOpen={() => open(g.id)} />
                   ))}
-                  {!isAdding && (
-                    <button className="plus" type="button" onClick={() => setAdding(s.person.id)} style={gifts.length ? undefined : { minHeight: 200 }}>
-                      <span className="orb"><IconPlus size={28} /></span>
-                      {plusLabel}
-                    </button>
-                  )}
+                  <button className="plus" type="button" onClick={() => setAdding(s.person.id)} style={gifts.length ? undefined : { minHeight: 200 }}>
+                    <span className="orb"><IconPlus size={28} /></span>
+                    {plusLabel}
+                  </button>
                 </div>
               ) : (
                 <div className="flex flex-col gap-2">
                   {gifts.map((g) => (
                     <GiftRow key={g.id} gift={g} onOpen={() => open(g.id)} />
                   ))}
-                  {!isAdding && (
+                  {
                     <button
                       type="button"
                       onClick={() => setAdding(s.person.id)}
@@ -166,7 +162,7 @@ export function FamilyBoard({ familyId, familySlug, sections, openGiftId }: Prop
                     >
                       <IconPlus size={18} /> {plusLabel}
                     </button>
-                  )}
+                  }
                 </div>
               )}
             </section>

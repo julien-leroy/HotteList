@@ -23,7 +23,7 @@ import type { PersonLite, VisibleGift } from "@/lib/visibility";
 import { formatPrice } from "@/lib/format";
 import { copyWish, moveWish, reorderWishes } from "@/app/actions/gifts";
 import { GiftVisual, statusOf } from "./gift-ui";
-import { GiftForm } from "./gift-form";
+import { AddGiftDialog } from "./gift-form";
 import { IconComment, IconDots, IconGrip, IconHidden, IconMove, IconPlus } from "./icons";
 import { useAction } from "./toaster";
 
@@ -201,18 +201,16 @@ function FamilyColumn({
           <SortableItem key={g.id} gift={g} family={col.family} others={others} isSelf={isSelf} />
         ))}
       </SortableContext>
-      {col.gifts.length === 0 && !adding && <p className="m-0 py-4 text-center text-sm text-gris-clair">Glissez un souhait ici, ou ajoutez-en un.</p>}
-      {adding ? (
-        <GiftForm
-          mode="create"
-          familyId={col.family.id}
-          recipientId={person.id}
-          kind="SOUHAIT"
-          title={isSelf ? "Nouveau souhait" : `Nouveau souhait pour ${person.firstName}`}
-          hint={`Dans ${col.family.name}.`}
-          onDone={() => setAdding(false)}
-        />
-      ) : (
+      {col.gifts.length === 0 && <p className="m-0 py-4 text-center text-sm text-gris-clair">Glissez un souhait ici, ou ajoutez-en un.</p>}
+      <AddGiftDialog
+        open={adding}
+        onClose={() => setAdding(false)}
+        familyId={col.family.id}
+        recipientId={person.id}
+        kind="SOUHAIT"
+        title={isSelf ? "Nouveau souhait" : `Nouveau souhait pour ${person.firstName}`}
+        hint={`Dans ${col.family.name}. Collez un lien : le titre, l'image et le prix se remplissent tout seuls.`}
+      />
         <button
           type="button"
           onClick={() => setAdding(true)}
@@ -221,7 +219,6 @@ function FamilyColumn({
         >
           <IconPlus /> Ajouter un souhait
         </button>
-      )}
     </section>
   );
 }

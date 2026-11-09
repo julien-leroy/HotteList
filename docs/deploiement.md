@@ -2,6 +2,11 @@
 
 Cible : `https://hottelist.julienfluenceur.online`, application sur `127.0.0.1:9000`, derrière Caddy.
 
+> ⚠️ **Sur le serveur, toujours en mode production** (`npm run build` puis `npm start`, ou le service systemd).
+> **Jamais `npm run dev`** derrière Caddy : le mode développement refuse de charger son JavaScript depuis un
+> nom de domaine, donc la page s'affiche mais aucun bouton ne marche. Dans la console, on voit alors des erreurs
+> `wss://…/_next/hmr … 502`. Si ça arrive : arrêter `npm run dev`, puis `npm run build && sudo systemctl restart hottelist`.
+
 ## 1. Utilisateur dédié et Node 24
 
 ```bash
@@ -45,6 +50,8 @@ PORT=9000
 > ⚠️ Ne changez jamais `AUTH_SECRET` après la mise en route : toutes les sessions et les liens de réinitialisation en cours deviendraient invalides.
 
 ## 4. Installation et compilation
+
+L'installation doit pouvoir lancer le script `postinstall` (il génère le client Prisma). Avec npm c'est automatique. Avec pnpm, il faut l'autoriser une fois via `pnpm approve-builds`. L'avertissement `deprecated whatwg-encoding` vient d'une sous-dépendance de cheerio et est sans effet.
 
 ```bash
 mkdir -p data
@@ -106,6 +113,7 @@ Le script sauvegarde la base, fait `git pull`, installe, migre, compile puis red
 
 | Problème | Commande |
 |---|---|
+| Les boutons ne réagissent pas, erreurs `_next/hmr` dans la console | Le site tourne en `npm run dev` : l'arrêter, `npm run build`, puis `sudo systemctl restart hottelist` |
 | Voir les logs | `journalctl -u hottelist -f` |
 | Mot de passe oublié (sans admin) | `cd /opt/hottelist && npm run reset-password -- <identifiant>` |
 | Lister les comptes | `npm run reset-password` (sans argument) |
