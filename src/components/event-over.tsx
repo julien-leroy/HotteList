@@ -6,7 +6,7 @@ import { cleanLists } from "@/app/actions/family";
 import { IconStar } from "./icons";
 import { useAction } from "./toaster";
 
-export function EventOver({ familyId, isAdmin, taken, free }: { familyId: string; isAdmin: boolean; taken: number; free: number }) {
+export function EventOver({ eventName, familyId, isAdmin, taken, free }: { eventName: string; familyId: string; isAdmin: boolean; taken: number; free: number }) {
   const [confirming, setConfirming] = useState(false);
   const { pending, run } = useAction();
   const s = (n: number) => (n > 1 ? "s" : "");
@@ -24,11 +24,11 @@ export function EventOver({ familyId, isAdmin, taken, free }: { familyId: string
           </span>
           <div className="flex flex-col gap-1">
             <h2 className="font-display m-0 text-[28px] leading-tight font-bold italic">
-              {cleaned ? "Les listes sont prêtes pour la suite" : "L'événement est terminé ! Merci à tous"}
+              {cleaned ? "Les listes sont prêtes pour la suite" : `C'est fini pour ${eventName} ! Merci à tous`}
             </h2>
             <p className="m-0 text-[15px] text-[#D8E8DE]">
               {cleaned
-                ? `${free} souhait${s(free)} encore sur les listes.${isAdmin ? " Pensez à choisir la date du prochain événement dans les réglages." : ""}`
+                ? `${free} souhait${s(free)} encore sur les listes.${isAdmin ? " Pensez à choisir le prochain événement et sa date dans les réglages." : ""}`
                 : `${taken} cadeau${taken > 1 ? "x" : ""} offert${s(taken)} · ${free} encore sur les listes`}
             </p>
           </div>

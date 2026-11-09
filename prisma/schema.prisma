@@ -60,6 +60,8 @@ model Family {
   createdById String
   createdBy   User         @relation("FamilyCreator", fields: [createdById], references: [id])
   eventDate   DateTime
+  /// titre de l'événement : « Noël » par défaut, ou « Anniversaire de Léa »…
+  eventName   String       @default("Noël")
   /// date (AAAA-MM-JJ) de l'événement pour lequel le rappel J-7 est parti
   reminderSentFor String?
   createdAt   DateTime     @default(now())
@@ -110,6 +112,8 @@ model Gift {
   contentUpdatedAt DateTime  @default(now())
   archivedAt       DateTime?
   archiveYear      Int?
+  /// événement pour lequel le cadeau a été offert (« Noël », « Anniversaire de Léa »…)
+  archiveEvent     String?
   /// suppression annulable quelques secondes (« Annuler »)
   deletedAt        DateTime?
   createdAt        DateTime  @default(now())

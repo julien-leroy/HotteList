@@ -58,6 +58,7 @@ async function main() {
       const mail = renderReminderEmail({
         firstName: u.firstName,
         familyName: family.name,
+        eventName: family.eventName,
         familyUrl: `${base}/f/${family.slug}`,
         coursesUrl: `${base}/courses`,
         settingsUrl: `${base}/profil#compte`,

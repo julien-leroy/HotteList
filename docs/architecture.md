@@ -1,6 +1,6 @@
 # HotteList — architecture technique (version simplifiée)
 
-_Document de référence. Dernière mise à jour : 9 novembre 2026 (liste de courses, onglets, tirage au sort, archives, rappels)._
+_Document de référence. Dernière mise à jour : 9 novembre 2026 (événement personnalisable)._
 _Développement lancé le 9 novembre 2026. Ajout de souhait et d'idée en popup depuis la v1.1. Code : https://github.com/julien-leroy/HotteList_
 
 ## 1. Décisions prises
@@ -21,6 +21,7 @@ _Développement lancé le 9 novembre 2026. Ajout de souhait et d'idée en popup 
 | Listes | Une liste par famille. Sur le profil, ma liste pour chaque famille ; glisser-déposer pour **déplacer** ou **copier** un souhait vers une autre famille, et pour changer l'ordre |
 | Cadeau à plusieurs | On indique seulement qu'on participe (pas de montant). Les détails se règlent en commentaire |
 | Comptes gérés | Un adulte crée et administre des comptes « en procuration » (ex. ses enfants) et voit tout sur leurs listes |
+| Événement | Chaque famille a un **événement** : titre et date. Par défaut **Noël, le 25 décembre** ; à la création, « Changer » propose Noël, Anniversaire (« Anniversaire de … » pré-rempli) ou Autre, avec une date au choix (pas dans le passé). Modifiable ensuite par l'admin |
 | Fin de l'événement | Un encart « L'événement est terminé » avec un bouton **« Nettoyer les listes »** : il archive tous les cadeaux réservés ou à plusieurs, et laisse sur les listes ceux qui n'ont pas été offerts |
 | DA | Festive : rouge profond, vert sapin, or ; Fraunces + Inter ; boutons ghost aux couleurs douces (cf. canvas de design) |
 | Ma liste de courses | Page `/courses` : tout ce que j'offre, regroupé par destinataire, avec ma part estimée (cadeau à plusieurs divisé), le reste à acheter et un **statut privé** « à acheter / acheté / emballé ». Imprimable |
@@ -95,12 +96,12 @@ Supprimés : Docker, PostgreSQL, sharp et stockage d'images, Better Auth.
 
 ## 6. Fin de l'événement : « Nettoyer les listes »
 
-- Chaque famille a une **date d'événement**, le 25 décembre par défaut, modifiable par l'admin.
-- Le lendemain de cette date (heure de Paris), la page famille affiche en haut un encart vert sapin et or : « L'événement est terminé ! Merci à tous », avec un récapitulatif « 18 cadeaux offerts · 13 encore sur les listes ».
+- Chaque famille a un **événement** (`eventName`, « Noël » par défaut) et une **date** (25 décembre par défaut), modifiables par l'admin. Ils s'affichent partout : cartes des familles (« Noël · J-46 »), page famille, invitation, encart de fin, archives, e-mail de rappel. Changer la date relance le rappel J-7.
+- Le lendemain de cette date (heure de Paris), la page famille affiche en haut un encart vert sapin et or : « C'est fini pour Noël ! Merci à tous », avec un récapitulatif « 18 cadeaux offerts · 13 encore sur les listes ».
 - Le bouton **« Nettoyer les listes »** n'apparaît que pour les **admins** et ouvre d'abord une confirmation détaillée.
 - **Effet** : les cadeaux réservés seuls ou à plusieurs reçoivent `archivedAt` et `archiveYear` et disparaissent des listes ; les autres restent avec leurs commentaires ; rien n'est supprimé.
 - Après nettoyage, l'encart devient « Les listes sont prêtes pour la suite » et invite l'admin à choisir la date du prochain événement.
-- **Années passées** (`/f/[slug]/archives`) : ce qui a été offert, par année et par personne. On voit qui a offert quoi, sauf sur ses propres cadeaux.
+- **Années passées** (`/f/[slug]/archives`) : ce qui a été offert, par événement (« Noël 2026 », « Anniversaire de Léa 2027 ») et par personne. On voit qui a offert quoi, sauf sur ses propres cadeaux.
 - **Rappel J-7** par e-mail (script `npm run rappels`, cron quotidien), une seule fois par événement.
 
 ## 7. Modèle de données
@@ -110,11 +111,11 @@ Les noms dans le code sont en anglais (`prisma/schema.prisma`).
 ```
 User           id, firstName, lastName?, login? (unique, vide pour un compte géré), passwordHash?, avatarColor, managedById?, email? (unique), emailVerifiedAt?, emailReminders
 Session        id (empreinte du jeton), userId, expiresAt
-Family         id, name, slug unique avec suffixe aléatoire (ex. famille-leroy-7kq2), createdById, eventDate, reminderSentFor?
+Family         id, name, slug unique avec suffixe aléatoire (ex. famille-leroy-7kq2), createdById, eventName (défaut « Noël »), eventDate, reminderSentFor?
 Membership     userId, familyId, role (ADMIN | MEMBRE), joinedAt, lastSeenAt?, prevSeenAt?   — unique (userId, familyId)
 Gift           id, familyId, recipientId, createdById, kind (SOUHAIT | IDEE),
                title, description?, url?, price?, imageUrl?, siteOrigin?, favorite, position,
-               takeMode (AUCUN | SEUL | A_PLUSIEURS), contentUpdatedAt, archivedAt?, archiveYear?, deletedAt?
+               takeMode (AUCUN | SEUL | A_PLUSIEURS), contentUpdatedAt, archivedAt?, archiveYear?, archiveEvent?, deletedAt?
 GiftParticipant giftId, userId, createdAt, status (A_ACHETER | ACHETE | EMBALLE — visible par ce participant seul)
 Comment        id, giftId, authorId, text, createdAt
 PasswordResetToken id (empreinte), userId, expiresAt, usedAt?
@@ -142,7 +143,7 @@ Droits d'écriture vérifiés côté serveur, dans chaque action :
 - Retirer quelqu'un de la famille (ex. un doublon) : **admin** de la famille. On ne peut pas retirer le dernier admin. La personne retirée garde son compte ; ses comptes gérés partent avec elle et ses réservations dans la famille sont libérées (comme quand on quitte la famille).
 - Statut d'achat : seulement le participant lui-même, et lui seul le voit.
 - Tirage au sort (lancer, refaire, annuler) : admin. Chaque participant ne reçoit que son propre tirage.
-- Nettoyer les listes, changer la date ou le nom, régénérer le lien, nommer ou retirer un admin : admin de la famille. Une famille garde toujours au moins un admin.
+- Nettoyer les listes, changer le titre ou la date de l'événement, renommer la famille, régénérer le lien, nommer ou retirer un admin : admin de la famille. Une famille garde toujours au moins un admin.
 
 ## 9. Profil : déplacer ou copier un souhait
 

@@ -4,7 +4,7 @@ import { requireUser } from "@/lib/auth";
 import { FestiveHeader, HeroTitle } from "@/components/festive";
 import { Avatar } from "@/components/avatar";
 import { CreateFamilyForm } from "@/components/create-family-form";
-import { daysUntil, isEventOver } from "@/lib/utils";
+import { daysUntil, defaultEventDate, isEventOver, parisDay } from "@/lib/utils";
 import { plural } from "@/lib/format";
 import { mailEnabled } from "@/lib/mail";
 
@@ -58,7 +58,7 @@ export default async function Familles() {
                 <div className="flex flex-1 flex-col gap-4 p-6">
                   <div className="flex items-center justify-between gap-3">
                     <span className="inline-flex items-center rounded-full bg-or-pale px-3 py-1 text-[13px] font-bold text-[#5C4214]">
-                      {over ? "Événement terminé" : days === 0 ? "C'est aujourd'hui !" : `J-${days}`}
+                      {over ? `${family.eventName} : terminé` : days === 0 ? `${family.eventName} : c'est aujourd'hui !` : `${family.eventName} · J-${days}`}
                     </span>
                     {role === "ADMIN" && <span className="text-xs font-bold tracking-wide text-gris-clair uppercase">Admin</span>}
                   </div>
@@ -82,7 +82,7 @@ export default async function Familles() {
               </Link>
             );
           })}
-          <CreateFamilyForm first={memberships.length === 0} />
+          <CreateFamilyForm first={memberships.length === 0} christmas={parisDay(defaultEventDate())} today={parisDay(new Date())} />
         </div>
         {memberships.length === 0 && (
           <p className="m-0 max-w-[640px] text-[15px] leading-relaxed text-gris">

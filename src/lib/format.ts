@@ -33,3 +33,10 @@ export function relativeDate(iso: string | Date) {
 export function plural(n: number, one: string, many: string) {
   return `${n} ${n > 1 ? many : one}`;
 }
+
+/** « 25 décembre » (ou « 25 décembre 2027 » si ce n'est pas l'année en cours). */
+export function eventDay(date: Date | string) {
+  const d = typeof date === "string" ? new Date(date) : date;
+  const sameYear = d.getFullYear() === new Date().getFullYear();
+  return d.toLocaleDateString("fr-FR", { day: "numeric", month: "long", ...(sameYear ? {} : { year: "numeric" }), timeZone: "Europe/Paris" });
+}

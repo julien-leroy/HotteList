@@ -8,7 +8,7 @@ import {
   regenerateLink,
   removeMember,
   renameFamily,
-  setEventDate,
+  setEvent,
   setManagedInFamily,
   setMemberRole,
 } from "@/app/actions/family";
@@ -27,8 +27,10 @@ export function FamilySettings({
   members,
   myManaged,
   santa,
+  today,
 }: {
-  family: { id: string; name: string; eventDate: string };
+  family: { id: string; name: string; eventName: string; eventDate: string };
+  today: string;
   isAdmin: boolean;
   meId: string;
   members: Member[];
@@ -38,6 +40,7 @@ export function FamilySettings({
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(family.name);
   const [date, setDate] = useState(family.eventDate);
+  const [eventName, setEventName] = useState(family.eventName);
   const [resetUrl, setResetUrl] = useState<{ who: string; url: string } | null>(null);
   const { pending, run } = useAction();
 
@@ -73,14 +76,25 @@ export function FamilySettings({
                     Renommer
                   </button>
                 </div>
-                <div className="flex flex-wrap items-end gap-2.5">
-                  <div className="flex flex-[1_1_240px] flex-col gap-1.5">
-                    <label className="label" htmlFor="fs-date">Date de l&apos;événement</label>
-                    <input className="input" id="fs-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+                <div className="flex flex-col gap-2.5">
+                  <span className="label">Événement</span>
+                  <div className="flex flex-wrap items-end gap-2.5">
+                    <div className="flex flex-[2_1_200px] flex-col gap-1.5">
+                      <label className="label" htmlFor="fs-event">Titre</label>
+                      <input className="input" id="fs-event" value={eventName} onChange={(e) => setEventName(e.target.value)} maxLength={60} placeholder="Noël, Anniversaire de Léa…" />
+                    </div>
+                    <div className="flex flex-[1_1_150px] flex-col gap-1.5">
+                      <label className="label" htmlFor="fs-date">Date</label>
+                      <input className="input" id="fs-date" type="date" min={today} value={date} onChange={(e) => setDate(e.target.value)} />
+                    </div>
+                    <button
+                      className="btn b-soft"
+                      disabled={pending || (date === family.eventDate && eventName === family.eventName)}
+                      onClick={() => run(() => setEvent(family.id, eventName, date), "Événement enregistré.")}
+                    >
+                      Enregistrer
+                    </button>
                   </div>
-                  <button className="btn b-soft" disabled={pending || date === family.eventDate} onClick={() => run(() => setEventDate(family.id, date), "Date enregistrée.")}>
-                    Enregistrer
-                  </button>
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <span className="label">Lien de la famille</span>

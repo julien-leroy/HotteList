@@ -85,6 +85,7 @@ type ReminderLine = { name: string; free: number };
 export function renderReminderEmail(opts: {
   firstName: string;
   familyName: string;
+  eventName: string;
   familyUrl: string;
   coursesUrl: string;
   days: number;
@@ -93,15 +94,15 @@ export function renderReminderEmail(opts: {
   toBuy: number;
   settingsUrl: string;
 }) {
-  const { firstName, familyName, familyUrl, coursesUrl, days, dateLabel, lines, toBuy, settingsUrl } = opts;
+  const { firstName, familyName, eventName, familyUrl, coursesUrl, days, dateLabel, lines, toBuy, settingsUrl } = opts;
   const free = lines.reduce((s, l) => s + l.free, 0);
   const when = days === 1 ? "demain" : `dans ${days} jours`;
-  const subject = `${familyName} : c'est ${when} !`;
+  const subject = `${eventName} (${familyName}) : c'est ${when} !`;
   const bullet = (l: ReminderLine) => `${l.name} : ${l.free} souhait${l.free > 1 ? "s" : ""} sans personne`;
   const text = [
     `Bonjour ${firstName},`,
     "",
-    `L'événement de ${familyName} a lieu ${when} (${dateLabel}).`,
+    `${eventName}, dans la famille ${familyName}, c'est ${when} (${dateLabel}).`,
     free ? `${free} souhait${free > 1 ? "s attendent" : " attend"} encore quelqu'un :` : "Tous les souhaits ont trouvé quelqu'un. Bravo !",
     ...lines.filter((l) => l.free).map((l) => `  - ${bullet(l)}`),
     "",
@@ -126,8 +127,8 @@ export function renderReminderEmail(opts: {
       <span style="float:right;margin-top:6px;padding:4px 12px;border-radius:999px;background:#F2C75C;color:#5A1018;font-family:Arial,sans-serif;font-weight:700;font-size:13px;">J-${days}</span>
     </td></tr>
     <tr><td style="padding:28px 28px 8px;font-family:Arial,Helvetica,sans-serif;color:#1F3A2C;">
-      <h1 style="margin:0 0 12px;font-family:Georgia,'Times New Roman',serif;font-size:26px;line-height:1.2;">${escapeHtml(familyName)}, c'est ${when} !</h1>
-      <p style="margin:0 0 16px;font-size:16px;line-height:1.5;">Bonjour ${escapeHtml(firstName)}, l'événement a lieu le <strong>${escapeHtml(dateLabel)}</strong>.</p>
+      <h1 style="margin:0 0 12px;font-family:Georgia,'Times New Roman',serif;font-size:26px;line-height:1.2;">${escapeHtml(eventName)}, c'est ${when} !</h1>
+      <p style="margin:0 0 16px;font-size:16px;line-height:1.5;">Bonjour ${escapeHtml(firstName)}, rendez-vous le <strong>${escapeHtml(dateLabel)}</strong> dans la famille <strong>${escapeHtml(familyName)}</strong>.</p>
       <p style="margin:0 0 8px;font-size:16px;line-height:1.5;">${free ? `<strong>${free} souhait${free > 1 ? "s attendent" : " attend"} encore quelqu'un :</strong>` : "Tous les souhaits ont trouvé quelqu'un. Bravo !"}</p>
       ${free ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:2px dotted #D9A93E;border-bottom:2px dotted #D9A93E;margin:6px 0 16px;">${lines.filter((l) => l.free).map(row).join("")}</table>` : ""}
       ${toBuy ? `<p style="margin:0 0 14px;font-size:15px;line-height:1.5;">Il vous reste <strong>${toBuy} cadeau${toBuy > 1 ? "x" : ""} à acheter</strong>.</p>` : ""}

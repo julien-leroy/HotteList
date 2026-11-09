@@ -6,7 +6,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { requireUser, tokenDigest } from "@/lib/auth";
 import { requireAdmin, requireMember } from "@/lib/queries";
-import { defaultEventDate, randomToken, slugify } from "@/lib/utils";
+import { defaultEventDate, parisDay, randomToken, slugify } from "@/lib/utils";
 import type { FormState } from "./auth";
 
 export type ActionResult = { ok: true; url?: string; message?: string } | { ok: false; error: string };
@@ -16,17 +16,36 @@ function fail(e: unknown): ActionResult {
 }
 
 const nameSchema = z.string().trim().min(2, "Donnez un nom à la famille.").max(60);
+const eventNameSchema = z.string().trim().min(2, "Donnez un titre à l'événement.").max(60);
+const isoDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Choisissez une date.");
+
+function parseEventDate(iso: string) {
+  const d = new Date(`${isoDateSchema.parse(iso)}T12:00:00Z`);
+  if (Number.isNaN(d.getTime())) throw new Error("Date invalide.");
+  if (parisDay(d) < parisDay(new Date())) throw new Error("La date de l'événement est déjà passée.");
+  return d;
+}
 
 export async function createFamily(_: FormState, formData: FormData): Promise<FormState> {
   const user = await requireUser();
   const parsed = nameSchema.safeParse(formData.get("name"));
   if (!parsed.success) return { error: parsed.error.issues[0].message };
+  // Événement : Noël le 25 décembre par défaut, ou titre et date choisis
+  let eventName = "Noël";
+  let eventDate = defaultEventDate();
+  try {
+    if (formData.get("eventName")) eventName = eventNameSchema.parse(formData.get("eventName"));
+    if (formData.get("eventDate")) eventDate = parseEventDate(String(formData.get("eventDate")));
+  } catch (e) {
+    return { error: e instanceof z.ZodError ? e.issues[0].message : (e as Error).message };
+  }
   const family = await db.family.create({
     data: {
       name: parsed.data,
       slug: slugify(parsed.data),
       createdById: user.id,
-      eventDate: defaultEventDate(),
+      eventName,
+      eventDate,
       memberships: { create: { userId: user.id, role: "ADMIN" } },
     },
   });
@@ -104,16 +123,19 @@ export async function renameFamily(familyId: string, name: string): Promise<Acti
   }
 }
 
-export async function setEventDate(familyId: string, isoDate: string): Promise<ActionResult> {
+/** Titre et date de l'événement (admin). Changer la date relance le rappel J-7. */
+export async function setEvent(familyId: string, name: string, isoDate: string): Promise<ActionResult> {
   try {
     const user = await requireUser();
     await requireAdmin(user.id, familyId);
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) throw new Error("Date invalide.");
-    await db.family.update({ where: { id: familyId }, data: { eventDate: new Date(`${isoDate}T12:00:00Z`) } });
+    await db.family.update({
+      where: { id: familyId },
+      data: { eventName: eventNameSchema.parse(name), eventDate: parseEventDate(isoDate), reminderSentFor: null },
+    });
     revalidatePath("/", "layout");
     return { ok: true };
   } catch (e) {
-    return fail(e);
+    return fail(e instanceof z.ZodError ? new Error(e.issues[0].message) : e);
   }
 }
 
@@ -218,7 +240,7 @@ export async function cleanLists(familyId: string): Promise<ActionResult> {
     const year = Number(new Intl.DateTimeFormat("fr-FR", { year: "numeric", timeZone: "Europe/Paris" }).format(family.eventDate));
     const res = await db.gift.updateMany({
       where: { familyId, archivedAt: null, deletedAt: null, takeMode: { in: ["SEUL", "A_PLUSIEURS"] } },
-      data: { archivedAt: new Date(), archiveYear: year },
+      data: { archivedAt: new Date(), archiveYear: year, archiveEvent: family.eventName },
     });
     revalidatePath("/", "layout");
     return { ok: true, message: `${res.count} cadeau${res.count > 1 ? "x" : ""} archivé${res.count > 1 ? "s" : ""}.` };

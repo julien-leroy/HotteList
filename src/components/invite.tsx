@@ -2,13 +2,15 @@ import { AuthShell, CardHero } from "./festive";
 import { Avatar, type AvatarPerson } from "./avatar";
 import { SignupForm } from "./auth-forms";
 import { JoinButton } from "./join-button";
-import { plural } from "@/lib/format";
+import { eventDay, plural } from "@/lib/format";
 import type { CurrentUser } from "@/lib/auth";
 
 type Fam = {
   id: string;
   name: string;
   slug: string;
+  eventName: string;
+  eventDate: Date;
   createdBy: AvatarPerson;
   memberships: { user: AvatarPerson & { id: string } }[];
 };
@@ -32,7 +34,7 @@ function Hero({ family, lead }: { family: Fam; lead: string }) {
         {family.name}
       </h1>
       <span className="inline-flex items-center gap-2 rounded-full bg-or-clair px-3 py-[5px] text-[13px] font-bold text-bordeaux-fonce">
-        {plural(people.length, "membre", "membres")}
+        {plural(people.length, "membre", "membres")} · {family.eventName}, {eventDay(family.eventDate)}
       </span>
     </CardHero>
   );

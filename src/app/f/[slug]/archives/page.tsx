@@ -19,13 +19,14 @@ export default async function Archives({ params }: { params: Promise<{ slug: str
   const gifts = await db.gift.findMany({
     where: { familyId: family.id, archivedAt: { not: null }, deletedAt: null },
     include: { recipient: { select: personSelect }, participants: { include: { user: { select: personSelect } } } },
-    orderBy: [{ archiveYear: "desc" }, { recipientId: "asc" }, { position: "asc" }],
+    orderBy: [{ archivedAt: "desc" }, { recipientId: "asc" }, { position: "asc" }],
   });
 
   // Par année, puis par personne. Sur ses propres cadeaux, on ne montre pas qui les a offerts.
-  const years = new Map<number, Map<string, { person: (typeof gifts)[number]["recipient"]; gifts: typeof gifts }>>();
+  // Une section par événement passé (« Noël 2026 », « Anniversaire de Léa 2027 »…)
+  const years = new Map<string, Map<string, { person: (typeof gifts)[number]["recipient"]; gifts: typeof gifts }>>();
   for (const g of gifts) {
-    const y = g.archiveYear ?? g.archivedAt!.getFullYear();
+    const y = `${g.archiveEvent ?? "Noël"} ${g.archiveYear ?? g.archivedAt!.getFullYear()}`;
     const byPerson = years.get(y) ?? new Map();
     const entry = byPerson.get(g.recipientId) ?? { person: g.recipient, gifts: [] };
     entry.gifts.push(g);
@@ -48,7 +49,7 @@ export default async function Archives({ params }: { params: Promise<{ slug: str
         {years.size === 0 && <p className="m-0 text-gris">Rien d&apos;archivé pour l&apos;instant : ça arrive après « Nettoyer les listes ».</p>}
         {[...years.entries()].map(([year, people]) => (
           <section key={year} className="flex flex-col gap-5">
-            <h2 className="font-display m-0 text-[44px] leading-none font-bold italic text-rouge">Noël {year}</h2>
+            <h2 className="font-display m-0 text-[44px] leading-none font-bold italic text-rouge">{year}</h2>
             <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fill,minmax(min(320px,100%),1fr))" }}>
               {[...people.values()].map(({ person, gifts: list }) => (
                 <div key={person.id} className="panel flex flex-col gap-3 p-5">

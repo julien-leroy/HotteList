@@ -14,7 +14,7 @@ import { SantaBanner } from "@/components/santa";
 import { ShareButton } from "@/components/share-button";
 import Link from "next/link";
 import { daysUntil, isEventOver, parisDay } from "@/lib/utils";
-import { plural } from "@/lib/format";
+import { eventDay, plural } from "@/lib/format";
 
 type Props = { params: Promise<{ slug: string }>; searchParams: Promise<{ cadeau?: string }> };
 
@@ -108,7 +108,7 @@ export default async function FamilyPage({ params, searchParams }: Props) {
             <div className="flex flex-wrap items-center gap-2.5">
               <span className="inline-flex items-center gap-2 rounded-full bg-or-clair px-3.5 py-1.5 text-sm font-bold text-bordeaux-fonce">
                 <IconStar />
-                {over ? "Événement terminé" : days === 0 ? "C'est le grand jour !" : `J-${days} avant le ${new Date(family.eventDate).toLocaleDateString("fr-FR", { day: "numeric", month: "long", timeZone: "Europe/Paris" })}`}
+                {over ? `${family.eventName} : terminé` : days === 0 ? `${family.eventName} : c'est le grand jour !` : `${family.eventName} · ${eventDay(family.eventDate)} · J-${days}`}
               </span>
               <span className="text-[15px] text-[#F6D9D2]">
                 {plural(family.memberships.length, "membre", "membres")} · {plural(wishCount, "souhait", "souhaits")}
@@ -127,7 +127,8 @@ export default async function FamilyPage({ params, searchParams }: Props) {
                 </Link>
               )}
               <FamilySettings
-                family={{ id: family.id, name: family.name, eventDate: parisDay(family.eventDate) }}
+                family={{ id: family.id, name: family.name, eventName: family.eventName, eventDate: parisDay(family.eventDate) }}
+                today={parisDay(new Date())}
                 isAdmin={isAdmin}
                 meId={user.id}
                 members={family.memberships.map((m) => ({
@@ -161,7 +162,7 @@ export default async function FamilyPage({ params, searchParams }: Props) {
         />
       )}
 
-      {recap && <EventOver familyId={family.id} isAdmin={isAdmin} taken={recap.taken} free={recap.free} />}
+      {recap && <EventOver eventName={family.eventName} familyId={family.id} isAdmin={isAdmin} taken={recap.taken} free={recap.free} />}
 
       <FamilyBoard
         familyId={family.id}
