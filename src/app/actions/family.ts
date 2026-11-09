@@ -56,7 +56,11 @@ export async function leaveFamily(familyId: string): Promise<ActionResult> {
       const members = await db.membership.count({ where: { familyId, user: { managedById: null } } });
       if (admins <= 1 && members > 1) throw new Error("Nommez un autre admin avant de quitter la famille.");
     }
-    await db.membership.deleteMany({ where: { familyId, userId: { in: [user.id, ...user.managedIds] } } });
+    const ids = [user.id, ...user.managedIds];
+    await db.$transaction(async (tx) => {
+      await tx.membership.deleteMany({ where: { familyId, userId: { in: ids } } });
+      await releaseParticipations(tx, familyId, ids);
+    });
   } catch (e) {
     return fail(e);
   }
@@ -145,13 +149,26 @@ export async function setMemberRole(familyId: string, userId: string, role: "ADM
   }
 }
 
+/**
+ * Retirer quelqu'un de la famille (ex. un compte en double). Ouvert à tous les membres.
+ * Ses comptes gérés partent avec lui ; ses réservations dans la famille sont libérées.
+ */
 export async function removeMember(familyId: string, userId: string): Promise<ActionResult> {
   try {
     const user = await requireUser();
-    await requireAdmin(user.id, familyId);
-    if (userId === user.id) throw new Error("Utilisez « Quitter la famille ».");
+    await requireMember(user.id, familyId);
+    if (userId === user.id) throw new Error("Pour vous retirer vous-même, utilisez « Quitter la famille ».");
+    const target = await requireMember(userId, familyId);
+    if (target.role === "ADMIN") {
+      const admins = await db.membership.count({ where: { familyId, role: "ADMIN" } });
+      if (admins <= 1) throw new Error("C'est le seul admin : nommez d'abord un autre admin.");
+    }
     const managed = await db.user.findMany({ where: { managedById: userId }, select: { id: true } });
-    await db.membership.deleteMany({ where: { familyId, userId: { in: [userId, ...managed.map((m) => m.id)] } } });
+    const ids = [userId, ...managed.map((m) => m.id)];
+    await db.$transaction(async (tx) => {
+      await tx.membership.deleteMany({ where: { familyId, userId: { in: ids } } });
+      await releaseParticipations(tx, familyId, ids);
+    });
     revalidatePath("/", "layout");
     return { ok: true };
   } catch (e) {
@@ -159,11 +176,25 @@ export async function removeMember(familyId: string, userId: string): Promise<Ac
   }
 }
 
-/** Lien de réinitialisation à usage unique, valable 24 h, à envoyer soi-même par SMS. */
+type Tx = Parameters<Parameters<typeof db.$transaction>[0]>[0];
+
+/** Libère les réservations et participations de ces personnes sur les cadeaux de la famille. */
+async function releaseParticipations(tx: Tx, familyId: string, userIds: string[]) {
+  const parts = await tx.giftParticipant.findMany({
+    where: { userId: { in: userIds }, gift: { familyId, archivedAt: null } },
+    select: { giftId: true },
+  });
+  if (!parts.length) return;
+  const giftIds = [...new Set(parts.map((p) => p.giftId))];
+  await tx.giftParticipant.deleteMany({ where: { userId: { in: userIds }, giftId: { in: giftIds } } });
+  await tx.gift.updateMany({ where: { id: { in: giftIds }, participants: { none: {} } }, data: { takeMode: "AUCUN" } });
+}
+
+/** Lien de réinitialisation à usage unique, valable 24 h, à envoyer soi-même par SMS. Ouvert à tous les membres. */
 export async function createResetLink(familyId: string, userId: string): Promise<ActionResult> {
   try {
     const user = await requireUser();
-    await requireAdmin(user.id, familyId);
+    await requireMember(user.id, familyId);
     await requireMember(userId, familyId);
     const target = await db.user.findUniqueOrThrow({ where: { id: userId } });
     if (target.managedById || !target.login) throw new Error("Ce compte n'a pas de mot de passe.");

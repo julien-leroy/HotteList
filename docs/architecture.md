@@ -67,7 +67,7 @@ Supprimés : Docker, PostgreSQL, envoi d'e-mails, sharp et stockage d'images, Be
 - **Inscription ouverte** : prénom, nom facultatif, identifiant (e-mail ou pseudo) et mot de passe de 8 caractères minimum, sans vérification d'adresse.
 - **Rejoindre une famille** : uniquement via son lien. Un visiteur qui s'inscrit depuis ce lien rejoint la famille directement. S'il se connecte, il confirme d'un clic, en cochant au passage ses comptes gérés à ajouter.
 - **Mot de passe oublié** :
-  - l'admin d'une famille génère, depuis « Réglages de la famille », un **lien de réinitialisation à usage unique**, valable 24 h, et l'envoie lui-même par SMS ou WhatsApp ;
+  - **n'importe quel membre** de la famille génère, depuis « Membres », un **lien de réinitialisation à usage unique**, valable 24 h, et l'envoie lui-même par SMS ou WhatsApp ;
   - Julien peut aussi lancer `npm run reset-password -- <identifiant>` sur le serveur.
 - **Comptes gérés** (enfants) : ni identifiant ni mot de passe, ils n'existent qu'à travers leur gestionnaire. Le bouton **« Lui donner un accès »** les rend autonomes (identifiant + mot de passe provisoire) ; le gestionnaire ne les gère alors plus.
 - **Sécurité minimale** : mots de passe hachés (scrypt), seule l'empreinte HMAC des jetons de session et de réinitialisation est stockée, limite de tentatives de connexion (20 / 15 min par IP, 8 par identifiant) et d'inscriptions (5 / h par IP), cookies `httpOnly`, `SameSite=Lax`, `Secure` en HTTPS. Redirections après connexion limitées aux pages du site.
@@ -112,7 +112,8 @@ Droits d'écriture vérifiés côté serveur, dans chaque action :
 - Réserver, participer, commenter : interdit sur un cadeau dont je suis le destinataire.
 - Modifier ou supprimer un SOUHAIT : le destinataire ou son gestionnaire.
 - Modifier ou supprimer une IDÉE : son auteur.
-- Nettoyer les listes, changer la date ou le nom, régénérer le lien, nommer un admin, retirer un membre, créer un lien de réinitialisation : admin de la famille. Une famille garde toujours au moins un admin.
+- Créer un lien de réinitialisation, retirer quelqu'un de la famille (ex. un doublon) : **tout membre**. On ne peut pas retirer le dernier admin. La personne retirée garde son compte ; ses comptes gérés partent avec elle et ses réservations dans la famille sont libérées (comme quand on quitte la famille).
+- Nettoyer les listes, changer la date ou le nom, régénérer le lien, nommer ou retirer un admin : admin de la famille. Une famille garde toujours au moins un admin.
 
 ## 9. Profil : déplacer ou copier un souhait
 

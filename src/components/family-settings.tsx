@@ -44,7 +44,7 @@ export function FamilySettings({
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger asChild>
         <button className="btn b-light" style={{ minHeight: 40 }}>
-          <IconSettings /> {isAdmin ? "Réglages de la famille" : "Membres et réglages"}
+          <IconSettings /> {isAdmin ? "Réglages de la famille" : "Membres"}
         </button>
       </Dialog.Trigger>
       <Dialog.Portal>
@@ -107,17 +107,19 @@ export function FamilySettings({
                       </span>
                       <span className="text-xs text-gris-clair">{m.managed ? "Compte géré" : m.role === "ADMIN" ? "Admin" : "Membre"}</span>
                     </span>
-                    {isAdmin && m.id !== meId && (
+                    {m.id !== meId && (
                       <span className="flex flex-wrap gap-1.5">
                         {!m.managed && (
                           <>
-                            <button
-                              className="btn b-soft b-sm"
-                              disabled={pending}
-                              onClick={() => run(() => setMemberRole(family.id, m.id, m.role === "ADMIN" ? "MEMBRE" : "ADMIN"))}
-                            >
-                              {m.role === "ADMIN" ? "Retirer admin" : "Nommer admin"}
-                            </button>
+                            {isAdmin && (
+                              <button
+                                className="btn b-soft b-sm"
+                                disabled={pending}
+                                onClick={() => run(() => setMemberRole(family.id, m.id, m.role === "ADMIN" ? "MEMBRE" : "ADMIN"))}
+                              >
+                                {m.role === "ADMIN" ? "Retirer admin" : "Nommer admin"}
+                              </button>
+                            )}
                             <button
                               className="btn b-gold b-sm"
                               disabled={pending}
@@ -135,7 +137,7 @@ export function FamilySettings({
                           className="btn b-quiet b-sm"
                           disabled={pending}
                           onClick={() => {
-                            if (confirm(`Retirer ${m.firstName} de la famille ?`)) run(() => removeMember(family.id, m.id), "Membre retiré.");
+                            if (confirm(`Retirer ${m.firstName} de la famille ? Ses réservations ici seront libérées. Son compte n'est pas supprimé : on pourra la réinviter avec le lien.`)) run(() => removeMember(family.id, m.id), "Membre retiré.");
                           }}
                         >
                           Retirer
