@@ -1,10 +1,9 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { IconGift } from "./icons";
-import { Avatar } from "./avatar";
+import { AvatarMenu } from "./avatar-menu";
 import { NotificationBell } from "./notification-bell";
 import type { CurrentUser } from "@/lib/auth";
-import { logout } from "@/app/actions/auth";
 
 const BULB_COLORS = ["#F2C75C", "#E8414F", "#4FB37A", "#6FA8E8", "#F2C75C", "#E8414F", "#4FB37A", "#F28C3C"];
 
@@ -108,16 +107,7 @@ export function FestiveHeader({
           {navLink("/familles", "Mes familles", "familles")}
           {navLink("/profil", "Mon profil", "profil")}
           <NotificationBell />
-          <form action={logout}>
-            <button
-              type="submit"
-              title={`Connecté·e en tant que ${user.firstName}. Se déconnecter`}
-              aria-label="Se déconnecter"
-              className="cursor-pointer rounded-full border-0 bg-transparent p-0"
-            >
-              <Avatar person={user} size={40} style={{ border: "2px solid #F2C75C" }} />
-            </button>
-          </form>
+          <AvatarMenu user={user} />
         </nav>
       </div>
       <div className="relative z-[1] mx-auto max-w-[1200px] px-6 pt-8 pb-[100px]">{children}</div>
