@@ -150,13 +150,13 @@ export async function setMemberRole(familyId: string, userId: string, role: "ADM
 }
 
 /**
- * Retirer quelqu'un de la famille (ex. un compte en double). Ouvert à tous les membres.
+ * Retirer quelqu'un de la famille (ex. un compte en double). Réservé aux admins.
  * Ses comptes gérés partent avec lui ; ses réservations dans la famille sont libérées.
  */
 export async function removeMember(familyId: string, userId: string): Promise<ActionResult> {
   try {
     const user = await requireUser();
-    await requireMember(user.id, familyId);
+    await requireAdmin(user.id, familyId);
     if (userId === user.id) throw new Error("Pour vous retirer vous-même, utilisez « Quitter la famille ».");
     const target = await requireMember(userId, familyId);
     if (target.role === "ADMIN") {
@@ -190,7 +190,7 @@ async function releaseParticipations(tx: Tx, familyId: string, userIds: string[]
   await tx.gift.updateMany({ where: { id: { in: giftIds }, participants: { none: {} } }, data: { takeMode: "AUCUN" } });
 }
 
-/** Lien de réinitialisation à usage unique, valable 24 h, à envoyer soi-même par SMS. Ouvert à tous les membres. */
+/** Lien de réinitialisation à usage unique, valable 24 h, à envoyer soi-même par SMS. Ouvert à tous les membres, y compris pour un admin. */
 export async function createResetLink(familyId: string, userId: string): Promise<ActionResult> {
   try {
     const user = await requireUser();

@@ -23,6 +23,7 @@ _Développement lancé le 9 novembre 2026. Ajout de souhait et d'idée en popup 
 | Comptes gérés | Un adulte crée et administre des comptes « en procuration » (ex. ses enfants) et voit tout sur leurs listes |
 | Fin de l'événement | Un encart « L'événement est terminé » avec un bouton **« Nettoyer les listes »** : il archive tous les cadeaux réservés ou à plusieurs, et laisse sur les listes ceux qui n'ont pas été offerts |
 | DA | Festive : rouge profond, vert sapin, or ; Fraunces + Inter ; boutons ghost aux couleurs douces (cf. canvas de design) |
+| Favicon | Cadeau doré au trait sur fond bordeaux pointillé (`src/app/icon.svg`, `apple-icon.png` pour l'écran d'accueil des téléphones) |
 
 ## 2. Vue d'ensemble
 
@@ -119,7 +120,8 @@ Droits d'écriture vérifiés côté serveur, dans chaque action :
 - Réserver, participer, commenter : interdit sur un cadeau dont je suis le destinataire.
 - Modifier ou supprimer un SOUHAIT : le destinataire ou son gestionnaire.
 - Modifier ou supprimer une IDÉE : son auteur.
-- Créer un lien de réinitialisation, retirer quelqu'un de la famille (ex. un doublon) : **tout membre**. On ne peut pas retirer le dernier admin. La personne retirée garde son compte ; ses comptes gérés partent avec elle et ses réservations dans la famille sont libérées (comme quand on quitte la famille).
+- Créer un lien de réinitialisation du mot de passe : **tout membre**, pour n'importe quel autre membre, **admin compris** (au cas où l'admin lui-même aurait perdu son accès).
+- Retirer quelqu'un de la famille (ex. un doublon) : **admin** de la famille. On ne peut pas retirer le dernier admin. La personne retirée garde son compte ; ses comptes gérés partent avec elle et ses réservations dans la famille sont libérées (comme quand on quitte la famille).
 - Nettoyer les listes, changer la date ou le nom, régénérer le lien, nommer ou retirer un admin : admin de la famille. Une famille garde toujours au moins un admin.
 
 ## 9. Profil : déplacer ou copier un souhait

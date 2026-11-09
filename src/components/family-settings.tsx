@@ -133,7 +133,7 @@ export function FamilySettings({
                             </button>
                           </>
                         )}
-                        <button
+                        {isAdmin && <button
                           className="btn b-quiet b-sm"
                           disabled={pending}
                           onClick={() => {
@@ -141,7 +141,7 @@ export function FamilySettings({
                           }}
                         >
                           Retirer
-                        </button>
+                        </button>}
                       </span>
                     )}
                   </li>
