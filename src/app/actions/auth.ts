@@ -77,7 +77,10 @@ export async function login(_: FormState, formData: FormData): Promise<FormState
   if (!hit(`login:${ip}`, 20, 15 * 60_000) || !hit(`login:${ip}:${loginValue}`, 8, 15 * 60_000)) {
     return { error: "Trop de tentatives. Patientez quelques minutes.", values: { login: String(formData.get("login") ?? "") } };
   }
-  const user = await db.user.findUnique({ where: { login: loginValue } });
+  // L'identifiant, ou l'adresse e-mail une fois confirmée
+  const user =
+    (await db.user.findUnique({ where: { login: loginValue } })) ??
+    (await db.user.findFirst({ where: { email: loginValue, emailVerifiedAt: { not: null } } }));
   const ok = user && !user.managedById && (await verifyPassword(password, user.passwordHash));
   if (!ok || !user) return { error: "Identifiant ou mot de passe incorrect.", values: { login: String(formData.get("login") ?? "") } };
   await createSession(user.id);

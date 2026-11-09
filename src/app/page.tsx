@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser, safeNext } from "@/lib/auth";
 import { AuthShell, CardHero } from "@/components/festive";
 import { LoginForm } from "@/components/auth-forms";
+import { mailEnabled } from "@/lib/mail";
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
   const { next } = await searchParams;
@@ -24,7 +25,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ n
           <p className="m-0 text-base leading-relaxed text-gris">
             Chacun écrit ses souhaits, les autres réservent en secret ou se mettent à plusieurs.
           </p>
-          <LoginForm next={safe} signupHref={safe ? `/inscription?next=${encodeURIComponent(safe)}` : "/inscription"} />
+          <LoginForm mail={mailEnabled()} next={safe} signupHref={safe ? `/inscription?next=${encodeURIComponent(safe)}` : "/inscription"} />
         </div>
       </div>
     </AuthShell>

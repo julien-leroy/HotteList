@@ -13,13 +13,13 @@ function ErrorLine({ state }: { state: FormState }) {
   );
 }
 
-export function LoginForm({ next, signupHref = "/inscription" }: { next?: string; signupHref?: string }) {
+export function LoginForm({ next, signupHref = "/inscription", mail = false }: { next?: string; signupHref?: string; mail?: boolean }) {
   const [state, action, pending] = useActionState(login, undefined);
   return (
     <form action={action} className="flex flex-col gap-[18px]">
       {next && <input type="hidden" name="next" value={next} />}
       <div className="flex flex-col gap-1.5">
-        <label className="label" htmlFor="login">E-mail ou pseudo</label>
+        <label className="label" htmlFor="login">{mail ? "Identifiant ou e-mail" : "E-mail ou pseudo"}</label>
         <input className="input" id="login" name="login" autoComplete="username" defaultValue={state?.values?.login} key={state?.values?.login} required />
       </div>
       <div className="flex flex-col gap-1.5">
@@ -33,9 +33,16 @@ export function LoginForm({ next, signupHref = "/inscription" }: { next?: string
       <p className="m-0 text-center text-sm text-gris">
         Pas encore de compte ? <Link href={signupHref}>Créer un compte</Link>
       </p>
-      <p className="m-0 text-center text-[13px] leading-normal text-gris-clair">
-        Mot de passe oublié ? Demandez à l&apos;admin de votre famille un lien de réinitialisation.
-      </p>
+      {mail ? (
+        <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-sm">
+          <Link href={next ? `/connexion-code?next=${encodeURIComponent(next)}` : "/connexion-code"}>Recevoir un code par e-mail</Link>
+          <Link href="/mot-de-passe-oublie">Mot de passe oublié ?</Link>
+        </div>
+      ) : (
+        <p className="m-0 text-center text-[13px] leading-normal text-gris-clair">
+          Mot de passe oublié ? Demandez à quelqu&apos;un de votre famille un lien de réinitialisation.
+        </p>
+      )}
     </form>
   );
 }

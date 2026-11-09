@@ -6,6 +6,7 @@ import { Avatar } from "@/components/avatar";
 import { CreateFamilyForm } from "@/components/create-family-form";
 import { daysUntil, isEventOver } from "@/lib/utils";
 import { plural } from "@/lib/format";
+import { mailEnabled } from "@/lib/mail";
 
 export const metadata = { title: "Mes familles" };
 
@@ -34,6 +35,14 @@ export default async function Familles() {
       </FestiveHeader>
 
       <main className="mx-auto flex max-w-[1200px] flex-col gap-8 px-6 pt-7 pb-24">
+        {mailEnabled() && !(await db.user.findUnique({ where: { id: user.id }, select: { emailVerifiedAt: true } }))?.emailVerifiedAt && (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-[18px] px-5 py-4" style={{ background: "#F8EDD2", border: "1px solid #E5CF96" }}>
+            <p className="m-0 flex-[1_1_320px] text-[15px] leading-normal text-[#4A3810]">
+              <strong>Ajoutez votre adresse e-mail</strong> pour pouvoir récupérer votre mot de passe tout seul, ou vous connecter avec un code.
+            </p>
+            <Link className="btn b-gold" href="/profil#compte">Ajouter mon e-mail</Link>
+          </div>
+        )}
         <div className="grid gap-5" style={{ gridTemplateColumns: "repeat(auto-fill,minmax(min(320px,100%),1fr))" }}>
           {memberships.map(({ family, role }) => {
             const days = daysUntil(family.eventDate);

@@ -17,6 +17,9 @@ model User {
   login        String?  @unique
   passwordHash String?
   avatarColor  String   @default("#1F4D36")
+  /// adresse e-mail facultative, utilisée seulement une fois confirmée
+  email           String?   @unique
+  emailVerifiedAt DateTime?
   /// compte administré « en procuration » par un autre utilisateur
   managedById  String?
   managedBy    User?    @relation("Managed", fields: [managedById], references: [id], onDelete: Cascade)
@@ -32,6 +35,7 @@ model User {
   comments       Comment[]
   resetTokens    PasswordResetToken[]
   notifications  Notification[]
+  emailCodes     EmailCode[]
 }
 
 model Session {
@@ -148,4 +152,23 @@ model Notification {
   createdAt DateTime  @default(now())
 
   @@index([userId, readAt])
+}
+
+/// Codes à 6 chiffres envoyés par e-mail (seule l'empreinte est stockée)
+model EmailCode {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// adresse à laquelle le code a été envoyé
+  email     String
+  /// VERIFY (confirmer l'adresse) | LOGIN (connexion par code) | RESET (mot de passe oublié)
+  purpose   String
+  codeHash  String
+  attempts  Int       @default(0)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([email, purpose])
+  @@index([userId, purpose])
 }

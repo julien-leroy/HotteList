@@ -4,6 +4,8 @@ import { loadVisibleGifts, personSelect } from "@/lib/queries";
 import { FestiveHeader, HeroTitle } from "@/components/festive";
 import { ProfileBoard, type Column } from "@/components/profile-board";
 import { ManagedPanel } from "@/components/managed-panel";
+import { AccountPanel } from "@/components/account-panel";
+import { mailEnabled } from "@/lib/mail";
 
 export const metadata = { title: "Mon profil" };
 
@@ -35,6 +37,22 @@ export default async function Profil({ searchParams }: { searchParams: Promise<{
     ),
   );
 
+  const [meRow, pending] = await Promise.all([
+    db.user.findUniqueOrThrow({ where: { id: user.id }, select: { email: true, emailVerifiedAt: true } }),
+    db.emailCode.findFirst({
+      where: { userId: user.id, purpose: "VERIFY", usedAt: null, expiresAt: { gt: new Date() } },
+      orderBy: { createdAt: "desc" },
+      select: { email: true },
+    }),
+  ]);
+  const account = {
+    firstName: user.firstName,
+    lastName: user.lastName,
+    login: user.login,
+    email: meRow.emailVerifiedAt ? meRow.email : null,
+    pendingEmail: pending?.email ?? null,
+  };
+
   return (
     <div className="min-h-screen bg-creme">
       <FestiveHeader user={user} current="profil">
@@ -52,6 +70,7 @@ export default async function Profil({ searchParams }: { searchParams: Promise<{
           managedFamilies={managedFamilies}
         />
         <ProfileBoard key={personId} person={person} isSelf={personId === user.id} columns={columns} />
+        {personId === user.id && <AccountPanel {...account} mail={mailEnabled()} />}
       </main>
     </div>
   );

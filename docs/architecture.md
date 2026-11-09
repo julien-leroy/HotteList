@@ -1,6 +1,6 @@
 # HotteList — architecture technique (version simplifiée)
 
-_Document de référence. Dernière mise à jour : 9 novembre 2026._
+_Document de référence. Dernière mise à jour : 9 novembre 2026 (e-mails)._
 _Développement lancé le 9 novembre 2026. Ajout de souhait et d'idée en popup depuis la v1.1. Code : https://github.com/julien-leroy/HotteList_
 
 ## 1. Décisions prises
@@ -15,7 +15,8 @@ _Développement lancé le 9 novembre 2026. Ajout de souhait et d'idée en popup 
 | Adresse | `hottelist.julienfluenceur.online` (DNS hors Cloudflare : un simple enregistrement A suffit) |
 | Reverse proxy | **Caddy**, déjà en place sur le serveur pour les autres projets |
 | Port de l'application | **9000** |
-| Simplicité | **Pas de Docker**, **SQLite**, **aucun envoi d'e-mail** |
+| Simplicité | **Pas de Docker**, **SQLite** |
+| E-mails | **Facultatifs**, par le SMTP d'Amen (`noreply@julienfluenceur.online`) : connexion par code, mot de passe oublié, confirmation d'adresse. Jamais envoyés depuis le serveur maison |
 | Images | **Aucune image stockée sur le serveur** : on enregistre seulement l'adresse de l'image trouvée dans le lien, et le navigateur l'affiche directement depuis le site d'origine |
 | Listes | Une liste par famille. Sur le profil, ma liste pour chaque famille ; glisser-déposer pour **déplacer** ou **copier** un souhait vers une autre famille, et pour changer l'ordre |
 | Cadeau à plusieurs | On indique seulement qu'on participe (pas de montant). Les détails se règlent en commentaire |
@@ -44,6 +45,7 @@ Tout le site tient dans un dossier, `/opt/hottelist`. Pour sauvegarder, il suffi
 | Accès BDD | Prisma 6 | Fonctionne avec SQLite ; on pourra basculer sur PostgreSQL plus tard |
 | Authentification | **Maison, minimale** : mots de passe hachés avec scrypt (intégré à Node), sessions en base, cookie httpOnly | Better Auth écarté : il impose une adresse e-mail par utilisateur, incompatible avec les comptes gérés sans identifiant |
 | Validation | Zod | |
+| E-mails | Nodemailer (SMTP Amen) | Activés seulement si `SMTP_*` est renseigné dans `.env` |
 | Styles | Tailwind CSS 4 (tokens de la DA) + classes reprises du canvas de design | |
 | Popup, menus | Radix UI (Dialog, DropdownMenu) | Accessible au clavier |
 | Glisser-déposer | dnd-kit | Souris, tactile (appui long), clavier |
@@ -52,7 +54,7 @@ Tout le site tient dans un dossier, `/opt/hottelist`. Pour sauvegarder, il suffi
 | Lancement | **systemd** (service Debian, Node via nvm) | Redémarre tout seul |
 | Tests | Vitest | Règles de visibilité, blocage réseau local, lecture des pages produit |
 
-Supprimés : Docker, PostgreSQL, envoi d'e-mails, sharp et stockage d'images, Better Auth.
+Supprimés : Docker, PostgreSQL, sharp et stockage d'images, Better Auth.
 
 ## 4. Images des cadeaux
 
@@ -62,11 +64,15 @@ Supprimés : Docker, PostgreSQL, envoi d'e-mails, sharp et stockage d'images, Be
 - Secours manuel : bouton « Choisir l'image moi-même », qui ouvre un champ « Adresse de l'image ».
 - Sécurité de la lecture des liens : délai de 7 s, 2 Mo maximum, 4 redirections, ports 80/443 seulement, et **blocage des adresses du réseau local vérifié au moment même de la connexion** (y compris après redirection ou résolution DNS piégée). Limite de 30 lectures par 10 min et par utilisateur.
 
-## 5. Comptes (sans e-mail)
+## 5. Comptes
 
 - **Inscription ouverte** : prénom, nom facultatif, identifiant (e-mail ou pseudo) et mot de passe de 8 caractères minimum, sans vérification d'adresse.
 - **Rejoindre une famille** : uniquement via son lien. Un visiteur qui s'inscrit depuis ce lien rejoint la famille directement. S'il se connecte, il confirme d'un clic, en cochant au passage ses comptes gérés à ajouter.
+- **Adresse e-mail (facultative)** : ajoutée dans « Mon profil → Mon compte » et enregistrée **seulement une fois confirmée** par un code. Tant qu'elle n'est pas confirmée, elle n'est pas réservée : personne ne peut bloquer l'adresse de quelqu'un d'autre. Une adresse confirmée sert aussi d'identifiant de connexion.
+- **Codes par e-mail** : 6 chiffres, valables 10 minutes, 5 essais, à usage unique (un nouveau code annule le précédent), seule l'empreinte HMAC est stockée. Limites : 3 codes / 15 min par adresse, 10 / h par IP. Pour la connexion par code et le mot de passe oublié, la réponse est toujours la même, que l'adresse ait un compte ou non.
+- **Connexion par code** (`/connexion-code`) : en option, à côté du mot de passe, jamais obligatoire.
 - **Mot de passe oublié** :
+  - par e-mail (`/mot-de-passe-oublie`) : code + nouveau mot de passe ; toutes les autres sessions sont fermées ;
   - **n'importe quel membre** de la famille génère, depuis « Membres », un **lien de réinitialisation à usage unique**, valable 24 h, et l'envoie lui-même par SMS ou WhatsApp ;
   - Julien peut aussi lancer `npm run reset-password -- <identifiant>` sur le serveur.
 - **Comptes gérés** (enfants) : ni identifiant ni mot de passe, ils n'existent qu'à travers leur gestionnaire. Le bouton **« Lui donner un accès »** les rend autonomes (identifiant + mot de passe provisoire) ; le gestionnaire ne les gère alors plus.
@@ -85,7 +91,7 @@ Supprimés : Docker, PostgreSQL, envoi d'e-mails, sharp et stockage d'images, Be
 Les noms dans le code sont en anglais (`prisma/schema.prisma`).
 
 ```
-User           id, firstName, lastName?, login? (unique, vide pour un compte géré), passwordHash?, avatarColor, managedById?
+User           id, firstName, lastName?, login? (unique, vide pour un compte géré), passwordHash?, avatarColor, managedById?, email? (unique), emailVerifiedAt?
 Session        id (empreinte du jeton), userId, expiresAt
 Family         id, name, slug unique avec suffixe aléatoire (ex. famille-leroy-7kq2), createdById, eventDate
 Membership     userId, familyId, role (ADMIN | MEMBRE), joinedAt          — unique (userId, familyId)
@@ -95,6 +101,7 @@ Gift           id, familyId, recipientId, createdById, kind (SOUHAIT | IDEE),
 GiftParticipant giftId, userId, createdAt
 Comment        id, giftId, authorId, text, createdAt
 PasswordResetToken id (empreinte), userId, expiresAt, usedAt?
+EmailCode      id, userId, email, purpose (VERIFY | LOGIN | RESET), codeHash, attempts, expiresAt, usedAt?
 Notification   id, userId, text, link?, readAt?        — ex. « souhait déplacé », « souhait retiré »
 ```
 
@@ -133,7 +140,9 @@ Droits d'écriture vérifiés côté serveur, dans chaque action :
 | `/profil` | Mes listes par famille, comptes gérés |
 | `/f/[slug]` | Page famille avec tous les souhaits ; c'est aussi le lien d'invitation |
 | `/f/[slug]?cadeau=ID` | Popup d'un cadeau |
-| `/reinitialiser/[token]` | Choisir un nouveau mot de passe |
+| `/reinitialiser/[token]` | Choisir un nouveau mot de passe (lien créé par un membre) |
+| `/mot-de-passe-oublie` | Mot de passe oublié par code e-mail |
+| `/connexion-code` | Connexion par code e-mail |
 | `/api/apercu-lien` | Renvoie le titre, l'adresse de l'image et le prix d'un lien collé (connecté uniquement) |
 
 ## 11. Points sensibles
@@ -156,4 +165,3 @@ Toutes livrées le 9 novembre 2026 : socle, familles, cadeaux et visibilité, r�
 
 - Consulter les archives des années passées (déjà en base, pas encore d'écran).
 - Transférer la gestion d'un compte géré à un autre adulte.
-- Changer son propre mot de passe et son prénom depuis le profil.
