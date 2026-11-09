@@ -82,6 +82,17 @@ export async function removeEmail(): Promise<ActionResult> {
 
 // ---------- Mon compte ----------
 
+export async function setEmailReminders(on: boolean): Promise<ActionResult> {
+  try {
+    const user = await requireUser();
+    await db.user.update({ where: { id: user.id }, data: { emailReminders: on } });
+    revalidatePath("/", "layout");
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
 export async function updateMyName(firstName: string, lastName: string): Promise<ActionResult> {
   try {
     const user = await requireUser();

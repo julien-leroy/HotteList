@@ -1,6 +1,6 @@
 # HotteList — architecture technique (version simplifiée)
 
-_Document de référence. Dernière mise à jour : 9 novembre 2026 (e-mails)._
+_Document de référence. Dernière mise à jour : 9 novembre 2026 (liste de courses, onglets, tirage au sort, archives, rappels)._
 _Développement lancé le 9 novembre 2026. Ajout de souhait et d'idée en popup depuis la v1.1. Code : https://github.com/julien-leroy/HotteList_
 
 ## 1. Décisions prises
@@ -23,6 +23,8 @@ _Développement lancé le 9 novembre 2026. Ajout de souhait et d'idée en popup 
 | Comptes gérés | Un adulte crée et administre des comptes « en procuration » (ex. ses enfants) et voit tout sur leurs listes |
 | Fin de l'événement | Un encart « L'événement est terminé » avec un bouton **« Nettoyer les listes »** : il archive tous les cadeaux réservés ou à plusieurs, et laisse sur les listes ceux qui n'ont pas été offerts |
 | DA | Festive : rouge profond, vert sapin, or ; Fraunces + Inter ; boutons ghost aux couleurs douces (cf. canvas de design) |
+| Ma liste de courses | Page `/courses` : tout ce que j'offre, regroupé par destinataire, avec ma part estimée (cadeau à plusieurs divisé), le reste à acheter et un **statut privé** « à acheter / acheté / emballé ». Imprimable |
+| Tirage au sort | Option de famille (admin) : chacun tire une personne à qui offrir ; chacun ne voit que son tirage, admin compris |
 | Favicon | Cadeau doré au trait sur fond bordeaux pointillé (`src/app/icon.svg`, `apple-icon.png` pour l'écran d'accueil des téléphones) |
 
 ## 2. Vue d'ensemble
@@ -79,6 +81,18 @@ Supprimés : Docker, PostgreSQL, sharp et stockage d'images, Better Auth.
 - **Comptes gérés** (enfants) : ni identifiant ni mot de passe, ils n'existent qu'à travers leur gestionnaire. Le bouton **« Lui donner un accès »** les rend autonomes (identifiant + mot de passe provisoire) ; le gestionnaire ne les gère alors plus.
 - **Sécurité minimale** : mots de passe hachés (scrypt), seule l'empreinte HMAC des jetons de session et de réinitialisation est stockée, limite de tentatives de connexion (20 / 15 min par IP, 8 par identifiant) et d'inscriptions (5 / h par IP), cookies `httpOnly`, `SameSite=Lax`, `Secure` en HTTPS. Redirections après connexion limitées aux pages du site.
 
+## 5 bis. Confort
+
+- **Confirmations** dans le style du site (plus de fenêtres grises du navigateur).
+- **Annuler** pendant 7 secondes après : réserver, participer, annuler sa réservation, supprimer un cadeau (suppression « douce » : `deletedAt`, restaurable 10 minutes).
+- **Notifications** (cloche) : quelqu'un rejoint un cadeau à plusieurs dont je fais partie, commente un cadeau que j'offre ou dont j'ai parlé, déplace ou retire un souhait que j'avais réservé, lance un tirage au sort. Jamais rien pour le destinataire du cadeau.
+- **Badge « Nouveau »** sur les cadeaux ajoutés par d'autres depuis ma visite précédente (une visite = plus d'une heure d'absence, pour que les badges ne disparaissent pas au premier clic).
+- **Tri** (ordre de la liste, coups de cœur, prix) et **filtre de budget** sur la page famille ; les prix libres restent toujours affichés.
+- **Doublons** : à l'ajout, alerte si le même lien (site + chemin) ou le même titre est déjà dans la liste visible.
+- **Partager l'invitation** : partage natif du téléphone, sinon message tout prêt copié.
+- **Profil en onglets** (une famille par onglet) : toujours sur mobile, au choix sur ordinateur (mémorisé). On peut lâcher une carte sur un autre onglet pour la déplacer.
+- **Installable** sur l'écran d'accueil (manifeste, icônes, plein écran).
+
 ## 6. Fin de l'événement : « Nettoyer les listes »
 
 - Chaque famille a une **date d'événement**, le 25 décembre par défaut, modifiable par l'admin.
@@ -86,24 +100,28 @@ Supprimés : Docker, PostgreSQL, sharp et stockage d'images, Better Auth.
 - Le bouton **« Nettoyer les listes »** n'apparaît que pour les **admins** et ouvre d'abord une confirmation détaillée.
 - **Effet** : les cadeaux réservés seuls ou à plusieurs reçoivent `archivedAt` et `archiveYear` et disparaissent des listes ; les autres restent avec leurs commentaires ; rien n'est supprimé.
 - Après nettoyage, l'encart devient « Les listes sont prêtes pour la suite » et invite l'admin à choisir la date du prochain événement.
+- **Années passées** (`/f/[slug]/archives`) : ce qui a été offert, par année et par personne. On voit qui a offert quoi, sauf sur ses propres cadeaux.
+- **Rappel J-7** par e-mail (script `npm run rappels`, cron quotidien), une seule fois par événement.
 
 ## 7. Modèle de données
 
 Les noms dans le code sont en anglais (`prisma/schema.prisma`).
 
 ```
-User           id, firstName, lastName?, login? (unique, vide pour un compte géré), passwordHash?, avatarColor, managedById?, email? (unique), emailVerifiedAt?
+User           id, firstName, lastName?, login? (unique, vide pour un compte géré), passwordHash?, avatarColor, managedById?, email? (unique), emailVerifiedAt?, emailReminders
 Session        id (empreinte du jeton), userId, expiresAt
-Family         id, name, slug unique avec suffixe aléatoire (ex. famille-leroy-7kq2), createdById, eventDate
-Membership     userId, familyId, role (ADMIN | MEMBRE), joinedAt          — unique (userId, familyId)
+Family         id, name, slug unique avec suffixe aléatoire (ex. famille-leroy-7kq2), createdById, eventDate, reminderSentFor?
+Membership     userId, familyId, role (ADMIN | MEMBRE), joinedAt, lastSeenAt?, prevSeenAt?   — unique (userId, familyId)
 Gift           id, familyId, recipientId, createdById, kind (SOUHAIT | IDEE),
                title, description?, url?, price?, imageUrl?, siteOrigin?, favorite, position,
-               takeMode (AUCUN | SEUL | A_PLUSIEURS), contentUpdatedAt, archivedAt?, archiveYear?
-GiftParticipant giftId, userId, createdAt
+               takeMode (AUCUN | SEUL | A_PLUSIEURS), contentUpdatedAt, archivedAt?, archiveYear?, deletedAt?
+GiftParticipant giftId, userId, createdAt, status (A_ACHETER | ACHETE | EMBALLE — visible par ce participant seul)
 Comment        id, giftId, authorId, text, createdAt
 PasswordResetToken id (empreinte), userId, expiresAt, usedAt?
 EmailCode      id, userId, email, purpose (VERIFY | LOGIN | RESET), codeHash, attempts, expiresAt, usedAt?
-Notification   id, userId, text, link?, readAt?        — ex. « souhait déplacé », « souhait retiré »
+Notification   id, userId, text, link?, readAt?
+SecretSanta    id, familyId, createdById, budget?, createdAt
+SecretSantaAssignment santaId, giverId, receiverId     — un seul cercle : personne ne se tire soi-même
 ```
 
 `contentUpdatedAt` ne bouge que si le titre, le lien, le prix ou la description changent : c'est ce qui déclenche « modifié depuis votre réservation ».
@@ -122,6 +140,8 @@ Droits d'écriture vérifiés côté serveur, dans chaque action :
 - Modifier ou supprimer une IDÉE : son auteur.
 - Créer un lien de réinitialisation du mot de passe : **tout membre**, pour n'importe quel autre membre, **admin compris** (au cas où l'admin lui-même aurait perdu son accès).
 - Retirer quelqu'un de la famille (ex. un doublon) : **admin** de la famille. On ne peut pas retirer le dernier admin. La personne retirée garde son compte ; ses comptes gérés partent avec elle et ses réservations dans la famille sont libérées (comme quand on quitte la famille).
+- Statut d'achat : seulement le participant lui-même, et lui seul le voit.
+- Tirage au sort (lancer, refaire, annuler) : admin. Chaque participant ne reçoit que son propre tirage.
 - Nettoyer les listes, changer la date ou le nom, régénérer le lien, nommer ou retirer un admin : admin de la famille. Une famille garde toujours au moins un admin.
 
 ## 9. Profil : déplacer ou copier un souhait
@@ -139,7 +159,9 @@ Droits d'écriture vérifiés côté serveur, dans chaque action :
 | `/` | Accueil et connexion |
 | `/inscription` | Création de compte |
 | `/familles` | Mes familles, création d'une famille |
-| `/profil` | Mes listes par famille, comptes gérés |
+| `/profil` | Mes listes par famille (colonnes ou onglets), comptes gérés, Mon compte |
+| `/courses` | Ma liste de courses |
+| `/f/[slug]/archives` | Années passées |
 | `/f/[slug]` | Page famille avec tous les souhaits ; c'est aussi le lien d'invitation |
 | `/f/[slug]?cadeau=ID` | Popup d'un cadeau |
 | `/reinitialiser/[token]` | Choisir un nouveau mot de passe (lien créé par un membre) |
@@ -165,5 +187,5 @@ Toutes livrées le 9 novembre 2026 : socle, familles, cadeaux et visibilité, r�
 
 ## 14. Pistes pour plus tard
 
-- Consulter les archives des années passées (déjà en base, pas encore d'écran).
 - Transférer la gestion d'un compte géré à un autre adulte.
+- Tirage au sort avec exclusions (ex. ne pas tirer son conjoint).

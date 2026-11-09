@@ -19,7 +19,7 @@ export default async function Familles() {
       family: {
         include: {
           memberships: { include: { user: true }, orderBy: { joinedAt: "asc" } },
-          _count: { select: { gifts: { where: { archivedAt: null, kind: "SOUHAIT" } } } },
+          _count: { select: { gifts: { where: { archivedAt: null, deletedAt: null, kind: "SOUHAIT" } } } },
         },
       },
     },

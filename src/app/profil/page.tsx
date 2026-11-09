@@ -38,7 +38,7 @@ export default async function Profil({ searchParams }: { searchParams: Promise<{
   );
 
   const [meRow, pending] = await Promise.all([
-    db.user.findUniqueOrThrow({ where: { id: user.id }, select: { email: true, emailVerifiedAt: true } }),
+    db.user.findUniqueOrThrow({ where: { id: user.id }, select: { email: true, emailVerifiedAt: true, emailReminders: true } }),
     db.emailCode.findFirst({
       where: { userId: user.id, purpose: "VERIFY", usedAt: null, expiresAt: { gt: new Date() } },
       orderBy: { createdAt: "desc" },
@@ -51,6 +51,7 @@ export default async function Profil({ searchParams }: { searchParams: Promise<{
     login: user.login,
     email: meRow.emailVerifiedAt ? meRow.email : null,
     pendingEmail: pending?.email ?? null,
+    reminders: meRow.emailReminders,
   };
 
   return (

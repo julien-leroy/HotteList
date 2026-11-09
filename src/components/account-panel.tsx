@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { changePassword, confirmEmail, removeEmail, requestEmailVerification, updateMyName } from "@/app/actions/email";
+import { changePassword, confirmEmail, removeEmail, requestEmailVerification, setEmailReminders, updateMyName } from "@/app/actions/email";
 import { CodeInput } from "./code-flow";
-import { useAction } from "./toaster";
+import { confirmDialog, useAction } from "./toaster";
 
 type Props = {
   firstName: string;
@@ -11,6 +11,7 @@ type Props = {
   login: string | null;
   email: string | null;
   pendingEmail: string | null;
+  reminders: boolean;
   mail: boolean;
 };
 
@@ -59,7 +60,7 @@ function NameForm({ firstName, lastName }: { firstName: string; lastName: string
   );
 }
 
-function EmailForm({ email, pendingEmail, login }: Props) {
+function EmailForm({ email, pendingEmail, login, reminders }: Props) {
   const [editing, setEditing] = useState(!email);
   const [value, setValue] = useState(email ?? (login && login.includes("@") ? login : ""));
   const [waiting, setWaiting] = useState<string | null>(pendingEmail);
@@ -79,6 +80,10 @@ function EmailForm({ email, pendingEmail, login }: Props) {
             <strong>{email}</strong>
             <span className="pill" style={{ background: "#DCEDE2", color: "#14492F", minHeight: 26, fontSize: 12 }}>Confirmée</span>
           </p>
+          <label className="chk text-sm">
+            <input type="checkbox" defaultChecked={reminders} disabled={pending} onChange={(e) => run(() => setEmailReminders(e.target.checked), e.target.checked ? "Rappels activés." : "Rappels désactivés.")} />
+            M&apos;envoyer un rappel une semaine avant chaque événement
+          </label>
           <div className="flex flex-wrap gap-2">
             <button type="button" className="btn b-soft b-sm" onClick={() => setEditing(true)}>Changer</button>
             <button
@@ -86,7 +91,7 @@ function EmailForm({ email, pendingEmail, login }: Props) {
               className="btn b-quiet b-sm"
               disabled={pending}
               onClick={() => {
-                if (confirm("Retirer cette adresse ? Vous ne pourrez plus récupérer votre mot de passe par e-mail.")) run(() => removeEmail(), "Adresse retirée.");
+                void confirmDialog({ title: "Retirer cette adresse ?", message: "Vous ne pourrez plus récupérer votre mot de passe ni vous connecter par e-mail.", confirmLabel: "Retirer", danger: true }).then((ok) => ok && run(() => removeEmail(), "Adresse retirée."));
               }}
             >
               Retirer

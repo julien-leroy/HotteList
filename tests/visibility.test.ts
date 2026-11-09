@@ -124,3 +124,20 @@ describe("archives", () => {
     expect(list.map((g) => g.id)).toEqual(["a", "b", "i"]);
   });
 });
+
+describe("statut d'achat et nouveautés", () => {
+  it("le statut d'achat n'est visible que par le participant", () => {
+    const g = gift({ participants: [{ userId: "claire", createdAt: t0, status: "ACHETE", user: person("claire") }] });
+    expect(toVisibleGift(claire, g)!.secret?.myStatus).toBe("ACHETE");
+    expect(toVisibleGift(paul, g)!.secret?.myStatus).toBeNull();
+    expect(JSON.stringify(toVisibleGift(paul, g))).not.toContain("ACHETE");
+  });
+
+  it("« Nouveau » seulement pour ce que d'autres ont ajouté depuis ma visite", () => {
+    const since = new Date("2026-11-01T12:00:00Z");
+    expect(toVisibleGift(paul, gift({ createdAt: t1 }), since)!.isNew).toBe(true);
+    expect(toVisibleGift(paul, gift({ createdAt: t0 }), since)!.isNew).toBe(false);
+    expect(toVisibleGift(julien, gift({ createdAt: t1 }), since)!.isNew).toBe(false);
+    expect(toVisibleGift(paul, gift({ createdAt: t1 }), null)!.isNew).toBe(false);
+  });
+});

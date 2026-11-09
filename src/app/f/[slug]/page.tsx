@@ -10,6 +10,9 @@ import { FamilyBoard, type Section } from "@/components/family-board";
 import { FamilySettings } from "@/components/family-settings";
 import { EventOver } from "@/components/event-over";
 import { InvitePage, JoinPage } from "@/components/invite";
+import { SantaBanner } from "@/components/santa";
+import { ShareButton } from "@/components/share-button";
+import Link from "next/link";
 import { daysUntil, isEventOver, parisDay } from "@/lib/utils";
 import { plural } from "@/lib/format";
 
@@ -43,7 +46,29 @@ export default async function FamilyPage({ params, searchParams }: Props) {
   }
 
   const isAdmin = me.role === "ADMIN";
-  const gifts = await loadVisibleGifts(user, family.id);
+
+  // Badge « Nouveau » : comparé à la visite précédente. Une « visite » se renouvelle après 1 h d'absence,
+  // pour que les badges ne disparaissent pas au premier clic.
+  const now = new Date();
+  let since = me.prevSeenAt;
+  if (!me.lastSeenAt || now.getTime() - me.lastSeenAt.getTime() > 3600_000) {
+    since = me.lastSeenAt;
+    await db.membership.update({ where: { id: me.id }, data: { prevSeenAt: me.lastSeenAt, lastSeenAt: now } });
+  }
+  const gifts = await loadVisibleGifts(user, family.id, undefined, since);
+
+  // Tirage au sort : je ne charge que MON tirage
+  const santa = await db.secretSanta.findFirst({
+    where: { familyId: family.id },
+    include: { assignments: { select: { giverId: true } } },
+  });
+  const myDraw = santa
+    ? await db.secretSantaAssignment.findUnique({
+        where: { santaId_giverId: { santaId: santa.id, giverId: user.id } },
+        include: { receiver: { select: personSelect } },
+      })
+    : null;
+  const archivedCount = await db.gift.count({ where: { familyId: family.id, archivedAt: { not: null }, deletedAt: null } });
 
   // Moi d'abord, puis mes comptes gérés, puis les autres dans l'ordre d'arrivée
   const rank = (id: string) => (id === user.id ? 0 : user.managedIds.includes(id) ? 1 : 2);
@@ -65,8 +90,8 @@ export default async function FamilyPage({ params, searchParams }: Props) {
   let recap: { taken: number; free: number } | null = null;
   if (over) {
     const [taken, free] = await Promise.all([
-      db.gift.count({ where: { familyId: family.id, archivedAt: null, takeMode: { in: ["SEUL", "A_PLUSIEURS"] } } }),
-      db.gift.count({ where: { familyId: family.id, archivedAt: null, takeMode: "AUCUN" } }),
+      db.gift.count({ where: { familyId: family.id, archivedAt: null, deletedAt: null, takeMode: { in: ["SEUL", "A_PLUSIEURS"] } } }),
+      db.gift.count({ where: { familyId: family.id, archivedAt: null, deletedAt: null, takeMode: "AUCUN" } }),
     ]);
     recap = { taken, free };
   }
@@ -94,7 +119,13 @@ export default async function FamilyPage({ params, searchParams }: Props) {
           <div className="flex min-w-0 flex-[0_1_440px] flex-col gap-2">
             <span className="text-sm font-medium text-[#F6D9D2]">Lien de la famille, à envoyer à tout le monde</span>
             <CopyLink url={inviteUrl} />
-            <div className="flex justify-end">
+            <div className="flex flex-wrap justify-end gap-2">
+              <ShareButton url={inviteUrl} familyName={family.name} />
+              {archivedCount > 0 && (
+                <Link className="btn b-light" href={`/f/${family.slug}/archives`} style={{ minHeight: 40 }}>
+                  Années passées
+                </Link>
+              )}
               <FamilySettings
                 family={{ id: family.id, name: family.name, eventDate: parisDay(family.eventDate) }}
                 isAdmin={isAdmin}
@@ -108,11 +139,27 @@ export default async function FamilyPage({ params, searchParams }: Props) {
                   managed: Boolean(m.user.managedById),
                 }))}
                 myManaged={myManaged.map((p) => ({ ...p, inFamily: family.memberships.some((m) => m.userId === p.id) }))}
+                santa={
+                  isAdmin
+                    ? {
+                        candidates: family.memberships.filter((m) => !m.user.managedById).map((m) => ({ id: m.user.id, firstName: m.user.firstName, lastName: m.user.lastName, avatarColor: m.user.avatarColor })),
+                        current: santa ? { participantIds: santa.assignments.map((a) => a.giverId), budget: santa.budget } : null,
+                      }
+                    : null
+                }
               />
             </div>
           </div>
         </div>
       </FestiveHeader>
+
+      {myDraw && (
+        <SantaBanner
+          receiver={myDraw.receiver}
+          budget={santa?.budget ?? null}
+          sinceLabel={`tiré le ${santa!.createdAt.toLocaleDateString("fr-FR", { day: "numeric", month: "long", timeZone: "Europe/Paris" })}`}
+        />
+      )}
 
       {recap && <EventOver familyId={family.id} isAdmin={isAdmin} taken={recap.taken} free={recap.free} />}
 

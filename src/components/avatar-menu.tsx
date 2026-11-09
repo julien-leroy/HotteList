@@ -37,6 +37,9 @@ export function AvatarMenu({ user }: { user: AvatarPerson & { login: string | nu
             <Link href="/familles" style={{ color: "#1F3A2C" }}>Mes familles</Link>
           </Dropdown.Item>
           <Dropdown.Item asChild className={item}>
+            <Link href="/courses" style={{ color: "#1F3A2C" }}>Ma liste de courses</Link>
+          </Dropdown.Item>
+          <Dropdown.Item asChild className={item}>
             <Link href="/profil#compte" style={{ color: "#1F3A2C" }}>Mon compte</Link>
           </Dropdown.Item>
           <Dropdown.Separator style={{ height: 1, background: "#E3D6BA", margin: "4px 6px" }} />

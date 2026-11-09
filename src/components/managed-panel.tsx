@@ -8,7 +8,7 @@ import { createManaged, deleteManaged, giveAccess, updateManaged } from "@/app/a
 import { setManagedInFamily } from "@/app/actions/family";
 import { Avatar } from "./avatar";
 import { IconPlus } from "./icons";
-import { useAction } from "./toaster";
+import { confirmDialog, useAction } from "./toaster";
 
 type Fam = { id: string; name: string };
 
@@ -156,7 +156,7 @@ function EditManaged({ person, families, inFamilies, onDeleted }: { person: Pers
             type="button"
             disabled={pending}
             onClick={() => {
-              if (confirm(`Supprimer le compte de ${person.firstName} et tous ses souhaits ?`)) run(() => deleteManaged(person.id), "Compte supprimé.", (r) => r.ok && onDeleted());
+              void confirmDialog({ title: `Supprimer le compte de ${person.firstName} ?`, message: "Tous ses souhaits, dans toutes les familles, seront supprimés. C'est définitif.", confirmLabel: "Supprimer le compte", danger: true }).then((ok) => ok && run(() => deleteManaged(person.id), "Compte supprimé.", (r) => r.ok && onDeleted()));
             }}
           >
             Supprimer le compte
@@ -200,7 +200,7 @@ function GiveAccess({ person, onDone }: { person: PersonLite; onDone: () => void
         type="button"
         disabled={pending}
         onClick={() => {
-          if (confirm(`Rendre le compte de ${person.firstName} autonome ? Vous ne pourrez plus le gérer.`)) run(() => giveAccess(person.id, login, password), "Accès créé.", (r) => r.ok && onDone());
+          void confirmDialog({ title: `Rendre le compte de ${person.firstName} autonome ?`, message: "Vous ne pourrez plus le gérer, et ses réservations et commentaires lui seront cachés comme pour tout le monde.", confirmLabel: "Créer son accès" }).then((ok) => ok && run(() => giveAccess(person.id, login, password), "Accès créé.", (r) => r.ok && onDone()));
         }}
       >
         Créer son accès

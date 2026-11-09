@@ -14,8 +14,9 @@ import {
 } from "@/app/actions/family";
 import { Avatar, type AvatarPerson } from "./avatar";
 import { CopyLink } from "./copy-link";
+import { SantaSettings } from "./santa";
 import { IconClose, IconSettings } from "./icons";
-import { useAction } from "./toaster";
+import { confirmDialog, useAction } from "./toaster";
 
 type Member = AvatarPerson & { id: string; role: "ADMIN" | "MEMBRE"; managed: boolean };
 
@@ -25,12 +26,14 @@ export function FamilySettings({
   meId,
   members,
   myManaged,
+  santa,
 }: {
   family: { id: string; name: string; eventDate: string };
   isAdmin: boolean;
   meId: string;
   members: Member[];
   myManaged: (AvatarPerson & { id: string; inFamily: boolean })[];
+  santa: { candidates: (AvatarPerson & { id: string })[]; current: { participantIds: string[]; budget: string | null } | null } | null;
 }) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(family.name);
@@ -86,7 +89,7 @@ export function FamilySettings({
                     className="btn b-red self-start"
                     disabled={pending}
                     onClick={() => {
-                      if (confirm("Créer un nouveau lien ? L'ancien ne fonctionnera plus.")) run(() => regenerateLink(family.id));
+                      void confirmDialog({ title: "Créer un nouveau lien ?", message: "L'ancien lien ne fonctionnera plus. Les membres actuels restent dans la famille.", confirmLabel: "Créer un nouveau lien", danger: true }).then((ok) => ok && run(() => regenerateLink(family.id)));
                     }}
                   >
                     Créer un nouveau lien
@@ -137,7 +140,7 @@ export function FamilySettings({
                           className="btn b-quiet b-sm"
                           disabled={pending}
                           onClick={() => {
-                            if (confirm(`Retirer ${m.firstName} de la famille ? Ses réservations ici seront libérées. Son compte n'est pas supprimé : on pourra la réinviter avec le lien.`)) run(() => removeMember(family.id, m.id), "Membre retiré.");
+                            void confirmDialog({ title: `Retirer ${m.firstName} de la famille ?`, message: "Ses réservations dans cette famille seront libérées. Son compte n'est pas supprimé : on pourra l'inviter de nouveau avec le lien.", confirmLabel: "Retirer", danger: true }).then((ok) => ok && run(() => removeMember(family.id, m.id), "Membre retiré."));
                           }}
                         >
                           Retirer
@@ -156,6 +159,12 @@ export function FamilySettings({
                 </div>
               )}
             </div>
+
+            {santa && (
+              <div className={section}>
+                <SantaSettings familyId={family.id} candidates={santa.candidates} current={santa.current} />
+              </div>
+            )}
 
             {myManaged.length > 0 && (
               <div className={section}>
@@ -179,7 +188,7 @@ export function FamilySettings({
                 className="btn b-quiet self-start"
                 disabled={pending}
                 onClick={() => {
-                  if (confirm(`Quitter ${family.name} ? Vos souhaits dans cette famille resteront, mais vous n'y aurez plus accès.`)) run(() => leaveFamily(family.id));
+                  void confirmDialog({ title: `Quitter ${family.name} ?`, message: "Vos réservations ici seront libérées et vous n'aurez plus accès aux listes. Vous pourrez revenir avec le lien de la famille.", confirmLabel: "Quitter la famille", danger: true }).then((ok) => ok && run(() => leaveFamily(family.id)));
                 }}
               >
                 Quitter la famille

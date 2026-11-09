@@ -34,18 +34,18 @@ export async function requireAdmin(userId: string, familyId: string) {
 }
 
 /** Unique point d'entrée pour lire les cadeaux d'une famille. */
-export async function loadVisibleGifts(user: CurrentUser, familyId: string, recipientIds?: string[]) {
+export async function loadVisibleGifts(user: CurrentUser, familyId: string, recipientIds?: string[], since?: Date | null) {
   const raw = await db.gift.findMany({
-    where: { familyId, archivedAt: null, ...(recipientIds ? { recipientId: { in: recipientIds } } : {}) },
+    where: { familyId, archivedAt: null, deletedAt: null, ...(recipientIds ? { recipientId: { in: recipientIds } } : {}) },
     include: giftInclude,
   });
-  return giftsVisibleTo(viewerOf(user), raw);
+  return giftsVisibleTo(viewerOf(user), raw, since);
 }
 
 /** Charge un cadeau pour une action d'écriture et vérifie l'appartenance à la famille. */
 export async function loadGiftForAction(user: CurrentUser, giftId: string) {
   const gift = await db.gift.findUnique({ where: { id: giftId }, include: { participants: true } });
-  if (!gift || gift.archivedAt) throw new Error("Ce cadeau n'existe plus.");
+  if (!gift || gift.archivedAt || gift.deletedAt) throw new Error("Ce cadeau n'existe plus.");
   await requireMember(user.id, gift.familyId);
   return gift;
 }

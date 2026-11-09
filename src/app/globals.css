@@ -107,7 +107,7 @@ textarea.input{padding:12px 14px;min-height:84px;resize:vertical;line-height:1.5
 .col.over{border:2px dashed #B3202E;background:#FFF4E0}
 .item{display:flex;align-items:center;gap:12px;padding:10px;background:#FFF9EE;border:1px solid #E3D6BA;border-radius:14px;touch-action:none}
 .item.dragging{opacity:.4}
-.item.overlay{box-shadow:0 18px 40px -18px rgba(90,20,25,.6);border-color:#B3202E;cursor:grabbing}
+.item.overlay{max-width:520px;box-shadow:0 18px 40px -18px rgba(90,20,25,.6);border-color:#B3202E;cursor:grabbing}
 .handle{display:flex;align-items:center;justify-content:center;width:28px;height:44px;flex:none;border:0;background:none;cursor:grab;border-radius:8px;color:#B7A985}
 .handle:focus-visible{outline:2px solid #B3202E}
 .who{display:inline-flex;align-items:center;gap:10px;min-height:52px;padding:0 18px 0 6px;border-radius:999px;border:1.5px solid #D8CBAE;background:#FFFDF7;font:600 15px var(--font-sans);color:#1F3A2C;cursor:pointer}
@@ -126,3 +126,10 @@ textarea.input{padding:12px 14px;min-height:84px;resize:vertical;line-height:1.5
 .toast.err{background:#8A1C26}
 
 @media (prefers-reduced-motion:reduce){.bulb{animation:none}.card:hover{transform:none}}
+
+/* Impression de la liste de courses */
+@media print {
+  .bulb, nav, .toast, svg[aria-hidden="true"] path[fill="#1F4D36"] { display: none !important; }
+  html, body { background: #fff !important; }
+  .row { break-inside: avoid; }
+}

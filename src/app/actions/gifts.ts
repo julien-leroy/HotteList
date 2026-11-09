@@ -71,7 +71,7 @@ export async function createGift(
     if (kind === "IDEE" && !canAddIdeaFor(viewer, recipientId)) throw new Error("Vous ne pouvez pas vous proposer une idée.");
     const data = clean(giftSchema.parse(input));
     const last = await db.gift.aggregate({
-      where: { familyId, recipientId, archivedAt: null },
+      where: { familyId, recipientId, archivedAt: null, deletedAt: null },
       _max: { position: true },
     });
     await db.gift.create({
@@ -122,8 +122,53 @@ export async function deleteGift(giftId: string): Promise<ActionResult> {
     const gift = await loadGiftForAction(user, giftId);
     if (!canEditGift(viewerOf(user), gift)) throw new Error("Vous ne pouvez pas supprimer ce cadeau.");
     const others = gift.participants.map((p) => p.userId).filter((id) => id !== user.id);
-    await db.gift.delete({ where: { id: giftId } });
-    await notify(others, `« ${gift.title} », que vous aviez réservé, a été retiré de la liste.`);
+    // Suppression « douce » : le bouton Annuler du toast peut la défaire.
+    await db.gift.update({ where: { id: giftId }, data: { deletedAt: new Date() } });
+    await notify(others, deletedText(gift.title), "/courses");
+    return done();
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+function deletedText(title: string) {
+  return `« ${title} », que vous aviez réservé, a été retiré de la liste.`;
+}
+
+/** Annule une suppression faite il y a moins de 10 minutes. */
+export async function restoreGift(giftId: string): Promise<ActionResult> {
+  try {
+    const user = await requireUser();
+    const gift = await db.gift.findUnique({ where: { id: giftId } });
+    if (!gift?.deletedAt || Date.now() - gift.deletedAt.getTime() > 10 * 60_000) throw new Error("Trop tard pour annuler.");
+    await requireMember(user.id, gift.familyId);
+    if (!canEditGift(viewerOf(user), gift)) throw new Error("Vous ne pouvez pas restaurer ce cadeau.");
+    await db.$transaction([
+      db.gift.update({ where: { id: giftId }, data: { deletedAt: null } }),
+      db.notification.deleteMany({ where: { text: deletedText(gift.title), createdAt: { gte: gift.deletedAt } } }),
+    ]);
+    return done();
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** Contexte d'un cadeau pour rédiger une notification : destinataire et lien. */
+async function giftContext(giftId: string) {
+  const g = await db.gift.findUniqueOrThrow({
+    where: { id: giftId },
+    include: { recipient: { select: { firstName: true } }, family: { select: { slug: true } }, comments: { select: { authorId: true } } },
+  });
+  return { title: g.title, recipientId: g.recipientId, who: g.recipient.firstName, link: `/f/${g.family.slug}?cadeau=${g.id}`, commenters: g.comments.map((c) => c.authorId) };
+}
+
+/** Mon statut d'achat sur un cadeau que j'offre (visible par moi seul). */
+export async function setPurchaseStatus(giftId: string, status: "A_ACHETER" | "ACHETE" | "EMBALLE"): Promise<ActionResult> {
+  try {
+    const user = await requireUser();
+    z.enum(["A_ACHETER", "ACHETE", "EMBALLE"]).parse(status);
+    const res = await db.giftParticipant.updateMany({ where: { giftId, userId: user.id }, data: { status } });
+    if (res.count !== 1) throw new Error("Vous ne participez pas à ce cadeau.");
     return done();
   } catch (e) {
     return fail(e);
@@ -145,7 +190,7 @@ export async function takeGift(giftId: string, mode: "SEUL" | "A_PLUSIEURS"): Pr
     await interactable(user, giftId);
     await db.$transaction(async (tx) => {
       const res = await tx.gift.updateMany({
-        where: { id: giftId, takeMode: "AUCUN", archivedAt: null },
+        where: { id: giftId, takeMode: "AUCUN", archivedAt: null, deletedAt: null },
         data: { takeMode: mode },
       });
       if (res.count !== 1) throw new Error("Quelqu'un vient de s'en occuper. La page a été mise à jour.");
@@ -163,11 +208,20 @@ export async function joinGroup(giftId: string): Promise<ActionResult> {
     const user = await requireUser();
     const gift = await interactable(user, giftId);
     if (gift.takeMode !== "A_PLUSIEURS") throw new Error("Ce cadeau n'est pas ouvert à plusieurs.");
+    const already = gift.participants.some((p) => p.userId === user.id);
     await db.giftParticipant.upsert({
       where: { giftId_userId: { giftId, userId: user.id } },
       create: { giftId, userId: user.id },
       update: {},
     });
+    if (!already) {
+      const ctx = await giftContext(giftId);
+      await notify(
+        gift.participants.map((p) => p.userId).filter((id) => id !== user.id),
+        `${user.firstName} participe aussi à « ${ctx.title} » pour ${ctx.who}.`,
+        ctx.link,
+      );
+    }
     return done();
   } catch (e) {
     return fail(e);
@@ -212,7 +266,14 @@ export async function addComment(giftId: string, text: string): Promise<ActionRe
     const user = await requireUser();
     await interactable(user, giftId);
     const t = z.string().trim().min(1, "Le commentaire est vide.").max(1000).parse(text);
+    const gift = await db.gift.findUniqueOrThrow({ where: { id: giftId }, include: { participants: true } });
+    const ctx = await giftContext(giftId);
     await db.comment.create({ data: { giftId, authorId: user.id, text: t } });
+    // Préviens ceux qui offrent ce cadeau et ceux qui en ont déjà parlé (jamais le destinataire).
+    const to = new Set([...gift.participants.map((p) => p.userId), ...ctx.commenters]);
+    to.delete(user.id);
+    to.delete(ctx.recipientId);
+    await notify([...to], `${user.firstName} a commenté « ${ctx.title} » pour ${ctx.who} : « ${t.length > 60 ? t.slice(0, 57) + "…" : t} »`, ctx.link);
     return done();
   } catch (e) {
     return fail(e);
@@ -241,7 +302,7 @@ async function editableWish(user: CurrentUser, giftId: string) {
 
 async function applyOrder(familyId: string, recipientId: string, orderedIds: string[]) {
   const own = await db.gift.findMany({
-    where: { familyId, recipientId, kind: "SOUHAIT", archivedAt: null },
+    where: { familyId, recipientId, kind: "SOUHAIT", archivedAt: null, deletedAt: null },
     select: { id: true },
   });
   const ownSet = new Set(own.map((g) => g.id));
@@ -276,7 +337,7 @@ export async function moveWish(giftId: string, toFamilyId: string, orderedIds?: 
       db.user.findUniqueOrThrow({ where: { id: gift.recipientId } }),
     ]);
     const last = await db.gift.aggregate({
-      where: { familyId: toFamilyId, recipientId: gift.recipientId, archivedAt: null },
+      where: { familyId: toFamilyId, recipientId: gift.recipientId, archivedAt: null, deletedAt: null },
       _max: { position: true },
     });
     // Les participants qui ne sont pas dans la famille d'arrivée ne pourraient plus voir
@@ -324,7 +385,7 @@ export async function copyWish(giftId: string, toFamilyId: string, orderedIds?: 
     await requireMember(user.id, toFamilyId);
     if (!(await getMembership(gift.recipientId, toFamilyId))) throw new Error("La personne n'est pas dans cette famille.");
     const last = await db.gift.aggregate({
-      where: { familyId: toFamilyId, recipientId: gift.recipientId, archivedAt: null },
+      where: { familyId: toFamilyId, recipientId: gift.recipientId, archivedAt: null, deletedAt: null },
       _max: { position: true },
     });
     const copy = await db.gift.create({

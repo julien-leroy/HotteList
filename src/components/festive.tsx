@@ -78,14 +78,14 @@ export function FestiveHeader({
   children,
 }: {
   user: CurrentUser;
-  current?: "familles" | "profil";
+  current?: "familles" | "profil" | "courses";
   children: ReactNode;
 }) {
-  const navLink = (href: string, label: string, key: string) => (
+  const navLink = (href: string, label: string, short: string, key: string, hideOnMobile = false) => (
     <Link
       href={href}
       aria-current={current === key ? "page" : undefined}
-      className="px-1 py-2.5 text-[15px] font-semibold no-underline"
+      className={`px-1 py-2.5 text-[15px] font-semibold whitespace-nowrap no-underline${hideOnMobile ? " hidden sm:inline" : ""}`}
       style={{
         color: "#FFF9EE",
         textDecoration: current === key ? "underline" : "none",
@@ -93,7 +93,8 @@ export function FestiveHeader({
         textUnderlineOffset: 6,
       }}
     >
-      {label}
+      <span className="hidden sm:inline">{label}</span>
+      <span className="sm:hidden">{short}</span>
     </Link>
   );
   return (
@@ -104,8 +105,9 @@ export function FestiveHeader({
           <Logo />
         </Link>
         <nav className="flex items-center gap-3.5 sm:gap-[18px]" aria-label="Navigation">
-          {navLink("/familles", "Mes familles", "familles")}
-          {navLink("/profil", "Mon profil", "profil")}
+          {navLink("/familles", "Mes familles", "Familles", "familles")}
+          {navLink("/courses", "Mes courses", "Courses", "courses")}
+          {navLink("/profil", "Mon profil", "Profil", "profil", true)}
           <NotificationBell />
           <AvatarMenu user={user} />
         </nav>

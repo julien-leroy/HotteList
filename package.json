@@ -11,7 +11,8 @@
     "db:migrate": "prisma migrate deploy",
     "reset-password": "node --env-file=.env --import tsx scripts/reset-password.ts",
     "postinstall": "prisma generate",
-    "test-mail": "node --env-file=.env --import tsx scripts/test-mail.ts"
+    "test-mail": "node --env-file=.env --import tsx scripts/test-mail.ts",
+    "rappels": "node --env-file=.env --import tsx scripts/rappels.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

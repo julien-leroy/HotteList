@@ -10,7 +10,31 @@ import { AddGiftDialog } from "./gift-form";
 import { GiftDialog } from "./gift-dialog";
 import { IconBookmark, IconComment, IconGrid, IconGroup, IconHidden, IconList, IconPlus } from "./icons";
 import { useAction } from "./toaster";
+import { priceValue } from "./price";
 import { joinGroup, leaveGift, takeGift } from "@/app/actions/gifts";
+
+type Sort = "ordre" | "coeur" | "prix-asc" | "prix-desc";
+type Budget = "tous" | "20" | "50" | "100" | "plus";
+
+function arrange(list: VisibleGift[], sort: Sort, budget: Budget) {
+  let out = list;
+  if (budget !== "tous") {
+    out = out.filter((g) => {
+      const v = priceValue(g.price);
+      if (v == null) return true; // prix libre : toujours affiché
+      return budget === "plus" ? v > 100 : v <= Number(budget);
+    });
+  }
+  if (sort === "ordre") return out;
+  const val = (g: VisibleGift) => priceValue(g.price);
+  return out.slice().sort((a, b) => {
+    if (sort === "coeur") return Number(b.favorite) - Number(a.favorite);
+    const va = val(a), vb = val(b);
+    if (va == null) return 1;
+    if (vb == null) return -1;
+    return sort === "prix-asc" ? va - vb : vb - va;
+  });
+}
 
 export type Section = {
   person: PersonLite;
@@ -32,6 +56,8 @@ export function FamilyBoard({ familyId, familySlug, sections, openGiftId }: Prop
   const router = useRouter();
   const [mode, setMode] = useState<"cards" | "list">("cards");
   const [onlyFree, setOnlyFree] = useState(false);
+  const [sort, setSort] = useState<Sort>("ordre");
+  const [budget, setBudget] = useState<Budget>("tous");
   const [adding, setAdding] = useState<string | null>(null);
 
   useEffect(() => {
@@ -67,6 +93,21 @@ export function FamilyBoard({ familyId, familySlug, sections, openGiftId }: Prop
             ))}
           </nav>
           <div className="flex flex-wrap items-center gap-3.5">
+            <label className="sr-only" htmlFor="tri">Trier</label>
+            <select id="tri" className="input" style={{ minHeight: 44, width: "auto", fontSize: 14, fontWeight: 600 }} value={sort} onChange={(e) => setSort(e.target.value as Sort)}>
+              <option value="ordre">Ordre de la liste</option>
+              <option value="coeur">Coups de cœur d&apos;abord</option>
+              <option value="prix-asc">Prix croissant</option>
+              <option value="prix-desc">Prix décroissant</option>
+            </select>
+            <label className="sr-only" htmlFor="budget">Budget</label>
+            <select id="budget" className="input" style={{ minHeight: 44, width: "auto", fontSize: 14, fontWeight: 600 }} value={budget} onChange={(e) => setBudget(e.target.value as Budget)}>
+              <option value="tous">Tous les prix</option>
+              <option value="20">Jusqu&apos;à 20 €</option>
+              <option value="50">Jusqu&apos;à 50 €</option>
+              <option value="100">Jusqu&apos;à 100 €</option>
+              <option value="plus">Plus de 100 €</option>
+            </select>
             <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 text-sm font-semibold">
               <input type="checkbox" checked={onlyFree} onChange={(e) => setOnlyFree(e.target.checked)} style={{ width: 20, height: 20, accentColor: "#1E6B47" }} />
               Seulement les disponibles
@@ -87,12 +128,16 @@ export function FamilyBoard({ familyId, familySlug, sections, openGiftId }: Prop
       <main className="mx-auto flex max-w-[1200px] flex-col gap-12 px-6 pt-7 pb-24">
         {sections.map((s) => {
           const canWish = s.isMe || s.isManaged;
-          const gifts = onlyFree
-            ? s.gifts.filter((g) => {
-                const st = statusOf(g);
-                return st.kind === "HIDDEN" || st.kind === "FREE" || (st.kind === "GROUP" && !st.mine);
-              })
-            : s.gifts;
+          const gifts = arrange(
+            onlyFree
+              ? s.gifts.filter((g) => {
+                  const st = statusOf(g);
+                  return st.kind === "HIDDEN" || st.kind === "FREE" || (st.kind === "GROUP" && !st.mine);
+                })
+              : s.gifts,
+            sort,
+            budget,
+          );
           const wishes = s.gifts.filter((g) => g.kind === "SOUHAIT").length;
           const ideas = s.gifts.length - wishes;
           const sub = s.isMe
@@ -130,12 +175,13 @@ export function FamilyBoard({ familyId, familySlug, sections, openGiftId }: Prop
                 familyId={familyId}
                 recipientId={s.person.id}
                 kind={canWish ? "SOUHAIT" : "IDEE"}
+                existing={s.gifts.map((g) => ({ title: g.title, url: g.url }))}
                 title={canWish ? (s.isMe ? "Nouveau souhait" : `Nouveau souhait pour ${s.person.firstName}`) : `Une idée pour ${s.person.firstName}`}
                 hint={canWish ? (s.isMe ? "Collez un lien : le titre, l'image et le prix se remplissent tout seuls. Toute la famille le verra." : `Collez un lien : le titre, l'image et le prix se remplissent tout seuls.`) : `${s.person.firstName} ne verra jamais cette idée. Le reste de la famille pourra la réserver et la commenter.`}
               />
 
-              {gifts.length === 0 && onlyFree && (
-                <p className="m-0 text-sm text-gris">Tout est déjà pris ici.</p>
+              {gifts.length === 0 && s.gifts.length > 0 && (
+                <p className="m-0 text-sm text-gris">{onlyFree ? "Rien de disponible ici avec ces filtres." : "Rien dans ce budget ici."}</p>
               )}
 
               {mode === "cards" ? (
@@ -192,6 +238,14 @@ function MissingGift({ onClose }: { onClose: () => void }) {
 
 // ---------- Actions rapides communes aux cartes et aux lignes ----------
 
+/** Annuler « Ne plus participer » : rejoindre, ou relancer le cadeau à plusieurs si j'étais le dernier. */
+async function rejoin(giftId: string) {
+  const r = await joinGroup(giftId);
+  return r.ok ? r : takeGift(giftId, "A_PLUSIEURS");
+}
+
+const STATUS_LABEL = { A_ACHETER: "à acheter", ACHETE: "acheté", EMBALLE: "emballé" } as const;
+
 function QuickActions({ gift, st, compact }: { gift: VisibleGift; st: Status; compact?: boolean }) {
   const { pending, run } = useAction();
   if (!gift.can.take || st.kind === "HIDDEN") return null;
@@ -199,7 +253,7 @@ function QuickActions({ gift, st, compact }: { gift: VisibleGift; st: Status; co
     <>
       {st.kind === "FREE" && (
         <>
-          <button className="btn b-go" type="button" disabled={pending} style={compact ? undefined : { flex: 1 }} onClick={() => run(() => takeGift(gift.id, "SEUL"), "Réservé ! Vous seul·e le savez avec la famille.")}>
+          <button className="btn b-go" type="button" disabled={pending} style={compact ? undefined : { flex: 1 }} onClick={() => run(() => takeGift(gift.id, "SEUL"), "Réservé ! C'est dans votre liste de courses.", undefined, { run: () => leaveGift(gift.id) })}>
             {!compact && <IconBookmark />} Réserver
           </button>
           <button
@@ -208,24 +262,24 @@ function QuickActions({ gift, st, compact }: { gift: VisibleGift; st: Status; co
             disabled={pending}
             aria-label="Offrir à plusieurs"
             title="Offrir à plusieurs"
-            onClick={() => run(() => takeGift(gift.id, "A_PLUSIEURS"), "Cadeau à plusieurs lancé.")}
+            onClick={() => run(() => takeGift(gift.id, "A_PLUSIEURS"), "Cadeau à plusieurs lancé.", undefined, { run: () => leaveGift(gift.id) })}
           >
             {compact ? "À plusieurs" : <IconGroup size={18} />}
           </button>
         </>
       )}
       {st.kind === "MINE" && (
-        <button className="btn b-quiet" type="button" disabled={pending} onClick={() => run(() => leaveGift(gift.id), "Réservation annulée.")}>
+        <button className="btn b-quiet" type="button" disabled={pending} onClick={() => run(() => leaveGift(gift.id), "Réservation annulée.", undefined, { run: () => takeGift(gift.id, "SEUL") })}>
           {compact ? "Annuler" : "Annuler ma réservation"}
         </button>
       )}
       {st.kind === "GROUP" && !st.mine && (
-        <button className="btn b-gold" type="button" disabled={pending} style={compact ? undefined : { flex: 1 }} onClick={() => run(() => joinGroup(gift.id), "Vous participez !")}>
+        <button className="btn b-gold" type="button" disabled={pending} style={compact ? undefined : { flex: 1 }} onClick={() => run(() => joinGroup(gift.id), "Vous participez ! C'est dans votre liste de courses.", undefined, { run: () => leaveGift(gift.id) })}>
           Participer
         </button>
       )}
       {st.kind === "GROUP" && st.mine && (
-        <button className="btn b-quiet" type="button" disabled={pending} onClick={() => run(() => leaveGift(gift.id))}>
+        <button className="btn b-quiet" type="button" disabled={pending} onClick={() => run(() => leaveGift(gift.id), "Vous ne participez plus.", undefined, { run: () => rejoin(gift.id) })}>
           Ne plus participer
         </button>
       )}
@@ -244,8 +298,9 @@ function GiftCard({ gift, onOpen }: { gift: VisibleGift; onOpen: () => void }) {
           <SourceBadge site={gift.siteOrigin} />
           {gift.kind === "IDEE" && gift.ideaBy && <span className="idea">Idée de {gift.ideaBy.firstName}</span>}
           {st.kind === "OTHER" && <span className="band" style={{ background: "#8A1C26", color: "#FFF9EE" }}>Réservé par {st.by}</span>}
-          {st.kind === "MINE" && <span className="band" style={{ background: "#1E6B47", color: "#FFF9EE" }}>Réservé par vous</span>}
-          {st.kind === "GROUP" && <span className="band" style={{ background: "#F2C75C", color: "#4A1209" }}>À plusieurs · {st.people}</span>}
+          {st.kind === "MINE" && <span className="band" style={{ background: "#1E6B47", color: "#FFF9EE" }}>Réservé par vous · {STATUS_LABEL[gift.secret!.myStatus ?? "A_ACHETER"]}</span>}
+          {st.kind === "GROUP" && <span className="band" style={{ background: "#F2C75C", color: "#4A1209" }}>À plusieurs · {st.people}{st.mine ? ` · ${STATUS_LABEL[gift.secret!.myStatus ?? "A_ACHETER"]}` : ""}</span>}
+          {gift.isNew && <span className="idea" style={{ background: "#B3202E", left: gift.kind === "IDEE" ? 10 : undefined, right: gift.kind === "IDEE" ? undefined : 10, top: gift.kind === "IDEE" ? 40 : 10 }}>Nouveau</span>}
         </GiftVisual>
         <span className="flex flex-1 flex-col gap-2.5 px-3.5 pt-3.5 pb-2.5">
           <span className="flex items-start justify-between gap-2">
@@ -296,6 +351,7 @@ function GiftRow({ gift, onOpen }: { gift: VisibleGift; onOpen: () => void }) {
         <span className="flex min-w-0 flex-1 flex-col gap-[3px]">
           <span className="flex flex-wrap items-center gap-2">
             <span className="rt text-base font-semibold">{gift.title}</span>
+            {gift.isNew && <span className="pill" style={{ background: "#B3202E", color: "#FFF9EE", minHeight: 22, fontSize: 11, padding: "0 8px" }}>Nouveau</span>}
             {nb > 0 && (
               <span className="cm">
                 <IconComment size={12} />
@@ -311,7 +367,7 @@ function GiftRow({ gift, onOpen }: { gift: VisibleGift; onOpen: () => void }) {
         <div className="flex flex-wrap items-center justify-end gap-2">
           {st.kind === "OTHER" && <span className="pill" style={{ background: "#F6DCDD", color: "#7E1621" }}>Réservé par {st.by}</span>}
           {st.kind === "GROUP" && <span className="pill" style={{ background: "#F6E7C1", color: "#5C4214" }}>À plusieurs · {st.people}</span>}
-          {st.kind === "MINE" && <span className="pill" style={{ background: "#DCEDE2", color: "#14492F" }}>Réservé par vous</span>}
+          {st.kind === "MINE" && <span className="pill" style={{ background: "#DCEDE2", color: "#14492F" }}>Réservé par vous · {STATUS_LABEL[gift.secret!.myStatus ?? "A_ACHETER"]}</span>}
           <QuickActions gift={gift} st={st} compact />
         </div>
       )}

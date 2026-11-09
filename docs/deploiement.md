@@ -131,6 +131,18 @@ Dans la zone DNS de `julienfluenceur.online` chez Amen :
 
 Pour contrôler le résultat : envoyez un e-mail d'essai vers Gmail, puis « Afficher l'original » : SPF, DKIM et DMARC doivent indiquer **PASS**.
 
+### Rappel une semaine avant l'événement
+
+Une fois par jour, le script regarde les familles dont l'événement tombe dans les 7 jours et envoie **un seul** rappel par événement aux membres qui ont une adresse confirmée (et n'ont pas désactivé les rappels dans « Mon compte ») : souhaits encore sans personne chez les autres, et cadeaux qu'il leur reste à acheter. Rien sur leur propre liste.
+
+```bash
+sudo -iu hottelist crontab -e
+# ajouter (tous les jours à 9 h 07) :
+7 9 * * * cd /opt/hottelist && . "$HOME/.nvm/nvm.sh" && nvm use --silent && npm run -s rappels >> data/rappels.log 2>&1
+```
+
+Pour voir ce qui partirait sans rien envoyer : `npm run rappels -- --dry`.
+
 ## 8. Sauvegardes
 
 ```bash

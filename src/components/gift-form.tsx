@@ -21,6 +21,8 @@ type Props =
       onDone: () => void;
       /** dans une popup : pas de cadre ni de titre (la popup les affiche) */
       bare?: boolean;
+      /** cadeaux déjà visibles dans cette liste, pour prévenir les doublons */
+      existing?: { title: string; url: string | null }[];
     }
   | {
       mode: "edit";
@@ -30,6 +32,17 @@ type Props =
       onDone: () => void;
       compact?: boolean;
     };
+
+/** Même article ? On compare le site et le chemin, sans les paramètres de suivi. */
+function sameUrl(a: string, b: string) {
+  try {
+    const x = new URL(a.trim()), y = new URL(b.trim());
+    const clean = (u: URL) => u.hostname.replace(/^www\./, "") + u.pathname.replace(/\/+$/, "").replace(/\/ref=.*$/, "");
+    return clean(x) === clean(y);
+  } catch {
+    return false;
+  }
+}
 
 function host(url: string) {
   try {
@@ -104,6 +117,12 @@ export function GiftForm(props: Props) {
   }
 
   const idBase = props.mode === "create" ? `n-${props.recipientId}` : `e-${props.giftId}`;
+  const duplicate =
+    props.mode === "create" && props.existing
+      ? props.existing.find(
+          (g) => (g.url && d.url && sameUrl(g.url, d.url)) || (d.title.trim().length > 3 && g.title.trim().toLowerCase() === d.title.trim().toLowerCase()),
+        ) ?? null
+      : null;
   const compact = props.mode === "edit" && props.compact;
   const bare = props.mode === "create" && props.bare;
 
@@ -166,6 +185,11 @@ export function GiftForm(props: Props) {
             Choisir l&apos;image moi-même
           </button>
         )}
+        {duplicate && (
+          <p role="status" className="m-0 rounded-xl px-3.5 py-2.5 text-sm font-semibold" style={{ background: "#F8EDD2", border: "1px solid #E5CF96", color: "#6E500F" }}>
+            Déjà dans cette liste : « {duplicate.title} ». Vous pouvez quand même l&apos;ajouter.
+          </p>
+        )}
         {props.kind === "SOUHAIT" && (
           <label className="chk">
             <input type="checkbox" checked={d.favorite} onChange={(e) => setD((x) => ({ ...x, favorite: e.target.checked }))} />
@@ -207,6 +231,7 @@ export function AddGiftDialog(props: {
   kind: "SOUHAIT" | "IDEE";
   title: string;
   hint: string;
+  existing?: { title: string; url: string | null }[];
 }) {
   return (
     <Dialog.Root open={props.open} onOpenChange={(o) => !o && props.onClose()}>
@@ -237,6 +262,7 @@ export function AddGiftDialog(props: {
                 kind={props.kind}
                 title={props.title}
                 hint={props.hint}
+                existing={props.existing}
                 onDone={props.onClose}
               />
             )}

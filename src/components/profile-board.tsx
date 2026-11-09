@@ -9,7 +9,9 @@ import {
   PointerSensor,
   TouchSensor,
   closestCorners,
+  pointerWithin,
   useDroppable,
+  type CollisionDetection,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -26,6 +28,12 @@ import { GiftVisual, statusOf } from "./gift-ui";
 import { AddGiftDialog } from "./gift-form";
 import { IconComment, IconDots, IconGrip, IconHidden, IconMove, IconPlus } from "./icons";
 import { useAction } from "./toaster";
+
+/** Un onglet de famille sous le pointeur gagne toujours ; sinon, la cible la plus proche. */
+const collision: CollisionDetection = (args) => {
+  const tab = pointerWithin(args).find((c) => String(c.id).startsWith("tab:"));
+  return tab ? [tab] : closestCorners(args);
+};
 
 export type Column = { family: { id: string; name: string; slug: string }; gifts: VisibleGift[] };
 
@@ -64,7 +72,34 @@ export function ProfileBoard({ person, isSelf, columns }: Props) {
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
-  const colOf = (id: string) => cols.find((c) => c.family.id === id || c.gifts.some((g) => g.id === id))?.family.id ?? null;
+  const colOf = (raw: string) => {
+    const id = raw.startsWith("tab:") ? raw.slice(4) : raw;
+    return cols.find((c) => c.family.id === id || c.gifts.some((g) => g.id === id))?.family.id ?? null;
+  };
+
+  // Affichage : colonnes ou onglets (toujours des onglets sur petit écran)
+  const [layout, setLayout] = useState<"cols" | "tabs">("cols");
+  const [narrow, setNarrow] = useState(false);
+  const [tab, setTab] = useState(columns[0]?.family.id ?? "");
+  useEffect(() => {
+    try {
+      const v = localStorage.getItem("hl-profil-layout");
+      if (v === "tabs" || v === "cols") setLayout(v);
+    } catch {}
+    const mq = window.matchMedia("(max-width: 760px)");
+    const on = () => setNarrow(mq.matches);
+    on();
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
+  const pickLayout = (v: "cols" | "tabs") => {
+    setLayout(v);
+    try {
+      localStorage.setItem("hl-profil-layout", v);
+    } catch {}
+  };
+  const tabs = narrow || layout === "tabs";
+  const current = cols.find((c) => c.family.id === tab) ?? cols[0];
   const active = activeId ? cols.flatMap((c) => c.gifts).find((g) => g.id === activeId) ?? null : null;
 
   function onStart(e: DragStartEvent) {
@@ -136,12 +171,51 @@ export function ProfileBoard({ person, isSelf, columns }: Props) {
           Sur vos propres souhaits, réservations et commentaires restent cachés.
         </p>
       )}
-      <p className="m-0 flex items-center gap-2 text-sm text-gris">
+      <p className="m-0 hidden items-center gap-2 text-sm text-gris sm:flex">
         <IconMove size={18} />
         Glissez une carte vers une autre famille pour l&apos;y déplacer (maintenez Alt / Option pour la copier), ou dans la même colonne pour changer l&apos;ordre.
       </p>
 
-      <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={onStart} onDragOver={onOver} onDragEnd={onEnd} onDragCancel={() => { setActiveId(null); setOverCol(null); }}>
+      {!narrow && cols.length > 1 && (
+        <div className="seg self-start" role="group" aria-label="Affichage des familles">
+          <button type="button" aria-pressed={!tabs} onClick={() => pickLayout("cols")}>Colonnes</button>
+          <button type="button" aria-pressed={tabs} onClick={() => pickLayout("tabs")}>Onglets</button>
+        </div>
+      )}
+      <DndContext sensors={sensors} collisionDetection={collision} onDragStart={onStart} onDragOver={onOver} onDragEnd={onEnd} onDragCancel={() => { setActiveId(null); setOverCol(null); }}>
+        {tabs ? (
+          <div className="flex flex-col gap-0">
+            <div role="tablist" aria-label="Familles" className="flex gap-1.5 overflow-x-auto px-1" style={{ scrollbarWidth: "thin" }}>
+              {cols.map((c) => (
+                <FamilyTab
+                  key={c.family.id}
+                  col={c}
+                  selected={c.family.id === current.family.id}
+                  dropTarget={Boolean(activeId) && overCol === c.family.id && colOf(activeId!) !== c.family.id}
+                  copyMode={copyMode}
+                  onSelect={() => setTab(c.family.id)}
+                />
+              ))}
+            </div>
+            <div role="tabpanel" aria-label={current.family.name} style={{ marginTop: -2 }}>
+              <FamilyColumn
+                key={current.family.id}
+                col={current}
+                others={cols.filter((o) => o.family.id !== current.family.id).map((o) => o.family)}
+                highlight={false}
+                copyMode={copyMode}
+                person={person}
+                isSelf={isSelf}
+                adding={adding === current.family.id}
+                setAdding={(v) => setAdding(v ? current.family.id : null)}
+                inTabs
+              />
+            </div>
+            {cols.length > 1 && (
+              <p className="m-0 mt-2 text-[13px] text-gris">Astuce : faites glisser une carte sur l&apos;onglet d&apos;une autre famille pour l&apos;y déplacer.</p>
+            )}
+          </div>
+        ) : (
         <div className="grid items-start gap-5" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(min(340px,100%),1fr))" }}>
           {cols.map((c) => (
             <FamilyColumn
@@ -157,6 +231,7 @@ export function ProfileBoard({ person, isSelf, columns }: Props) {
             />
           ))}
         </div>
+        )}
         <DragOverlay>{active ? <ItemBody gift={active} isSelf={isSelf} overlay /> : null}</DragOverlay>
       </DndContext>
     </>
@@ -172,7 +247,9 @@ function FamilyColumn({
   isSelf,
   adding,
   setAdding,
+  inTabs,
 }: {
+  inTabs?: boolean;
   col: Column;
   others: Column["family"][];
   highlight: boolean;
@@ -184,8 +261,8 @@ function FamilyColumn({
 }) {
   const { setNodeRef } = useDroppable({ id: col.family.id });
   return (
-    <section ref={setNodeRef} className={`col${highlight ? " over" : ""}`} aria-label={col.family.name}>
-      <div className="flex flex-wrap items-baseline justify-between gap-2.5 px-1 pb-2" style={{ borderBottom: "2px dotted #D9A93E" }}>
+    <section ref={setNodeRef} className={`col${highlight ? " over" : ""}`} aria-label={col.family.name} style={inTabs ? { borderTopLeftRadius: 0, borderTop: "3px solid #B3202E" } : undefined}>
+      <div className={`flex flex-wrap items-baseline justify-between gap-2.5 px-1 pb-2${inTabs ? " hidden" : ""}`} style={{ borderBottom: "2px dotted #D9A93E" }}>
         <h2 className="font-display m-0 text-[26px] font-bold italic">{col.family.name}</h2>
         <span className="text-[13px] text-gris">
           {col.gifts.length} souhait{col.gifts.length > 1 ? "s" : ""} · <Link href={`/f/${col.family.slug}`}>ouvrir</Link>
@@ -220,6 +297,48 @@ function FamilyColumn({
           <IconPlus /> Ajouter un souhait
         </button>
     </section>
+  );
+}
+
+function FamilyTab({
+  col,
+  selected,
+  dropTarget,
+  copyMode,
+  onSelect,
+}: {
+  col: Column;
+  selected: boolean;
+  dropTarget: boolean;
+  copyMode: boolean;
+  onSelect: () => void;
+}) {
+  const { setNodeRef } = useDroppable({ id: `tab:${col.family.id}` });
+  return (
+    <button
+      ref={setNodeRef}
+      role="tab"
+      type="button"
+      aria-selected={selected}
+      onClick={onSelect}
+      className="flex min-h-12 flex-none cursor-pointer items-center gap-2 rounded-t-2xl px-4 font-semibold"
+      style={{
+        border: dropTarget ? "2px dashed #B3202E" : "1px solid #E3D6BA",
+        borderBottom: selected ? "3px solid #FFFDF7" : undefined,
+        background: dropTarget ? "#FFF4E0" : selected ? "#FFFDF7" : "#F2EADA",
+        color: selected ? "#1F3A2C" : "#6B6553",
+        position: "relative",
+        zIndex: selected ? 1 : 0,
+        fontFamily: selected ? "var(--font-display)" : undefined,
+        fontStyle: selected ? "italic" : undefined,
+        fontSize: selected ? 19 : 15,
+      }}
+    >
+      {dropTarget ? (copyMode ? `Copier dans ${col.family.name}` : `Déplacer vers ${col.family.name}`) : col.family.name}
+      <span className="rounded-full px-2 py-0.5 text-xs not-italic" style={{ background: selected ? "#F6E7C1" : "#E3D6BA", color: "#5C4214", fontFamily: "var(--font-sans)" }}>
+        {col.gifts.length}
+      </span>
+    </button>
   );
 }
 

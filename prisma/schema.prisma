@@ -20,6 +20,8 @@ model User {
   /// adresse e-mail facultative, utilisée seulement une fois confirmée
   email           String?   @unique
   emailVerifiedAt DateTime?
+  /// rappel par e-mail quelques jours avant l'événement
+  emailReminders  Boolean   @default(true)
   /// compte administré « en procuration » par un autre utilisateur
   managedById  String?
   managedBy    User?    @relation("Managed", fields: [managedById], references: [id], onDelete: Cascade)
@@ -36,6 +38,8 @@ model User {
   resetTokens    PasswordResetToken[]
   notifications  Notification[]
   emailCodes     EmailCode[]
+  santaGives     SecretSantaAssignment[] @relation("SantaGiver")
+  santaReceives  SecretSantaAssignment[] @relation("SantaReceiver")
 }
 
 model Session {
@@ -56,9 +60,12 @@ model Family {
   createdById String
   createdBy   User         @relation("FamilyCreator", fields: [createdById], references: [id])
   eventDate   DateTime
+  /// date (AAAA-MM-JJ) de l'événement pour lequel le rappel J-7 est parti
+  reminderSentFor String?
   createdAt   DateTime     @default(now())
   memberships Membership[]
   gifts       Gift[]
+  secretSantas SecretSanta[]
 }
 
 model Membership {
@@ -68,6 +75,9 @@ model Membership {
   /// ADMIN | MEMBRE
   role     String   @default("MEMBRE")
   joinedAt DateTime @default(now())
+  /// visites de la page famille : le badge « Nouveau » compare à la visite précédente
+  lastSeenAt DateTime?
+  prevSeenAt DateTime?
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   family   Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
 
@@ -100,6 +110,8 @@ model Gift {
   contentUpdatedAt DateTime  @default(now())
   archivedAt       DateTime?
   archiveYear      Int?
+  /// suppression annulable quelques secondes (« Annuler »)
+  deletedAt        DateTime?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
@@ -114,6 +126,8 @@ model GiftParticipant {
   giftId    String
   userId    String
   createdAt DateTime @default(now())
+  /// statut d'achat, visible seulement par ce participant : A_ACHETER | ACHETE | EMBALLE
+  status    String   @default("A_ACHETER")
   gift      Gift     @relation(fields: [giftId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -171,4 +185,28 @@ model EmailCode {
 
   @@index([email, purpose])
   @@index([userId, purpose])
+}
+
+/// Tirage au sort « qui offre à qui » dans une famille
+model SecretSanta {
+  id          String                  @id @default(cuid())
+  familyId    String
+  family      Family                  @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  createdById String
+  budget      String?
+  createdAt   DateTime                @default(now())
+  assignments SecretSantaAssignment[]
+
+  @@index([familyId])
+}
+
+model SecretSantaAssignment {
+  santaId    String
+  giverId    String
+  receiverId String
+  santa      SecretSanta @relation(fields: [santaId], references: [id], onDelete: Cascade)
+  giver      User        @relation("SantaGiver", fields: [giverId], references: [id], onDelete: Cascade)
+  receiver   User        @relation("SantaReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@id([santaId, giverId])
 }

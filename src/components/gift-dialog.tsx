@@ -9,7 +9,7 @@ import { GiftVisual, SourceBadge, statusOf } from "./gift-ui";
 import { GiftForm } from "./gift-form";
 import { IconClose, IconComment, IconExternal, IconHidden } from "./icons";
 import { toast, useAction } from "./toaster";
-import { addComment, deleteComment, deleteGift, joinGroup, leaveGift, openToGroup, takeGift } from "@/app/actions/gifts";
+import { addComment, deleteComment, deleteGift, restoreGift, setPurchaseStatus, joinGroup, leaveGift, openToGroup, takeGift } from "@/app/actions/gifts";
 
 export function GiftDialog({
   gift,
@@ -109,8 +109,8 @@ export function GiftDialog({
                         <span className="text-sm font-semibold">Personne ne s&apos;en occupe encore.</span>
                         {gift.can.take && (
                           <div className="flex flex-wrap gap-2.5">
-                            <button className="btn b-go" disabled={pending} onClick={() => run(() => takeGift(gift.id, "SEUL"), "Réservé !")}>Je le réserve</button>
-                            <button className="btn b-gold" disabled={pending} onClick={() => run(() => takeGift(gift.id, "A_PLUSIEURS"), "Cadeau à plusieurs lancé.")}>Lancer un cadeau à plusieurs</button>
+                            <button className="btn b-go" disabled={pending} onClick={() => run(() => takeGift(gift.id, "SEUL"), "Réservé ! C'est dans votre liste de courses.", undefined, { run: () => leaveGift(gift.id) })}>Je le réserve</button>
+                            <button className="btn b-gold" disabled={pending} onClick={() => run(() => takeGift(gift.id, "A_PLUSIEURS"), "Cadeau à plusieurs lancé.", undefined, { run: () => leaveGift(gift.id) })}>Lancer un cadeau à plusieurs</button>
                           </div>
                         )}
                       </>
@@ -123,7 +123,7 @@ export function GiftDialog({
                         <span className="text-sm font-semibold text-[#14492F]">Vous l&apos;offrez.</span>
                         <div className="flex flex-wrap gap-2.5">
                           <button className="btn b-gold" disabled={pending} onClick={() => run(() => openToGroup(gift.id), "D'autres peuvent maintenant participer.")}>Ouvrir à d&apos;autres participants</button>
-                          <button className="btn b-quiet" disabled={pending} onClick={() => run(() => leaveGift(gift.id), "Réservation annulée.")}>Annuler ma réservation</button>
+                          <button className="btn b-quiet" disabled={pending} onClick={() => run(() => leaveGift(gift.id), "Réservation annulée.", undefined, { run: () => takeGift(gift.id, "SEUL") })}>Annuler ma réservation</button>
                         </div>
                       </>
                     )}
@@ -140,11 +140,24 @@ export function GiftDialog({
                         </div>
                         <p className="m-0 text-[13px] text-gris">Qui paie quoi ? Mettez-vous d&apos;accord dans les commentaires.</p>
                         <div className="flex flex-wrap gap-2.5">
-                          {!st.mine && gift.can.take && <button className="btn b-gold" disabled={pending} onClick={() => run(() => joinGroup(gift.id), "Vous participez !")}>Participer</button>}
+                          {!st.mine && gift.can.take && <button className="btn b-gold" disabled={pending} onClick={() => run(() => joinGroup(gift.id), "Vous participez ! C'est dans votre liste de courses.", undefined, { run: () => leaveGift(gift.id) })}>Participer</button>}
                           {st.mine && <button className="btn b-quiet" disabled={pending} onClick={() => run(() => leaveGift(gift.id))}>Ne plus participer</button>}
                         </div>
                       </>
                     )}
+                  </div>
+                )}
+
+                {s?.myStatus && !editing && (
+                  <div className="flex flex-col gap-1.5">
+                    <span className="label" id="st-label">Où j&apos;en suis <span className="opt">(visible par vous seul)</span></span>
+                    <div className="seg self-start" role="group" aria-labelledby="st-label">
+                      {(["A_ACHETER", "ACHETE", "EMBALLE"] as const).map((v) => (
+                        <button key={v} type="button" aria-pressed={s.myStatus === v} disabled={pending} onClick={() => run(() => setPurchaseStatus(gift.id, v))}>
+                          {v === "A_ACHETER" ? "À acheter" : v === "ACHETE" ? "Acheté" : "Emballé"}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 )}
 
@@ -162,7 +175,7 @@ export function GiftDialog({
                           className="btn b-quiet"
                           disabled={pending}
                           onClick={() => {
-                            if (confirm(`Supprimer « ${gift.title} » ?`)) run(() => deleteGift(gift.id), "Supprimé.", (r) => r.ok && onClose());
+                            run(() => deleteGift(gift.id), `« ${gift.title} » supprimé.`, (r) => r.ok && onClose(), { run: () => restoreGift(gift.id) });
                           }}
                         >
                           Supprimer

@@ -181,7 +181,7 @@ type Tx = Parameters<Parameters<typeof db.$transaction>[0]>[0];
 /** Libère les réservations et participations de ces personnes sur les cadeaux de la famille. */
 async function releaseParticipations(tx: Tx, familyId: string, userIds: string[]) {
   const parts = await tx.giftParticipant.findMany({
-    where: { userId: { in: userIds }, gift: { familyId, archivedAt: null } },
+    where: { userId: { in: userIds }, gift: { familyId, archivedAt: null, deletedAt: null } },
     select: { giftId: true },
   });
   if (!parts.length) return;
@@ -217,7 +217,7 @@ export async function cleanLists(familyId: string): Promise<ActionResult> {
     const family = await db.family.findUniqueOrThrow({ where: { id: familyId } });
     const year = Number(new Intl.DateTimeFormat("fr-FR", { year: "numeric", timeZone: "Europe/Paris" }).format(family.eventDate));
     const res = await db.gift.updateMany({
-      where: { familyId, archivedAt: null, takeMode: { in: ["SEUL", "A_PLUSIEURS"] } },
+      where: { familyId, archivedAt: null, deletedAt: null, takeMode: { in: ["SEUL", "A_PLUSIEURS"] } },
       data: { archivedAt: new Date(), archiveYear: year },
     });
     revalidatePath("/", "layout");

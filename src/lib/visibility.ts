@@ -26,7 +26,7 @@ export type RawGift = {
   archivedAt: Date | null;
   createdAt: Date;
   createdBy: PersonLite;
-  participants: { userId: string; createdAt: Date; user: PersonLite }[];
+  participants: { userId: string; createdAt: Date; status?: string; user: PersonLite }[];
   comments: { id: string; authorId: string; text: string; createdAt: Date; author: PersonLite }[];
 };
 
@@ -39,7 +39,11 @@ export type GiftSecret = {
   comments: { id: string; text: string; createdAt: string; author: PersonLite; mine: boolean }[];
   /** le souhait a été modifié après ma réservation / participation */
   changedSinceMine: boolean;
+  /** mon statut d'achat (visible par moi seul) : A_ACHETER | ACHETE | EMBALLE */
+  myStatus: PurchaseStatus | null;
 };
+
+export type PurchaseStatus = "A_ACHETER" | "ACHETE" | "EMBALLE";
 
 export type VisibleGift = {
   id: string;
@@ -57,6 +61,9 @@ export type VisibleGift = {
   /** auteur d'une idée (jamais renseigné pour un souhait) */
   ideaBy: PersonLite | null;
   relation: Relation;
+  createdAt: string;
+  /** ajouté depuis ma dernière visite, par quelqu'un d'autre */
+  isNew: boolean;
   /** réservations, participants, commentaires : null pour le destinataire */
   secret: GiftSecret | null;
   can: { edit: boolean; take: boolean; comment: boolean };
@@ -90,7 +97,7 @@ export function canAddWishFor(viewer: Viewer, recipientId: string) {
   return recipientId === viewer.id || viewer.managedIds.includes(recipientId);
 }
 
-export function toVisibleGift(viewer: Viewer, g: RawGift): VisibleGift | null {
+export function toVisibleGift(viewer: Viewer, g: RawGift, since?: Date | null): VisibleGift | null {
   if (g.archivedAt) return null;
   const relation = relationTo(viewer, g.recipientId);
 
@@ -112,6 +119,8 @@ export function toVisibleGift(viewer: Viewer, g: RawGift): VisibleGift | null {
     position: g.position,
     ideaBy: g.kind === "IDEE" ? g.createdBy : null,
     relation,
+    createdAt: g.createdAt.toISOString(),
+    isNew: Boolean(since && g.createdAt > since && g.createdById !== viewer.id),
     can: {
       edit: canEditGift(viewer, g),
       take: relation !== "RECIPIENT" && canInteract(viewer, g),
@@ -132,6 +141,7 @@ export function toVisibleGift(viewer: Viewer, g: RawGift): VisibleGift | null {
         .map((p) => p.user),
       iParticipate: Boolean(mine),
       changedSinceMine: Boolean(mine && g.contentUpdatedAt > mine.createdAt),
+      myStatus: mine ? ((mine.status as PurchaseStatus | undefined) ?? "A_ACHETER") : null,
       comments: g.comments
         .slice()
         .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
@@ -146,10 +156,10 @@ export function toVisibleGift(viewer: Viewer, g: RawGift): VisibleGift | null {
   };
 }
 
-export function giftsVisibleTo(viewer: Viewer, gifts: RawGift[]): VisibleGift[] {
+export function giftsVisibleTo(viewer: Viewer, gifts: RawGift[], since?: Date | null): VisibleGift[] {
   const out: VisibleGift[] = [];
   for (const g of gifts) {
-    const v = toVisibleGift(viewer, g);
+    const v = toVisibleGift(viewer, g, since);
     if (v) out.push(v);
   }
   // Souhaits dans l'ordre choisi, puis idées.
