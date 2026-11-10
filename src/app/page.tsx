@@ -4,8 +4,8 @@ import { AuthShell, CardHero } from "@/components/festive";
 import { LoginForm } from "@/components/auth-forms";
 import { mailEnabled } from "@/lib/mail";
 
-export default async function Home({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
-  const { next } = await searchParams;
+export default async function Home({ searchParams }: { searchParams: Promise<{ next?: string; email?: string }> }) {
+  const { next, email } = await searchParams;
   const safe = safeNext(next) ?? undefined;
   if (await getCurrentUser()) redirect(safe ?? "/familles");
 
@@ -25,7 +25,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ n
           <p className="m-0 text-base leading-relaxed text-gris">
             Chacun écrit ses souhaits, les autres réservent en secret ou se mettent à plusieurs.
           </p>
-          <LoginForm mail={mailEnabled()} next={safe} signupHref={safe ? `/inscription?next=${encodeURIComponent(safe)}` : "/inscription"} />
+          <LoginForm mail={mailEnabled()} next={safe} initialLogin={email ?? ""} />
         </div>
       </div>
     </AuthShell>

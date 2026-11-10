@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
-import { personSelect, requireMember } from "@/lib/queries";
+import { personSelect, familyNicknames, withNickname, requireMember } from "@/lib/queries";
 import { FestiveHeader, HeroTitle } from "@/components/festive";
 import { Avatar } from "@/components/avatar";
 import { formatPrice } from "@/lib/format";
@@ -16,11 +16,17 @@ export default async function Archives({ params }: { params: Promise<{ slug: str
   if (!family) notFound();
   await requireMember(user.id, family.id);
 
-  const gifts = await db.gift.findMany({
+  const rawGifts = await db.gift.findMany({
     where: { familyId: family.id, archivedAt: { not: null }, deletedAt: null },
     include: { recipient: { select: personSelect }, participants: { include: { user: { select: personSelect } } } },
     orderBy: [{ archivedAt: "desc" }, { recipientId: "asc" }, { position: "asc" }],
   });
+  const names = await familyNicknames(family.id);
+  const gifts = rawGifts.map((g) => ({
+    ...g,
+    recipient: withNickname(g.recipient, names),
+    participants: g.participants.map((p) => ({ ...p, user: withNickname(p.user, names) })),
+  }));
 
   // Par année, puis par personne. Sur ses propres cadeaux, on ne montre pas qui les a offerts.
   // Une section par événement passé (« Noël 2026 », « Anniversaire de Léa 2027 »…)

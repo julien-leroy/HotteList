@@ -11,7 +11,9 @@ import { FamilySettings } from "@/components/family-settings";
 import { EventOver } from "@/components/event-over";
 import { InvitePage, JoinPage } from "@/components/invite";
 import { SantaBanner } from "@/components/santa";
+import { mailEnabled } from "@/lib/mail";
 import { ShareButton } from "@/components/share-button";
+import { FamilyNameEdit } from "@/components/family-name-edit";
 import Link from "next/link";
 import { daysUntil, isEventOver, parisDay } from "@/lib/utils";
 import { eventDay, plural } from "@/lib/format";
@@ -37,7 +39,7 @@ export default async function FamilyPage({ params, searchParams }: Props) {
   if (!family) notFound();
 
   const user = await getCurrentUser();
-  if (!user) return <InvitePage family={family} />;
+  if (!user) return <InvitePage family={family} mail={mailEnabled()} />;
 
   const me = family.memberships.find((m) => m.userId === user.id);
   if (!me) {
@@ -71,14 +73,22 @@ export default async function FamilyPage({ params, searchParams }: Props) {
   const archivedCount = await db.gift.count({ where: { familyId: family.id, archivedAt: { not: null }, deletedAt: null } });
 
   // Moi d'abord, puis mes comptes gérés, puis les autres dans l'ordre d'arrivée
+  // Pseudo de chacun dans cette famille (sinon son prénom)
+  const nick = new Map(family.memberships.filter((m) => m.nickname).map((m) => [m.userId, m.nickname!]));
+  const shown = (u: { id: string; firstName: string; lastName: string | null }) => (nick.has(u.id) ? nick.get(u.id)! : u.firstName);
   const rank = (id: string) => (id === user.id ? 0 : user.managedIds.includes(id) ? 1 : 2);
   const members = family.memberships.slice().sort((a, b) => rank(a.userId) - rank(b.userId));
   const sections: Section[] = members.map((m) => ({
-    person: { id: m.user.id, firstName: m.user.firstName, lastName: m.user.lastName, avatarColor: m.user.avatarColor },
+    person: { id: m.user.id, firstName: shown(m.user), lastName: m.nickname ? null : m.user.lastName, avatarColor: m.user.avatarColor },
+    realName: [m.user.firstName, m.user.lastName].filter(Boolean).join(" "),
+    nickname: m.nickname,
     isMe: m.userId === user.id,
     isManaged: user.managedIds.includes(m.userId),
     managerName: m.user.managedById
-      ? family.memberships.find((x) => x.userId === m.user.managedById)?.user.firstName ?? null
+      ? (() => {
+          const mgr = family.memberships.find((x) => x.userId === m.user.managedById)?.user;
+          return mgr ? shown(mgr) : null;
+        })()
       : null,
     gifts: gifts.filter((g) => g.recipientId === m.userId),
   }));
@@ -114,7 +124,9 @@ export default async function FamilyPage({ params, searchParams }: Props) {
                 {plural(family.memberships.length, "membre", "membres")} · {plural(wishCount, "souhait", "souhaits")}
               </span>
             </div>
-            <HeroTitle size={76}>{family.name}</HeroTitle>
+            <HeroTitle size={76}>
+              {isAdmin ? <FamilyNameEdit familyId={family.id} name={family.name} /> : family.name}
+            </HeroTitle>
           </div>
           <div className="flex min-w-0 flex-[0_1_440px] flex-col gap-2">
             <span className="text-sm font-medium text-[#F6D9D2]">Lien de la famille, à envoyer à tout le monde</span>
@@ -135,6 +147,7 @@ export default async function FamilyPage({ params, searchParams }: Props) {
                   id: m.user.id,
                   firstName: m.user.firstName,
                   lastName: m.user.lastName,
+                  nickname: m.nickname,
                   avatarColor: m.user.avatarColor,
                   role: m.role as "ADMIN" | "MEMBRE",
                   managed: Boolean(m.user.managedById),
@@ -143,7 +156,7 @@ export default async function FamilyPage({ params, searchParams }: Props) {
                 santa={
                   isAdmin
                     ? {
-                        candidates: family.memberships.filter((m) => !m.user.managedById).map((m) => ({ id: m.user.id, firstName: m.user.firstName, lastName: m.user.lastName, avatarColor: m.user.avatarColor })),
+                        candidates: family.memberships.filter((m) => !m.user.managedById).map((m) => ({ id: m.user.id, firstName: shown(m.user), lastName: m.nickname ? null : m.user.lastName, avatarColor: m.user.avatarColor })),
                         current: santa ? { participantIds: santa.assignments.map((a) => a.giverId), budget: santa.budget } : null,
                       }
                     : null
@@ -156,7 +169,7 @@ export default async function FamilyPage({ params, searchParams }: Props) {
 
       {myDraw && (
         <SantaBanner
-          receiver={myDraw.receiver}
+          receiver={{ ...myDraw.receiver, firstName: shown(myDraw.receiver), lastName: nick.has(myDraw.receiver.id) ? null : myDraw.receiver.lastName }}
           budget={santa?.budget ?? null}
           sinceLabel={`tiré le ${santa!.createdAt.toLocaleDateString("fr-FR", { day: "numeric", month: "long", timeZone: "Europe/Paris" })}`}
         />

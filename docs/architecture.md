@@ -71,7 +71,8 @@ Supprimés : Docker, PostgreSQL, sharp et stockage d'images, Better Auth.
 
 ## 5. Comptes
 
-- **Inscription ouverte** : prénom, nom facultatif, identifiant (e-mail ou pseudo) et mot de passe de 8 caractères minimum, sans vérification d'adresse.
+- **Inscription ouverte, validée par code** : prénom, nom facultatif, adresse e-mail et mot de passe de 8 caractères minimum. Un code à 6 chiffres (10 min, 5 essais) est envoyé à l'adresse ; le compte n'existe vraiment (identifiant = e-mail, adresse vérifiée) qu'après saisie du code. Ensuite on se connecte avec e-mail + mot de passe ; le code ne resert que pour « Mot de passe oublié » ou « Recevoir un code par e-mail ». Sans SMTP configuré, on revient à l'ancienne inscription (identifiant e-mail ou pseudo, sans vérification).
+- **Adresse reprise d'un écran à l'autre** : l'adresse tapée dans Connexion ou Inscription est transmise (`?email=`) aux pages Code par e-mail, Mot de passe oublié et Inscription.
 - **Rejoindre une famille** : uniquement via son lien. Un visiteur qui s'inscrit depuis ce lien rejoint la famille directement. S'il se connecte, il confirme d'un clic, en cochant au passage ses comptes gérés à ajouter.
 - **Adresse e-mail (facultative)** : ajoutée dans « Mon profil → Mon compte » et enregistrée **seulement une fois confirmée** par un code. Tant qu'elle n'est pas confirmée, elle n'est pas réservée : personne ne peut bloquer l'adresse de quelqu'un d'autre. Une adresse confirmée sert aussi d'identifiant de connexion.
 - **Codes par e-mail** : 6 chiffres, valables 10 minutes, 5 essais, à usage unique (un nouveau code annule le précédent), seule l'empreinte HMAC est stockée. Limites : 3 codes / 15 min par adresse, 10 / h par IP. Pour la connexion par code et le mot de passe oublié, la réponse est toujours la même, que l'adresse ait un compte ou non.
@@ -121,7 +122,7 @@ Les noms dans le code sont en anglais (`prisma/schema.prisma`).
 User           id, firstName, lastName?, login? (unique, vide pour un compte géré), passwordHash?, avatarColor, managedById?, email? (unique), emailVerifiedAt?, emailReminders, emailMentions
 Session        id (empreinte du jeton), userId, expiresAt
 Family         id, name, slug unique avec suffixe aléatoire (ex. famille-leroy-7kq2), createdById, eventName (défaut « Noël »), eventDate, reminderSentFor?
-Membership     userId, familyId, role (ADMIN | MEMBRE), joinedAt, lastSeenAt?, prevSeenAt?   — unique (userId, familyId)
+Membership     userId, familyId, role (ADMIN | MEMBRE), nickname?, joinedAt, lastSeenAt?, prevSeenAt?   — unique (userId, familyId)
 Gift           id, familyId, recipientId, createdById, kind (SOUHAIT | IDEE),
                title, description?, url?, price?, imageUrl?, siteOrigin?, favorite, position,
                takeMode (AUCUN | SEUL | A_PLUSIEURS), contentUpdatedAt, archivedAt?, archiveYear?, archiveEvent?, deletedAt?
@@ -153,7 +154,8 @@ Droits d'écriture vérifiés côté serveur, dans chaque action :
 - Retirer quelqu'un de la famille (ex. un doublon) : **admin** de la famille. On ne peut pas retirer le dernier admin. La personne retirée garde son compte ; ses comptes gérés partent avec elle et ses réservations dans la famille sont libérées (comme quand on quitte la famille).
 - Statut d'achat : seulement le participant lui-même, et lui seul le voit.
 - Tirage au sort (lancer, refaire, annuler) : admin. Chaque participant ne reçoit que son propre tirage.
-- Nettoyer les listes, changer le titre ou la date de l'événement, renommer la famille, régénérer le lien, nommer ou retirer un admin : admin de la famille. Une famille garde toujours au moins un admin.
+- **Pseudo dans la famille** : chaque membre peut changer le nom sous lequel n'importe quel membre apparaît dans cette famille (clic sur le titre de sa liste, ex. « Dominique » → « Maman ») ; vide = retour au prénom. Le pseudo sert partout dans la famille : titres, puces, réservations, commentaires, @mentions, notifications, tirage au sort, archives. Le vrai prénom reste affiché en petit.
+- Nettoyer les listes, changer le titre ou la date de l'événement, renommer la famille (aussi d'un clic sur le nom en haut de la page), régénérer le lien, nommer ou retirer un admin : admin de la famille. Une famille garde toujours au moins un admin.
 
 ## 9. Profil : déplacer ou copier un souhait
 

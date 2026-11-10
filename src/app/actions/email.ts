@@ -57,10 +57,16 @@ export async function confirmEmail(code: string): Promise<ActionResult> {
     if (!check.ok) throw new Error(check.error);
     const taken = await db.user.findFirst({ where: { email: check.email, NOT: { id: user.id } } });
     if (taken?.emailVerifiedAt) throw new Error("Cette adresse est déjà reliée à un autre compte.");
+    if (await db.user.findFirst({ where: { login: check.email, NOT: { id: user.id } } })) {
+      throw new Error("Cette adresse est déjà l'identifiant d'un autre compte.");
+    }
+    // Si l'identifiant de connexion était une adresse e-mail, il suit la nouvelle adresse.
+    const me = await db.user.findUniqueOrThrow({ where: { id: user.id }, select: { login: true } });
+    const newLogin = me.login && me.login.includes("@") ? check.email : undefined;
     await db.$transaction([
       // une adresse jamais confirmée par quelqu'un d'autre ne bloque pas le vrai propriétaire
       ...(taken ? [db.user.update({ where: { id: taken.id }, data: { email: null, emailVerifiedAt: null } })] : []),
-      db.user.update({ where: { id: user.id }, data: { email: check.email, emailVerifiedAt: new Date() } }),
+      db.user.update({ where: { id: user.id }, data: { email: check.email, emailVerifiedAt: new Date(), ...(newLogin ? { login: newLogin } : {}) } }),
     ]);
     revalidatePath("/", "layout");
     return { ok: true };

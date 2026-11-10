@@ -36,9 +36,9 @@ export function CodeInput({ value, onChange, id = "code" }: { value: string; onC
 }
 
 /** Connexion par code (LOGIN) ou mot de passe oublié (RESET), en deux étapes. */
-export function CodeFlow({ mode, next }: { mode: "LOGIN" | "RESET"; next?: string }) {
+export function CodeFlow({ mode, next, initialEmail = "" }: { mode: "LOGIN" | "RESET"; next?: string; initialEmail?: string }) {
   const [step, setStep] = useState<"email" | "code">("email");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(initialEmail);
   const [code, setCode] = useState("");
   const [pw, setPw] = useState("");
   const [pw2, setPw2] = useState("");
@@ -73,15 +73,15 @@ export function CodeFlow({ mode, next }: { mode: "LOGIN" | "RESET"; next?: strin
       <form onSubmit={send} className="flex flex-col gap-[18px]">
         <div className="flex flex-col gap-1.5">
           <label className="label" htmlFor="cf-email">Votre adresse e-mail</label>
-          <input className="input" id="cf-email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="vous@exemple.fr" required autoFocus />
-          <span className="text-xs text-gris-clair">Celle que vous avez confirmée dans « Mon profil ».</span>
+          <input className="input" id="cf-email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="vous@exemple.fr" required autoFocus={!initialEmail} />
+          <span className="text-xs text-gris-clair">L&apos;adresse de votre compte.</span>
         </div>
         {error && <Alert text={error} />}
-        <button className="btn b-red w-full" disabled={pending} style={{ minHeight: 48, fontSize: 15 }}>
+        <button className="btn b-red w-full" disabled={pending} autoFocus={Boolean(initialEmail)} style={{ minHeight: 48, fontSize: 15 }}>
           {pending ? "Envoi…" : "Recevoir un code"}
         </button>
         <p className="m-0 text-center text-sm text-gris">
-          <Link href={next ? `/?next=${encodeURIComponent(next)}` : "/"}>Retour à la connexion</Link>
+          <Link href={`/?${new URLSearchParams({ ...(next ? { next } : {}), ...(email ? { email } : {}) }).toString()}`}>Retour à la connexion</Link>
         </p>
       </form>
     );

@@ -18,7 +18,7 @@ import { SantaSettings } from "./santa";
 import { IconClose, IconSettings } from "./icons";
 import { confirmDialog, useAction } from "./toaster";
 
-type Member = AvatarPerson & { id: string; role: "ADMIN" | "MEMBRE"; managed: boolean };
+type Member = AvatarPerson & { id: string; role: "ADMIN" | "MEMBRE"; managed: boolean; nickname: string | null };
 
 export function FamilySettings({
   family,
@@ -120,9 +120,12 @@ export function FamilySettings({
                     <Avatar person={m} size={36} />
                     <span className="flex min-w-0 flex-1 flex-col">
                       <span className="font-semibold">
-                        {m.firstName} {m.lastName ?? ""} {m.id === meId && <span className="text-gris-clair">(vous)</span>}
+                        {m.nickname ?? m.firstName} {m.id === meId && <span className="text-gris-clair">(vous)</span>}
                       </span>
-                      <span className="text-xs text-gris-clair">{m.managed ? "Compte géré" : m.role === "ADMIN" ? "Admin" : "Membre"}</span>
+                      <span className="text-xs text-gris-clair">
+                        {m.nickname ? `${m.firstName} ${m.lastName ?? ""}`.trim() + " · " : m.lastName ? `${m.firstName} ${m.lastName} · ` : ""}
+                        {m.managed ? "Compte géré" : m.role === "ADMIN" ? "Admin" : "Membre"}
+                      </span>
                     </span>
                     {m.id !== meId && (
                       <span className="flex flex-wrap gap-1.5">
@@ -142,7 +145,7 @@ export function FamilySettings({
                               disabled={pending}
                               onClick={() =>
                                 run(() => createResetLink(family.id, m.id), undefined, (r) => {
-                                  if (r.ok && r.url) setResetUrl({ who: m.firstName, url: r.url });
+                                  if (r.ok && r.url) setResetUrl({ who: m.nickname ?? m.firstName, url: r.url });
                                 })
                               }
                             >
@@ -154,7 +157,7 @@ export function FamilySettings({
                           className="btn b-quiet b-sm"
                           disabled={pending}
                           onClick={() => {
-                            void confirmDialog({ title: `Retirer ${m.firstName} de la famille ?`, message: "Ses réservations dans cette famille seront libérées. Son compte n'est pas supprimé : on pourra l'inviter de nouveau avec le lien.", confirmLabel: "Retirer", danger: true }).then((ok) => ok && run(() => removeMember(family.id, m.id), "Membre retiré."));
+                            void confirmDialog({ title: `Retirer ${m.nickname ?? m.firstName} de la famille ?`, message: "Ses réservations dans cette famille seront libérées. Son compte n'est pas supprimé : on pourra l'inviter de nouveau avec le lien.", confirmLabel: "Retirer", danger: true }).then((ok) => ok && run(() => removeMember(family.id, m.id), "Membre retiré."));
                           }}
                         >
                           Retirer

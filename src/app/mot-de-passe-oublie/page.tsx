@@ -7,7 +7,8 @@ import { CodeFlow } from "@/components/code-flow";
 
 export const metadata = { title: "Mot de passe oublié" };
 
-export default async function MotDePasseOublie() {
+export default async function MotDePasseOublie({ searchParams }: { searchParams: Promise<{ email?: string }> }) {
+  const { email } = await searchParams;
   if (await getCurrentUser()) redirect("/profil");
   return (
     <AuthShell>
@@ -16,7 +17,7 @@ export default async function MotDePasseOublie() {
         {mailEnabled() ? (
           <>
             <p className="m-0 leading-relaxed text-gris">Recevez un code par e-mail pour choisir un nouveau mot de passe.</p>
-            <CodeFlow mode="RESET" />
+            <CodeFlow mode="RESET" initialEmail={email ?? ""} />
           </>
         ) : null}
         <p className="m-0 border-t-2 border-dotted border-or pt-4 text-[13px] leading-normal text-gris-clair">

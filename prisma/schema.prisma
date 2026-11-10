@@ -82,6 +82,8 @@ model Membership {
   /// visites de la page famille : le badge « Nouveau » compare à la visite précédente
   lastSeenAt DateTime?
   prevSeenAt DateTime?
+  /// nom affiché dans cette famille (« Maman », « Papi Michou »…), sinon le prénom
+  nickname   String?
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   family   Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
 

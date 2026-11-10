@@ -22,6 +22,7 @@ function Svg({ size = 16, children, ...rest }: P & { children: React.ReactNode }
 }
 
 export const IconPlus = (p: P) => <Svg strokeWidth={2.4} {...p}><path d="M12 5v14M5 12h14" /></Svg>;
+export const IconEdit = (p: P) => <Svg strokeWidth={2} {...p}><path d="M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4" /></Svg>;
 export const IconClose = (p: P) => <Svg strokeWidth={2.4} {...p}><path d="M6 6l12 12M18 6L6 18" /></Svg>;
 export const IconLink = (p: P) => <Svg {...p}><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" /></Svg>;
 export const IconBookmark = (p: P) => <Svg {...p}><path d="M6 3h12v18l-6-4-6 4z" /></Svg>;

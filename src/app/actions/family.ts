@@ -108,6 +108,21 @@ export async function setManagedInFamily(familyId: string, managedId: string, in
   }
 }
 
+/** Pseudo d'un membre dans cette famille. Tout membre peut le changer ; vide = retour au prénom. */
+export async function setNickname(familyId: string, userId: string, nickname: string): Promise<ActionResult> {
+  try {
+    const user = await requireUser();
+    await requireMember(user.id, familyId);
+    await requireMember(userId, familyId);
+    const n = z.string().trim().max(40, "40 caractères maximum.").parse(nickname);
+    await db.membership.update({ where: { userId_familyId: { userId, familyId } }, data: { nickname: n || null } });
+    revalidatePath("/", "layout");
+    return { ok: true };
+  } catch (e) {
+    return fail(e instanceof z.ZodError ? new Error(e.issues[0].message) : e);
+  }
+}
+
 // ---------- Admin ----------
 
 export async function renameFamily(familyId: string, name: string): Promise<ActionResult> {

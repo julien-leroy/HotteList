@@ -34,12 +34,35 @@ export async function requireAdmin(userId: string, familyId: string) {
 }
 
 /** Unique point d'entrée pour lire les cadeaux d'une famille. */
+/** Pseudos d'une famille : idUtilisateur → nom affiché dans cette famille. */
+export async function familyNicknames(familyId: string) {
+  const rows = await db.membership.findMany({ where: { familyId, nickname: { not: null } }, select: { userId: true, nickname: true } });
+  return new Map(rows.map((r) => [r.userId, r.nickname!]));
+}
+
+/** Remplace le prénom par le pseudo de la famille (et retire le nom, pour des initiales cohérentes). */
+export function withNickname<T extends { id: string; firstName: string; lastName: string | null }>(p: T, names: Map<string, string>): T {
+  const n = names.get(p.id);
+  return n ? { ...p, firstName: n, lastName: null } : p;
+}
+
 export async function loadVisibleGifts(user: CurrentUser, familyId: string, recipientIds?: string[], since?: Date | null) {
-  const raw = await db.gift.findMany({
-    where: { familyId, archivedAt: null, deletedAt: null, ...(recipientIds ? { recipientId: { in: recipientIds } } : {}) },
-    include: giftInclude,
-  });
-  return giftsVisibleTo(viewerOf(user), raw, since);
+  const [raw, names] = await Promise.all([
+    db.gift.findMany({
+      where: { familyId, archivedAt: null, deletedAt: null, ...(recipientIds ? { recipientId: { in: recipientIds } } : {}) },
+      include: giftInclude,
+    }),
+    familyNicknames(familyId),
+  ]);
+  const named = names.size
+    ? raw.map((g) => ({
+        ...g,
+        createdBy: withNickname(g.createdBy, names),
+        participants: g.participants.map((p) => ({ ...p, user: withNickname(p.user, names) })),
+        comments: g.comments.map((c) => ({ ...c, author: withNickname(c.author, names) })),
+      }))
+    : raw;
+  return giftsVisibleTo(viewerOf(user), named, since);
 }
 
 /** Charge un cadeau pour une action d'écriture et vérifie l'appartenance à la famille. */

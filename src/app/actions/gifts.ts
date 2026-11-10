@@ -157,12 +157,22 @@ export async function restoreGift(giftId: string): Promise<ActionResult> {
 }
 
 /** Contexte d'un cadeau pour rédiger une notification : destinataire et lien. */
-async function giftContext(giftId: string) {
+async function giftContext(giftId: string, actor: { id: string; firstName: string }) {
   const g = await db.gift.findUniqueOrThrow({
     where: { id: giftId },
     include: { recipient: { select: { firstName: true } }, family: { select: { slug: true } }, comments: { select: { authorId: true } } },
   });
-  return { title: g.title, recipientId: g.recipientId, who: g.recipient.firstName, link: `/f/${g.family.slug}?cadeau=${g.id}`, commenters: g.comments.map((c) => c.authorId) };
+  // noms tels qu'on les voit dans cette famille (pseudos)
+  const nicks = await db.membership.findMany({ where: { familyId: g.familyId, userId: { in: [g.recipientId, actor.id] } }, select: { userId: true, nickname: true } });
+  const nickOf = (id: string) => nicks.find((n) => n.userId === id)?.nickname;
+  return {
+    title: g.title,
+    recipientId: g.recipientId,
+    who: nickOf(g.recipientId) ?? g.recipient.firstName,
+    me: nickOf(actor.id) ?? actor.firstName,
+    link: `/f/${g.family.slug}?cadeau=${g.id}`,
+    commenters: g.comments.map((c) => c.authorId),
+  };
 }
 
 /** Mon statut d'achat sur un cadeau que j'offre (visible par moi seul). */
@@ -218,10 +228,10 @@ export async function joinGroup(giftId: string): Promise<ActionResult> {
       update: {},
     });
     if (!already) {
-      const ctx = await giftContext(giftId);
+      const ctx = await giftContext(giftId, user);
       await notify(
         gift.participants.map((p) => p.userId).filter((id) => id !== user.id),
-        `${user.firstName} participe aussi à « ${ctx.title} » pour ${ctx.who}.`,
+        `${ctx.me} participe aussi à « ${ctx.title} » pour ${ctx.who}.`,
         ctx.link,
       );
     }
@@ -271,7 +281,8 @@ async function mentionablesFor(familyId: string, recipientId: string) {
     include: { user: { select: { id: true, firstName: true, lastName: true } } },
     orderBy: { joinedAt: "asc" },
   });
-  return mentionLabels(members.map((m) => m.user));
+  // mêmes libellés que dans la page : pseudo de la famille s'il y en a un
+  return mentionLabels(members.map((m) => (m.nickname ? { ...m.user, firstName: m.nickname, lastName: null } : m.user)));
 }
 
 export async function addComment(giftId: string, text: string): Promise<ActionResult> {
@@ -283,7 +294,7 @@ export async function addComment(giftId: string, text: string): Promise<ActionRe
       where: { id: giftId },
       include: { participants: true, family: { select: { name: true, slug: true } } },
     });
-    const ctx = await giftContext(giftId);
+    const ctx = await giftContext(giftId, user);
 
     // Mentions recalculées ici, avec la liste autorisée : on ne fait jamais confiance au navigateur.
     const allowed = await mentionablesFor(gift.familyId, gift.recipientId);
@@ -294,7 +305,7 @@ export async function addComment(giftId: string, text: string): Promise<ActionRe
 
     const mentioned = mentionIds(stored).filter((id) => id !== user.id && id !== gift.recipientId);
     if (mentioned.length) {
-      await notify(mentioned, `${user.firstName} vous a mentionné sur « ${ctx.title} » pour ${ctx.who} : « ${short} »`, ctx.link);
+      await notify(mentioned, `${ctx.me} vous a mentionné sur « ${ctx.title} » pour ${ctx.who} : « ${short} »`, ctx.link);
       if (mailEnabled() && hit(`mention-mail:${user.id}`, 30, 60 * 60_000)) {
         const people = await db.user.findMany({
           where: { id: { in: mentioned }, emailVerifiedAt: { not: null }, emailMentions: true, managedById: null },
@@ -305,7 +316,7 @@ export async function addComment(giftId: string, text: string): Promise<ActionRe
           people.map((p) =>
             sendMentionEmail(p.email!, {
               firstName: p.firstName,
-              author: user.firstName,
+              author: ctx.me,
               comment: plain,
               meLabel: allowed.find((a) => a.id === p.id)?.label ?? p.firstName,
               labels: allowed.filter((a) => mentionIds(stored).includes(a.id)).map((a) => a.label),
@@ -325,7 +336,7 @@ export async function addComment(giftId: string, text: string): Promise<ActionRe
     to.delete(user.id);
     to.delete(ctx.recipientId);
     for (const id of mentioned) to.delete(id);
-    await notify([...to], `${user.firstName} a commenté « ${ctx.title} » pour ${ctx.who} : « ${short} »`, ctx.link);
+    await notify([...to], `${ctx.me} a commenté « ${ctx.title} » pour ${ctx.who} : « ${short} »`, ctx.link);
     return done();
   } catch (e) {
     return fail(e);

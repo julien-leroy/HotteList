@@ -2,11 +2,12 @@ import { redirect } from "next/navigation";
 import { getCurrentUser, safeNext } from "@/lib/auth";
 import { AuthShell, CardHero } from "@/components/festive";
 import { SignupForm } from "@/components/auth-forms";
+import { mailEnabled } from "@/lib/mail";
 
 export const metadata = { title: "Créer un compte" };
 
-export default async function Inscription({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
-  const { next } = await searchParams;
+export default async function Inscription({ searchParams }: { searchParams: Promise<{ next?: string; email?: string }> }) {
+  const { next, email } = await searchParams;
   const safe = safeNext(next) ?? undefined;
   if (await getCurrentUser()) redirect(safe ?? "/familles");
   return (
@@ -19,7 +20,7 @@ export default async function Inscription({ searchParams }: { searchParams: Prom
           <p className="m-0 text-[15px] text-[#F6D9D2]">Créez votre compte, puis votre famille ou rejoignez-en une.</p>
         </CardHero>
         <div className="px-8 pt-7 pb-8">
-          <SignupForm next={safe} loginHref={safe ? `/?next=${encodeURIComponent(safe)}` : "/"} />
+          <SignupForm next={safe} mail={mailEnabled()} initialEmail={email ?? ""} />
         </div>
       </div>
     </AuthShell>

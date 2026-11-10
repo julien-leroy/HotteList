@@ -14,6 +14,8 @@ import { priceValue } from "./price";
 import { mentionLabels } from "@/lib/mentions";
 import type { MentionPerson } from "./comment-box";
 import { joinGroup, leaveGift, takeGift } from "@/app/actions/gifts";
+import { setNickname } from "@/app/actions/family";
+import { InlineEdit } from "./inline-edit";
 
 type Sort = "ordre" | "coeur" | "prix-asc" | "prix-desc";
 type Budget = "tous" | "20" | "50" | "100" | "plus";
@@ -43,6 +45,9 @@ export type Section = {
   isMe: boolean;
   isManaged: boolean;
   managerName: string | null;
+  /** Prénom + nom réels (le titre affiche le pseudo de la famille s'il y en a un). */
+  realName: string;
+  nickname: string | null;
   gifts: VisibleGift[];
 };
 
@@ -164,8 +169,44 @@ export function FamilyBoard({ familyId, familySlug, viewerId, sections, openGift
                 <div className="flex items-center gap-3.5">
                   <Avatar person={s.person} size={56} style={{ border: "3px solid #FFFDF7", boxShadow: "0 0 0 2px #D9A93E", fontSize: 18 }} />
                   <div className="flex flex-col gap-0.5">
-                    <h2 className="font-display m-0 text-[32px] leading-[1.1] font-bold">{s.isMe ? "Ma liste" : s.person.firstName}</h2>
-                    <span className="text-sm text-gris">{sub}</span>
+                    {s.isMe ? (
+                      <h2 className="font-display m-0 text-[32px] leading-[1.1] font-bold">Ma liste</h2>
+                    ) : (
+                      <InlineEdit
+                        as="h2"
+                        className="font-display m-0 text-[32px] leading-[1.1] font-bold"
+                        value={s.nickname ?? ""}
+                        display={s.person.firstName}
+                        placeholder={s.realName.split(" ")[0]}
+                        allowEmpty
+                        label={`Changer le nom de ${s.realName} dans cette famille`}
+                        success="Nom modifié pour toute la famille."
+                        onSave={(v) => setNickname(familyId, s.person.id, v)}
+                      />
+                    )}
+                    <span className="text-sm text-gris">
+                      {s.isMe ? (
+                        <>
+                          Vous apparaissez comme{" "}
+                          <InlineEdit
+                            className="font-semibold text-encre"
+                            value={s.nickname ?? ""}
+                            display={`« ${s.person.firstName} »`}
+                            placeholder={s.realName.split(" ")[0]}
+                            allowEmpty
+                            label="Changer mon nom dans cette famille"
+                            success="Nom modifié pour toute la famille."
+                            onSave={(v) => setNickname(familyId, s.person.id, v)}
+                          />{" "}
+                          · {sub}
+                        </>
+                      ) : (
+                        <>
+                          {s.nickname && <>{s.realName} · </>}
+                          {sub}
+                        </>
+                      )}
+                    </span>
                   </div>
                 </div>
                 <button className="btn b-soft" type="button" onClick={() => setAdding(s.person.id)}>

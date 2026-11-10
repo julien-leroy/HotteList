@@ -43,7 +43,7 @@ function Hero({ family, lead }: { family: Fam; lead: string }) {
 const cardStyle = { boxShadow: "0 30px 60px -36px rgba(90,20,25,.55)" };
 
 /** Visiteur non connecté arrivant par le lien de la famille. */
-export function InvitePage({ family }: { family: Fam }) {
+export function InvitePage({ family, mail }: { family: Fam; mail: boolean }) {
   const next = `/f/${family.slug}`;
   return (
     <AuthShell>
@@ -53,7 +53,7 @@ export function InvitePage({ family }: { family: Fam }) {
           <p className="m-0 text-base leading-relaxed text-gris">
             Créez votre compte pour voir les listes de chacun, réserver un cadeau ou participer à un cadeau à plusieurs.
           </p>
-          <SignupForm next={next} joinFamilyId={family.id} submitLabel={`Rejoindre ${family.name}`} loginHref={`/?next=${encodeURIComponent(next)}`} />
+          <SignupForm next={next} joinFamilyId={family.id} submitLabel={`Rejoindre ${family.name}`} mail={mail} />
           <p className="m-0 text-center text-[13px] leading-normal text-gris-clair">
             Après l&apos;inscription, vous pourrez aussi créer des comptes pour vos enfants depuis votre profil.
           </p>
