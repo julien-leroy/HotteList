@@ -50,9 +50,30 @@ export const IconGrip = ({ size = 16, ...p }: P) => (
     <circle cx="15" cy="12" r="1.6" /><circle cx="9" cy="18" r="1.6" /><circle cx="15" cy="18" r="1.6" />
   </svg>
 );
-export const IconGift = ({ size = 30, ...p }: P) => (
-  <Svg size={size} strokeWidth={1.6} {...p}>
-    <rect x="3" y="9" width="18" height="12" rx="1.5" />
-    <path d="M12 9v12M3 13h18M12 9c-1.5-4-6-4.5-6-1.8C6 9 12 9 12 9zm0 0c1.5-4 6-4.5 6-1.8C18 9 12 9 12 9z" />
-  </Svg>
+/** Le cadeau du favicon : couvercle, boîte, ruban et nœud (dessin d'origine en 64 unités). */
+export const GIFT_64 = (
+  <>
+    <rect x="12" y="24" width="40" height="10" rx="2.5" />
+    <path d="M15.5 34v15.5a2.5 2.5 0 0 0 2.5 2.5h28a2.5 2.5 0 0 0 2.5-2.5V34" />
+    <path d="M32 24v28" />
+    <path d="M32 24c-2.5-7.5-12.5-10-12.5-4 0 4 12.5 4 12.5 4zm0 0c2.5-7.5 12.5-10 12.5-4 0 4-12.5 4-12.5 4z" />
+  </>
+);
+
+export const IconGift = ({ size = 30, strokeWidth = 1.6, stroke = "currentColor", ...p }: P) => (
+  <svg width={size} height={size} viewBox="9 10 46 46" fill="none" stroke={stroke} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...p}>
+    <g strokeWidth={Number(strokeWidth) * 2.6}>{GIFT_64}</g>
+  </svg>
+);
+
+/** L'icône de l'application (identique au favicon) : tuile bordeaux, cadeau doré. */
+export const AppTile = ({ size = 34, ring = false }: { size?: number; ring?: boolean }) => (
+  <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true" style={{ flex: "none" }}>
+    <rect width="64" height="64" rx="14" fill="#7E1621" />
+    {ring && <rect x="1.5" y="1.5" width="61" height="61" rx="12.8" fill="none" stroke="#F2C75C" strokeOpacity=".55" strokeWidth="3" />}
+    <g fill="#FFF9EE" fillOpacity=".14">
+      <circle cx="8" cy="20" r="2.4" /><circle cx="55" cy="38" r="2.4" /><circle cx="18" cy="57" r="1.8" /><circle cx="44" cy="9" r="1.6" />
+    </g>
+    <g fill="none" stroke="#F2C75C" strokeWidth="4.2" strokeLinecap="round" strokeLinejoin="round">{GIFT_64}</g>
+  </svg>
 );

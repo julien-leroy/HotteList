@@ -8,6 +8,9 @@ import { getMembership, loadGiftForAction, requireMember, viewerOf } from "@/lib
 import { canAddIdeaFor, canAddWishFor, canEditGift, canInteract } from "@/lib/visibility";
 import { hostnameOf } from "@/lib/utils";
 import { displayName } from "@/lib/format";
+import { encodeMentions, mentionIds, mentionLabels, toPlain } from "@/lib/mentions";
+import { mailEnabled, sendMentionEmail } from "@/lib/mail";
+import { hit } from "@/lib/rate-limit";
 import type { ActionResult } from "./family";
 
 function fail(e: unknown): ActionResult {
@@ -261,19 +264,68 @@ export async function openToGroup(giftId: string): Promise<ActionResult> {
 
 // ---------- Commentaires ----------
 
+/** Personnes qu'on peut mentionner sur un cadeau : membres avec un compte, jamais le destinataire. */
+async function mentionablesFor(familyId: string, recipientId: string) {
+  const members = await db.membership.findMany({
+    where: { familyId, userId: { not: recipientId }, user: { managedById: null } },
+    include: { user: { select: { id: true, firstName: true, lastName: true } } },
+    orderBy: { joinedAt: "asc" },
+  });
+  return mentionLabels(members.map((m) => m.user));
+}
+
 export async function addComment(giftId: string, text: string): Promise<ActionResult> {
   try {
     const user = await requireUser();
     await interactable(user, giftId);
-    const t = z.string().trim().min(1, "Le commentaire est vide.").max(1000).parse(text);
-    const gift = await db.gift.findUniqueOrThrow({ where: { id: giftId }, include: { participants: true } });
+    const typed = z.string().trim().min(1, "Le commentaire est vide.").max(1000).parse(text);
+    const gift = await db.gift.findUniqueOrThrow({
+      where: { id: giftId },
+      include: { participants: true, family: { select: { name: true, slug: true } } },
+    });
     const ctx = await giftContext(giftId);
-    await db.comment.create({ data: { giftId, authorId: user.id, text: t } });
-    // Préviens ceux qui offrent ce cadeau et ceux qui en ont déjà parlé (jamais le destinataire).
+
+    // Mentions recalculées ici, avec la liste autorisée : on ne fait jamais confiance au navigateur.
+    const allowed = await mentionablesFor(gift.familyId, gift.recipientId);
+    const stored = encodeMentions(toPlain(typed), allowed);
+    await db.comment.create({ data: { giftId, authorId: user.id, text: stored } });
+    const plain = toPlain(stored);
+    const short = plain.length > 60 ? plain.slice(0, 57) + "…" : plain;
+
+    const mentioned = mentionIds(stored).filter((id) => id !== user.id && id !== gift.recipientId);
+    if (mentioned.length) {
+      await notify(mentioned, `${user.firstName} vous a mentionné sur « ${ctx.title} » pour ${ctx.who} : « ${short} »`, ctx.link);
+      if (mailEnabled() && hit(`mention-mail:${user.id}`, 30, 60 * 60_000)) {
+        const people = await db.user.findMany({
+          where: { id: { in: mentioned }, emailVerifiedAt: { not: null }, emailMentions: true, managedById: null },
+          select: { id: true, firstName: true, email: true },
+        });
+        const base = (process.env.APP_URL ?? "").replace(/\/$/, "");
+        await Promise.all(
+          people.map((p) =>
+            sendMentionEmail(p.email!, {
+              firstName: p.firstName,
+              author: user.firstName,
+              comment: plain,
+              meLabel: allowed.find((a) => a.id === p.id)?.label ?? p.firstName,
+              labels: allowed.filter((a) => mentionIds(stored).includes(a.id)).map((a) => a.label),
+              gift: { title: gift.title, price: gift.price, imageUrl: gift.imageUrl, siteOrigin: gift.siteOrigin },
+              recipientName: ctx.who,
+              familyName: gift.family.name,
+              giftUrl: `${base}${ctx.link}`,
+              settingsUrl: `${base}/profil#compte`,
+            }).catch((e) => console.error("[mail] mention", e)),
+          ),
+        );
+      }
+    }
+
+    // Préviens aussi ceux qui offrent ce cadeau et ceux qui en ont déjà parlé (jamais le destinataire).
     const to = new Set([...gift.participants.map((p) => p.userId), ...ctx.commenters]);
     to.delete(user.id);
     to.delete(ctx.recipientId);
-    await notify([...to], `${user.firstName} a commenté « ${ctx.title} » pour ${ctx.who} : « ${t.length > 60 ? t.slice(0, 57) + "…" : t} »`, ctx.link);
+    for (const id of mentioned) to.delete(id);
+    await notify([...to], `${user.firstName} a commenté « ${ctx.title} » pour ${ctx.who} : « ${short} »`, ctx.link);
     return done();
   } catch (e) {
     return fail(e);

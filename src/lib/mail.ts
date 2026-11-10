@@ -1,6 +1,6 @@
 import "server-only";
 import nodemailer, { type Transporter } from "nodemailer";
-import { renderCodeEmail, type CodePurpose } from "./email-templates";
+import { renderCodeEmail, renderMentionEmail, type CodePurpose } from "./email-templates";
 export type { CodePurpose };
 
 // Envoi d'e-mails par le SMTP d'Amen (ou tout autre SMTP), jamais depuis le serveur maison.
@@ -38,4 +38,9 @@ export async function sendCodeEmail(to: string, purpose: CodePurpose, firstName:
     text,
     html,
   });
+}
+
+export async function sendMentionEmail(to: string, data: Parameters<typeof renderMentionEmail>[0]) {
+  const { subject, text, html } = renderMentionEmail(data);
+  await transport().sendMail({ from: process.env.MAIL_FROM || `HotteList <${process.env.SMTP_USER}>`, to, subject, text, html });
 }

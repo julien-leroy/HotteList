@@ -22,6 +22,8 @@ model User {
   emailVerifiedAt DateTime?
   /// rappel par e-mail quelques jours avant l'événement
   emailReminders  Boolean   @default(true)
+  /// e-mail quand quelqu'un me mentionne (@Prénom) dans un commentaire
+  emailMentions   Boolean   @default(true)
   /// compte administré « en procuration » par un autre utilisateur
   managedById  String?
   managedBy    User?    @relation("Managed", fields: [managedById], references: [id], onDelete: Cascade)

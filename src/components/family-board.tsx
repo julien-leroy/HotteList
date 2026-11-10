@@ -11,6 +11,8 @@ import { GiftDialog } from "./gift-dialog";
 import { IconBookmark, IconComment, IconGrid, IconGroup, IconHidden, IconList, IconPlus } from "./icons";
 import { useAction } from "./toaster";
 import { priceValue } from "./price";
+import { mentionLabels } from "@/lib/mentions";
+import type { MentionPerson } from "./comment-box";
 import { joinGroup, leaveGift, takeGift } from "@/app/actions/gifts";
 
 type Sort = "ordre" | "coeur" | "prix-asc" | "prix-desc";
@@ -52,7 +54,16 @@ type Props = {
   openGiftId: string | null;
 };
 
-export function FamilyBoard({ familyId, familySlug, sections, openGiftId }: Props) {
+/** Même calcul que le serveur : membres avec compte, hors destinataire ; puis on retire moi-même. */
+function mentionPeople(sections: Section[], recipientId: string, meId: string): MentionPerson[] {
+  const candidates = sections.filter((s) => !s.managerName && s.person.id !== recipientId).map((s) => s.person);
+  const labels = mentionLabels(candidates);
+  return labels
+    .map((l) => ({ ...l, person: candidates.find((c) => c.id === l.id)! }))
+    .filter((p) => p.id !== meId);
+}
+
+export function FamilyBoard({ familyId, familySlug, viewerId, sections, openGiftId }: Props) {
   const router = useRouter();
   const [mode, setMode] = useState<"cards" | "list">("cards");
   const [onlyFree, setOnlyFree] = useState(false);
@@ -217,7 +228,14 @@ export function FamilyBoard({ familyId, familySlug, sections, openGiftId }: Prop
       </main>
 
       {opened && openedSection && (
-        <GiftDialog gift={opened} owner={openedSection.person} ownerIsMe={openedSection.isMe} onClose={close} />
+        <GiftDialog
+          gift={opened}
+          owner={openedSection.person}
+          ownerIsMe={openedSection.isMe}
+          onClose={close}
+          meId={viewerId}
+          people={mentionPeople(sections, opened.recipientId, viewerId)}
+        />
       )}
       {openGiftId && !opened && <MissingGift onClose={close} />}
     </>

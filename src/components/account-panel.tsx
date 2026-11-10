@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { changePassword, confirmEmail, removeEmail, requestEmailVerification, setEmailReminders, updateMyName } from "@/app/actions/email";
+import { changePassword, confirmEmail, removeEmail, requestEmailVerification, setEmailPref, updateMyName } from "@/app/actions/email";
 import { CodeInput } from "./code-flow";
 import { confirmDialog, useAction } from "./toaster";
 
@@ -12,6 +12,7 @@ type Props = {
   email: string | null;
   pendingEmail: string | null;
   reminders: boolean;
+  mentions: boolean;
   mail: boolean;
 };
 
@@ -60,7 +61,7 @@ function NameForm({ firstName, lastName }: { firstName: string; lastName: string
   );
 }
 
-function EmailForm({ email, pendingEmail, login, reminders }: Props) {
+function EmailForm({ email, pendingEmail, login, reminders, mentions }: Props) {
   const [editing, setEditing] = useState(!email);
   const [value, setValue] = useState(email ?? (login && login.includes("@") ? login : ""));
   const [waiting, setWaiting] = useState<string | null>(pendingEmail);
@@ -81,8 +82,12 @@ function EmailForm({ email, pendingEmail, login, reminders }: Props) {
             <span className="pill" style={{ background: "#DCEDE2", color: "#14492F", minHeight: 26, fontSize: 12 }}>Confirmée</span>
           </p>
           <label className="chk text-sm">
-            <input type="checkbox" defaultChecked={reminders} disabled={pending} onChange={(e) => run(() => setEmailReminders(e.target.checked), e.target.checked ? "Rappels activés." : "Rappels désactivés.")} />
+            <input type="checkbox" defaultChecked={reminders} disabled={pending} onChange={(e) => run(() => setEmailPref("reminders", e.target.checked), e.target.checked ? "Rappels activés." : "Rappels désactivés.")} />
             M&apos;envoyer un rappel une semaine avant chaque événement
+          </label>
+          <label className="chk text-sm">
+            <input type="checkbox" defaultChecked={mentions} disabled={pending} onChange={(e) => run(() => setEmailPref("mentions", e.target.checked), e.target.checked ? "E-mails de mention activés." : "E-mails de mention désactivés.")} />
+            M&apos;envoyer un e-mail quand quelqu&apos;un me mentionne dans un commentaire
           </label>
           <div className="flex flex-wrap gap-2">
             <button type="button" className="btn b-soft b-sm" onClick={() => setEditing(true)}>Changer</button>

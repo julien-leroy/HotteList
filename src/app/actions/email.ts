@@ -82,10 +82,10 @@ export async function removeEmail(): Promise<ActionResult> {
 
 // ---------- Mon compte ----------
 
-export async function setEmailReminders(on: boolean): Promise<ActionResult> {
+export async function setEmailPref(pref: "reminders" | "mentions", on: boolean): Promise<ActionResult> {
   try {
     const user = await requireUser();
-    await db.user.update({ where: { id: user.id }, data: { emailReminders: on } });
+    await db.user.update({ where: { id: user.id }, data: pref === "reminders" ? { emailReminders: on } : { emailMentions: on } });
     revalidatePath("/", "layout");
     return { ok: true };
   } catch (e) {

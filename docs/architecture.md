@@ -1,6 +1,6 @@
 # HotteList — architecture technique (version simplifiée)
 
-_Document de référence. Dernière mise à jour : 9 novembre 2026 (événement personnalisable)._
+_Document de référence. Dernière mise à jour : 10 novembre 2026 (mentions @ dans les commentaires, logo)._
 _Développement lancé le 9 novembre 2026. Ajout de souhait et d'idée en popup depuis la v1.1. Code : https://github.com/julien-leroy/HotteList_
 
 ## 1. Décisions prises
@@ -16,7 +16,8 @@ _Développement lancé le 9 novembre 2026. Ajout de souhait et d'idée en popup 
 | Reverse proxy | **Caddy**, déjà en place sur le serveur pour les autres projets |
 | Port de l'application | **9000** |
 | Simplicité | **Pas de Docker**, **SQLite** |
-| E-mails | **Facultatifs**, par le SMTP d'Amen (`noreply@julienfluenceur.online`) : connexion par code, mot de passe oublié, confirmation d'adresse. Jamais envoyés depuis le serveur maison |
+| E-mails | **Facultatifs**, par le SMTP d'Amen (`noreply@julienfluenceur.online`) : connexion par code, mot de passe oublié, confirmation d'adresse, mention dans un commentaire, rappel J-7. Jamais envoyés depuis le serveur maison |
+| Mentions | Dans un commentaire, `@Prénom` prévient la personne (notification + e-mail avec le cadeau et le commentaire mis en avant). Le destinataire du cadeau n'est **jamais** mentionnable |
 | Images | **Aucune image stockée sur le serveur** : on enregistre seulement l'adresse de l'image trouvée dans le lien, et le navigateur l'affiche directement depuis le site d'origine |
 | Listes | Une liste par famille. Sur le profil, ma liste pour chaque famille ; glisser-déposer pour **déplacer** ou **copier** un souhait vers une autre famille, et pour changer l'ordre |
 | Cadeau à plusieurs | On indique seulement qu'on participe (pas de montant). Les détails se règlent en commentaire |
@@ -26,7 +27,7 @@ _Développement lancé le 9 novembre 2026. Ajout de souhait et d'idée en popup 
 | DA | Festive : rouge profond, vert sapin, or ; Fraunces + Inter ; boutons ghost aux couleurs douces (cf. canvas de design) |
 | Ma liste de courses | Page `/courses` : tout ce que j'offre, regroupé par destinataire, avec ma part estimée (cadeau à plusieurs divisé), le reste à acheter et un **statut privé** « à acheter / acheté / emballé ». Imprimable |
 | Tirage au sort | Option de famille (admin) : chacun tire une personne à qui offrir ; chacun ne voit que son tirage, admin compris |
-| Favicon | Cadeau doré au trait sur fond bordeaux pointillé (`src/app/icon.svg`, `apple-icon.png` pour l'écran d'accueil des téléphones) |
+| Logo et favicon | Tuile bordeaux pointillée avec cadeau doré (`src/app/icon.svg`) : favicon, icône d'application, en-tête du site et logos de `public/brand/` (fond Noël, sans fond couleur ou blanc, SVG vectoriels). Image d'aperçu des liens partagés : `src/app/opengraph-image.png` |
 
 ## 2. Vue d'ensemble
 
@@ -94,6 +95,14 @@ Supprimés : Docker, PostgreSQL, sharp et stockage d'images, Better Auth.
 - **Profil en onglets** (une famille par onglet) : toujours sur mobile, au choix sur ordinateur (mémorisé). On peut lâcher une carte sur un autre onglet pour la déplacer.
 - **Installable** sur l'écran d'accueil (manifeste, icônes, plein écran).
 
+## 5 ter. Mentions dans les commentaires
+
+- En tapant **`@`** dans un commentaire, une liste propose les membres de la famille (avatar + prénom) ; flèches, Entrée ou Tab pour choisir. On peut aussi taper le nom à la main : `@Michou`, `@papiMichou` ou `@Papi Michou` sont reconnus (sans accents, majuscules ni espaces).
+- Stockage : `@[Libellé](idUtilisateur)` dans le texte du commentaire. Libellé = prénom, ou prénom + initiale du nom en cas d'homonymes (`lib/mentions.ts`, testé).
+- **Le serveur recalcule toujours les mentions** à partir du texte tapé et de sa propre liste autorisée : membres avec un compte, **jamais le destinataire du cadeau** (les comptes gérés non plus). Une mention trafiquée côté navigateur redevient du texte.
+- Effet : notification dans la cloche (« Claire vous a mentionné sur « Casque » pour Julien : … ») et **e-mail** si l'adresse est confirmée et que le réglage « M'envoyer un e-mail quand quelqu'un me mentionne » est actif (Mon compte, activé par défaut). L'e-mail montre la carte du cadeau (image, titre, prix, pour qui, famille) et le commentaire encadré, la mention de la personne surlignée en doré, avec un bouton « Voir le cadeau et répondre ». Limite : 30 e-mails de mention par heure et par auteur.
+- Affichage : mentions en surbrillance dans les commentaires ; la sienne en doré.
+
 ## 6. Fin de l'événement : « Nettoyer les listes »
 
 - Chaque famille a un **événement** (`eventName`, « Noël » par défaut) et une **date** (25 décembre par défaut), modifiables par l'admin. Ils s'affichent partout : cartes des familles (« Noël · J-46 »), page famille, invitation, encart de fin, archives, e-mail de rappel. Changer la date relance le rappel J-7.
@@ -109,7 +118,7 @@ Supprimés : Docker, PostgreSQL, sharp et stockage d'images, Better Auth.
 Les noms dans le code sont en anglais (`prisma/schema.prisma`).
 
 ```
-User           id, firstName, lastName?, login? (unique, vide pour un compte géré), passwordHash?, avatarColor, managedById?, email? (unique), emailVerifiedAt?, emailReminders
+User           id, firstName, lastName?, login? (unique, vide pour un compte géré), passwordHash?, avatarColor, managedById?, email? (unique), emailVerifiedAt?, emailReminders, emailMentions
 Session        id (empreinte du jeton), userId, expiresAt
 Family         id, name, slug unique avec suffixe aléatoire (ex. famille-leroy-7kq2), createdById, eventName (défaut « Noël »), eventDate, reminderSentFor?
 Membership     userId, familyId, role (ADMIN | MEMBRE), joinedAt, lastSeenAt?, prevSeenAt?   — unique (userId, familyId)
@@ -117,7 +126,7 @@ Gift           id, familyId, recipientId, createdById, kind (SOUHAIT | IDEE),
                title, description?, url?, price?, imageUrl?, siteOrigin?, favorite, position,
                takeMode (AUCUN | SEUL | A_PLUSIEURS), contentUpdatedAt, archivedAt?, archiveYear?, archiveEvent?, deletedAt?
 GiftParticipant giftId, userId, createdAt, status (A_ACHETER | ACHETE | EMBALLE — visible par ce participant seul)
-Comment        id, giftId, authorId, text, createdAt
+Comment        id, giftId, authorId, text (mentions : @[Libellé](id)), createdAt
 PasswordResetToken id (empreinte), userId, expiresAt, usedAt?
 EmailCode      id, userId, email, purpose (VERIFY | LOGIN | RESET), codeHash, attempts, expiresAt, usedAt?
 Notification   id, userId, text, link?, readAt?
@@ -137,6 +146,7 @@ Toutes les lectures passent par `giftsVisibleTo(viewer, gifts)` (`src/lib/visibi
 
 Droits d'écriture vérifiés côté serveur, dans chaque action :
 - Réserver, participer, commenter : interdit sur un cadeau dont je suis le destinataire.
+- Mentionner : seulement des membres avec un compte, jamais le destinataire du cadeau (vérifié côté serveur).
 - Modifier ou supprimer un SOUHAIT : le destinataire ou son gestionnaire.
 - Modifier ou supprimer une IDÉE : son auteur.
 - Créer un lien de réinitialisation du mot de passe : **tout membre**, pour n'importe quel autre membre, **admin compris** (au cas où l'admin lui-même aurait perdu son accès).

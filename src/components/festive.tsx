@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { IconGift } from "./icons";
+import { AppTile } from "./icons";
 import { AvatarMenu } from "./avatar-menu";
 import { NotificationBell } from "./notification-bell";
 import type { CurrentUser } from "@/lib/auth";
@@ -55,7 +55,7 @@ export function Treeline({ fill = "#F7F1E3" }: { fill?: string }) {
 export function Logo({ light = true }: { light?: boolean }) {
   return (
     <span className="flex items-center gap-2.5">
-      <IconGift stroke={light ? "#F2C75C" : "#A8323C"} />
+      <AppTile size={36} ring={light} />
       <span className="font-display text-[26px] font-bold italic" style={{ color: light ? "#FFF9EE" : "#1F3A2C" }}>
         Hotte<span style={{ color: light ? "#F2C75C" : "#A8323C" }}>List</span>
       </span>

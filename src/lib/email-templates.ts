@@ -142,3 +142,90 @@ export function renderReminderEmail(opts: {
 </body></html>`;
   return { subject, text, html };
 }
+
+/** « X vous a mentionné » : le cadeau et le commentaire mis en avant. */
+export function renderMentionEmail(o: {
+  firstName: string;
+  author: string;
+  comment: string; // texte lisible, mentions en « @Prénom »
+  meLabel: string;
+  /** libellés mentionnés dans ce commentaire, pour les mettre en valeur */
+  labels: string[];
+  gift: { title: string; price: string | null; imageUrl: string | null; siteOrigin: string | null };
+  recipientName: string;
+  familyName: string;
+  giftUrl: string;
+  settingsUrl: string;
+}) {
+  const subject = `${o.author} vous a mentionné à propos de « ${o.gift.title} »`;
+  const price = o.gift.price ? (/^\d+([.,]\d{1,2})?$/.test(o.gift.price.trim()) ? `${o.gift.price.trim().replace(".", ",")} €` : o.gift.price) : "Prix libre";
+  const text = [
+    `Bonjour ${o.firstName},`,
+    "",
+    `${o.author} vous a mentionné dans un commentaire sur « ${o.gift.title} » (pour ${o.recipientName}, famille ${o.familyName}) :`,
+    "",
+    ...o.comment.split("\n").map((l) => `  > ${l}`),
+    "",
+    `Voir le cadeau et répondre : ${o.giftUrl}`,
+    "",
+    `${o.recipientName} ne voit pas les commentaires de ses cadeaux : la surprise est préservée.`,
+    `Ne plus recevoir ces e-mails : ${o.settingsUrl}`,
+  ].join("\n");
+
+  // Mentions en gras doré ; la mienne encore plus visible
+  let commentHtml = escapeHtml(o.comment).replace(/\n/g, "<br>");
+  const labels = [...new Set(o.labels)].sort((a, b) => b.length - a.length);
+  if (labels.length) {
+    const alt = labels.map((l) => escapeHtml(l).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
+    commentHtml = commentHtml.replace(new RegExp(`@(${alt})`, "g"), (_, label) =>
+      label === escapeHtml(o.meLabel)
+        ? `<span style="background:#F2C75C;color:#5A1018;font-weight:700;padding:1px 6px;border-radius:6px;">@${label}</span>`
+        : `<span style="color:#8A1C26;font-weight:700;">@${label}</span>`,
+    );
+  }
+  const img =
+    o.gift.imageUrl && /^https?:\/\//.test(o.gift.imageUrl)
+      ? `<img src="${escapeHtml(o.gift.imageUrl)}" width="96" height="96" alt="" style="display:block;width:96px;height:96px;object-fit:contain;border-radius:12px;background:#fff;border:1px solid #E3D6BA;">`
+      : `<div style="width:96px;height:96px;border-radius:12px;background:#F6E7C1;text-align:center;line-height:96px;font-size:44px;">🎁</div>`;
+
+  const html = `<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${escapeHtml(subject)}</title></head>
+<body style="margin:0;padding:0;background:#F7F1E3;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F7F1E3;padding:24px 12px;"><tr><td align="center">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:540px;background:#FFFDF7;border:1px solid #E3D6BA;border-radius:20px;overflow:hidden;">
+    <tr><td style="background:#7E1621;padding:20px 28px;border-bottom:4px solid #D9A93E;">
+      <span style="font-family:Georgia,'Times New Roman',serif;font-style:italic;font-weight:700;font-size:26px;color:#FFF9EE;">Hotte<span style="color:#F2C75C;">List</span></span>
+    </td></tr>
+    <tr><td style="padding:26px 28px 6px;font-family:Arial,Helvetica,sans-serif;color:#1F3A2C;">
+      <h1 style="margin:0 0 8px;font-family:Georgia,'Times New Roman',serif;font-size:24px;line-height:1.25;">${escapeHtml(o.author)} vous a mentionné</h1>
+      <p style="margin:0 0 18px;font-size:15px;line-height:1.5;color:#5E5A48;">Bonjour ${escapeHtml(o.firstName)}, on a besoin de vous sur ce cadeau.</p>
+    </td></tr>
+    <tr><td style="padding:0 28px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#FFF9EE;border:1px solid #E3D6BA;border-radius:16px;">
+        <tr>
+          <td width="112" style="padding:14px 0 14px 14px;vertical-align:top;">${img}</td>
+          <td style="padding:14px 16px;vertical-align:top;font-family:Arial,Helvetica,sans-serif;">
+            <div style="font-size:12px;font-weight:700;color:#8A6516;text-transform:uppercase;letter-spacing:.04em;">Pour ${escapeHtml(o.recipientName)} · ${escapeHtml(o.familyName)}</div>
+            <div style="margin:6px 0 8px;font-family:Georgia,'Times New Roman',serif;font-size:19px;font-weight:700;color:#1F3A2C;line-height:1.25;">${escapeHtml(o.gift.title)}</div>
+            <span style="display:inline-block;padding:3px 10px;border-radius:6px 999px 999px 6px;background:#F6E7C1;color:#5C4214;font-weight:700;font-size:13px;">${escapeHtml(price)}</span>
+            ${o.gift.siteOrigin ? `<span style="font-size:12px;color:#6B6553;margin-left:6px;">${escapeHtml(o.gift.siteOrigin)}</span>` : ""}
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+    <tr><td style="padding:18px 28px 6px;font-family:Arial,Helvetica,sans-serif;">
+      <div style="font-size:13px;font-weight:700;color:#1F3A2C;margin-bottom:8px;">💬 ${escapeHtml(o.author)} a écrit :</div>
+      <div style="padding:14px 16px;border-left:5px solid #D9A93E;background:#FBF4E4;border-radius:4px 14px 14px 4px;font-size:16px;line-height:1.55;color:#1F3A2C;">${commentHtml}</div>
+    </td></tr>
+    <tr><td style="padding:20px 28px 26px;font-family:Arial,Helvetica,sans-serif;">
+      <a href="${o.giftUrl}" style="display:inline-block;padding:13px 22px;border-radius:999px;background:#B3202E;color:#FFF9EE;font-weight:700;font-size:15px;text-decoration:none;">Voir le cadeau et répondre</a>
+      <p style="margin:16px 0 0;font-size:13px;color:#6B6553;line-height:1.5;">🤫 ${escapeHtml(o.recipientName)} ne voit pas les commentaires de ses cadeaux : la surprise est préservée.</p>
+    </td></tr>
+    <tr><td style="padding:14px 28px;background:#1F4D36;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#D8E8DE;">
+      Vous recevez cet e-mail car quelqu'un vous a mentionné sur HotteList. <a href="${o.settingsUrl}" style="color:#F2C75C;">Ne plus recevoir ces e-mails</a>
+    </td></tr>
+  </table>
+</td></tr></table>
+</body></html>`;
+  return { subject, text, html };
+}

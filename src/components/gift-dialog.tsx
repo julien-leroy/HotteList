@@ -7,6 +7,7 @@ import { displayName, formatPrice, relativeDate } from "@/lib/format";
 import { Avatar } from "./avatar";
 import { GiftVisual, SourceBadge, statusOf } from "./gift-ui";
 import { GiftForm } from "./gift-form";
+import { CommentBox, CommentText, type MentionPerson } from "./comment-box";
 import { IconClose, IconComment, IconExternal, IconHidden } from "./icons";
 import { toast, useAction } from "./toaster";
 import { addComment, deleteComment, deleteGift, restoreGift, setPurchaseStatus, joinGroup, leaveGift, openToGroup, takeGift } from "@/app/actions/gifts";
@@ -16,11 +17,16 @@ export function GiftDialog({
   owner,
   ownerIsMe,
   onClose,
+  people,
+  meId,
 }: {
   gift: VisibleGift;
   owner: PersonLite;
   ownerIsMe: boolean;
   onClose: () => void;
+  /** membres qu'on peut mentionner (jamais le destinataire, ni moi) */
+  people: MentionPerson[];
+  meId: string;
 }) {
   const [editing, setEditing] = useState(false);
   const [comment, setComment] = useState("");
@@ -218,7 +224,7 @@ export function GiftDialog({
                             </button>
                           )}
                         </span>
-                        <span className="text-[15px] leading-normal whitespace-pre-line">{c.text}</span>
+                        <span className="text-[15px] leading-normal whitespace-pre-line"><CommentText text={c.text} meId={meId} /></span>
                       </div>
                     </div>
                   ))}
@@ -232,9 +238,8 @@ export function GiftDialog({
                       run(() => addComment(gift.id, comment), undefined, (r) => r.ok && setComment(""));
                     }}
                   >
-                    <div className="flex flex-[1_1_300px] flex-col gap-1.5">
-                      <label className="label" htmlFor="cmt">Votre commentaire</label>
-                      <textarea className="input" id="cmt" value={comment} onChange={(e) => setComment(e.target.value)} maxLength={1000} placeholder="Je peux mettre 20 €, qui commande ?" />
+                    <div className="flex-[1_1_300px]">
+                      <CommentBox value={comment} onChange={setComment} people={people} disabled={pending} />
                     </div>
                     <button className="btn b-red" type="submit" disabled={pending}>Envoyer</button>
                   </form>
