@@ -1,6 +1,6 @@
 # HotteList — architecture technique (version simplifiée)
 
-_Document de référence. Dernière mise à jour : 10 novembre 2026 (mentions @ dans les commentaires, logo)._
+_Document de référence. Dernière mise à jour : 10 novembre 2026 (inscription validée par code e-mail, pseudos par famille)._
 _Développement lancé le 9 novembre 2026. Ajout de souhait et d'idée en popup depuis la v1.1. Code : https://github.com/julien-leroy/HotteList_
 
 ## 1. Décisions prises
@@ -129,7 +129,7 @@ Gift           id, familyId, recipientId, createdById, kind (SOUHAIT | IDEE),
 GiftParticipant giftId, userId, createdAt, status (A_ACHETER | ACHETE | EMBALLE — visible par ce participant seul)
 Comment        id, giftId, authorId, text (mentions : @[Libellé](id)), createdAt
 PasswordResetToken id (empreinte), userId, expiresAt, usedAt?
-EmailCode      id, userId, email, purpose (VERIFY | LOGIN | RESET), codeHash, attempts, expiresAt, usedAt?
+EmailCode      id, userId, email, purpose (VERIFY | LOGIN | RESET | SIGNUP), codeHash, attempts, expiresAt, usedAt?
 Notification   id, userId, text, link?, readAt?
 SecretSanta    id, familyId, createdById, budget?, createdAt
 SecretSantaAssignment santaId, giverId, receiverId     — un seul cercle : personne ne se tire soi-même
