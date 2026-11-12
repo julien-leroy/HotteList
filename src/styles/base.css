@@ -9,8 +9,8 @@ body { margin: 0; min-height: 100vh; }
 a { color: var(--color-rouge-texte); }
 a:hover { color: var(--color-bordeaux-fonce); }
 
-/* Courgette n'existe qu'en une graisse : pas de faux gras ni de faux italique */
-.font-display { font-family: var(--font-display); font-weight: 400 !important; font-style: normal !important; font-synthesis: none; letter-spacing: 0; }
+/* Titres en Merienda gras ; elle n'a pas d'italique : pas de faux italique */
+.font-display { font-family: var(--font-display); font-weight: 700 !important; font-style: normal !important; font-synthesis: none; letter-spacing: -.005em; }
 .font-brand { font-family: var(--font-brand); }
 /* Santa Natale : uniquement pour les grands titres (jamais un bouton, un prix ou un texte long). */
 .font-script { font-family: var(--font-script); font-weight: 400; font-style: normal; letter-spacing: 0; }

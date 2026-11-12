@@ -46,9 +46,9 @@
 .hero-title-sober {
   margin: 0;
   font-family: var(--font-display);
-  font-weight: 400;
+  font-weight: 700;
   font-synthesis: none;
-  line-height: 1.18;
+  line-height: 1.2;
   color: var(--color-ivoire);
   text-wrap: balance;
 }
@@ -56,7 +56,7 @@
 
 /* Titres de listes sur fond clair (« Maman », « Pour Dominique ») */
 .list-title { margin: 0; font-family: var(--font-script); font-weight: 400; line-height: 1.25; white-space: nowrap; color: var(--color-rouge); }
-.list-title-sober { margin: 0; font-family: var(--font-display); font-weight: 400; font-synthesis: none; line-height: 1.2; color: var(--color-rouge-texte); }
+.list-title-sober { margin: 0; font-family: var(--font-display); font-weight: 700; font-synthesis: none; line-height: 1.2; color: var(--color-rouge-texte); }
 
 /* Ampoules de la guirlande : verre coloré, culot sombre, reflet, halo qui scintille */
 .bulb {
@@ -88,7 +88,7 @@
 .auth-aside-inner { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 22px; padding: 18px 24px 96px; }
 .auth-main { display: flex; flex-direction: column; align-items: center; padding: 8px 20px 56px; }
 .auth-panel { width: 100%; max-width: 440px; display: flex; flex-direction: column; gap: 20px; }
-.auth-panel h2 { margin: 0; font: 400 32px/1.2 var(--font-display); font-synthesis: none; color: var(--color-encre); }
+.auth-panel h2 { margin: 0; font: 700 30px/1.2 var(--font-display); font-synthesis: none; color: var(--color-encre); }
 .auth-panel .lead { margin: 0; font-size: 15px; line-height: 1.55; color: var(--color-gris); }
 .auth-card {
   background: var(--color-papier); border: 1px solid var(--color-sable); border-radius: 22px;
