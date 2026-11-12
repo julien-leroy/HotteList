@@ -12,6 +12,8 @@ const GIFT = "#FFD146";
 const TIE = "#3F7A52";
 const KNOT = "#FFCB2E";
 const SHADOW = "#6E0B14";
+/** Couleurs inversées, pour les fonds bordeaux : sac sapin, lien rouge vif (cadeau et nœud restent dorés). */
+const INV = { sack: "#2A6B4B", fold: "#1A4A33", tie: "#FF4A55", shadow: "#0B2A1B" };
 
 const SACK_PATH =
   "M27 24C23 22 19 18 20 13c1-3 5-2 7 1 1-5 7-6 8-1 2-3 7-2 6 3-1 4-4 6-7 7C43 26.5 50 35 52 44c1.8 8-1 13.2-8 14-8 1-20 1-27 0-6.2-.9-8.2-6.6-5.2-13.6 3.2-7.8 8.2-16.4 15.2-20.4z";
@@ -41,12 +43,15 @@ function GiftShapes() {
 export function HotteMark({
   size = 48,
   simple = size <= 32,
+  inverse = false,
   title,
   className,
   style,
 }: {
   size?: number;
   simple?: boolean;
+  /** Version pour fond bordeaux (couleurs inversées). */
+  inverse?: boolean;
   title?: string;
   className?: string;
   style?: CSSProperties;
@@ -54,6 +59,10 @@ export function HotteMark({
   const sw = simple ? 4.6 : size >= 120 ? 2.6 : size >= 64 ? 2.9 : 3.2;
   const tw = simple ? sw * 0.8 : sw;
   const layers = simple ? 4 : 7;
+  const sack = inverse ? INV.sack : SACK;
+  const fold = inverse ? INV.fold : FOLD;
+  const tie = inverse ? INV.tie : TIE;
+  const shadow = inverse ? INV.shadow : SHADOW;
   return (
     <svg
       width={size}
@@ -65,11 +74,11 @@ export function HotteMark({
       aria-label={title}
       aria-hidden={title ? undefined : true}
     >
-      <path d={SACK_PATH} fill={SACK} />
-      {!simple && <path d={FOLDS} fill="none" stroke={FOLD} strokeWidth={1.7} strokeLinecap="round" />}
+      <path d={SACK_PATH} fill={sack} />
+      {!simple && <path d={FOLDS} fill="none" stroke={fold} strokeWidth={1.7} strokeLinecap="round" />}
       <g transform="translate(-1 0.5) rotate(-6 33 45)">
         {/* Ombre floue sous le cadeau : couches de plus en plus larges et transparentes */}
-        <g transform="translate(0.35 1.15)" fill="none" stroke={SHADOW} strokeLinecap="round" strokeLinejoin="round">
+        <g transform="translate(0.35 1.15)" fill="none" stroke={shadow} strokeLinecap="round" strokeLinejoin="round">
           {Array.from({ length: layers }, (_, k) => (
             <g key={k} strokeOpacity={simple ? 0.075 : 0.055} strokeWidth={(simple ? sw * 1.6 : sw) + 0.7 + k * (simple ? 0.9 : 0.75)}>
               <GiftShapes />
@@ -80,7 +89,7 @@ export function HotteMark({
           <>
             <path d={LID} fill={GIFT} />
             <path d={BOX} fill={GIFT} />
-            <g fill="none" stroke={SACK} strokeWidth={sw * 0.8}>
+            <g fill="none" stroke={sack} strokeWidth={sw * 0.8}>
               <path d={RIB} />
               <path d="M24.5 42h17" />
             </g>
@@ -92,33 +101,9 @@ export function HotteMark({
           </g>
         )}
       </g>
-      <path d={TIE_BAND} fill="none" stroke={TIE} strokeWidth={tw * 1.15} strokeLinecap="round" />
-      <path d={TIE_ENDS} fill="none" stroke={TIE} strokeWidth={tw * 0.95} strokeLinecap="round" />
+      <path d={TIE_BAND} fill="none" stroke={tie} strokeWidth={tw * 1.15} strokeLinecap="round" />
+      <path d={TIE_ENDS} fill="none" stroke={tie} strokeWidth={tw * 0.95} strokeLinecap="round" />
       <circle cx="34.5" cy="23.6" r={tw * 1.25} fill={KNOT} />
-    </svg>
-  );
-}
-
-/**
- * Le cadeau seul, pour les fonds bordeaux : la hotte rouge s'y fondrait.
- * Même dessin que dans la hotte (penché, ombre floue), cadré dans un carré.
- */
-export function GiftMark({ size = 40, className, style }: { size?: number; className?: string; style?: CSSProperties }) {
-  const sw = size >= 64 ? 2.6 : 2.9;
-  return (
-    <svg width={size} height={size} viewBox="20 30 26 26" className={className} style={{ flex: "none", ...style }} aria-hidden="true">
-      <g transform="translate(-1 0.5) rotate(-6 33 45)">
-        <g transform="translate(0.35 1.15)" fill="none" stroke="#3A0008" strokeLinecap="round" strokeLinejoin="round">
-          {Array.from({ length: 6 }, (_, k) => (
-            <g key={k} strokeOpacity={0.07} strokeWidth={sw + 0.7 + k * 0.75}>
-              <GiftShapes />
-            </g>
-          ))}
-        </g>
-        <g fill="none" stroke={GIFT} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
-          <GiftShapes />
-        </g>
-      </g>
     </svg>
   );
 }
@@ -143,11 +128,11 @@ export function Wordmark({ size = 26, tone = "light" }: { size?: number; tone?: 
 }
 
 /**
- * Logo complet. Sur bordeaux : le cadeau jaune seul. Sur les autres fonds (crème, sapin) :
- * le cadeau dans la hotte rouge.
+ * Logo complet. Hotte classique (sac rouge, lien vert) sur crème et sapin ; sur bordeaux,
+ * couleurs inversées (sac sapin, lien rouge vif). Le cadeau jaune seul est réservé aux icônes.
  */
 export function Logo({ size = 26, tone = "light", hideWordOnMobile = false }: { size?: number; tone?: Tone; hideWordOnMobile?: boolean }) {
-  const mark = tone === "bordeaux" ? <GiftMark size={Math.round(size * 1.45)} /> : <HotteMark size={Math.round(size * 1.6)} />;
+  const mark = <HotteMark size={Math.round(size * 1.6)} inverse={tone === "bordeaux"} />;
   return (
     <span className="logo" style={{ gap: size * 0.32 }}>
       {mark}
