@@ -2,11 +2,6 @@
 
 /* Logo : la hotte + « Hotte » (Santa Natale) « List » (Fraunces italique) */
 .logo { display: inline-flex; align-items: center; text-decoration: none; }
-.logo-badge {
-  display: inline-flex; align-items: center; justify-content: center; flex: none;
-  border-radius: 999px; background: var(--color-ivoire);
-  box-shadow: 0 4px 14px -6px rgba(40, 0, 8, .55);
-}
 .wordmark { display: inline-flex; align-items: baseline; line-height: 1; white-space: nowrap; }
 .wordmark .font-script {
   line-height: .9;

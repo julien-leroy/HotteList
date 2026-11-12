@@ -9,7 +9,7 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: "/familles",
     scope: "/",
     display: "standalone",
-    background_color: "#FFF9EE",
+    background_color: "#7E1621",
     theme_color: "#7E1621",
     lang: "fr",
     icons: [

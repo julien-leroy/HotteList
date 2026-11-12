@@ -99,6 +99,30 @@ export function HotteMark({
   );
 }
 
+/**
+ * Le cadeau seul, pour les fonds bordeaux : la hotte rouge s'y fondrait.
+ * Même dessin que dans la hotte (penché, ombre floue), cadré dans un carré.
+ */
+export function GiftMark({ size = 40, className, style }: { size?: number; className?: string; style?: CSSProperties }) {
+  const sw = size >= 64 ? 2.6 : 2.9;
+  return (
+    <svg width={size} height={size} viewBox="20 30 26 26" className={className} style={{ flex: "none", ...style }} aria-hidden="true">
+      <g transform="translate(-1 0.5) rotate(-6 33 45)">
+        <g transform="translate(0.35 1.15)" fill="none" stroke="#3A0008" strokeLinecap="round" strokeLinejoin="round">
+          {Array.from({ length: 6 }, (_, k) => (
+            <g key={k} strokeOpacity={0.07} strokeWidth={sw + 0.7 + k * 0.75}>
+              <GiftShapes />
+            </g>
+          ))}
+        </g>
+        <g fill="none" stroke={GIFT} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
+          <GiftShapes />
+        </g>
+      </g>
+    </svg>
+  );
+}
+
 type Tone = "light" | "bordeaux" | "pine";
 
 const WORD_COLORS: Record<Tone, [string, string]> = {
@@ -119,21 +143,13 @@ export function Wordmark({ size = 26, tone = "light" }: { size?: number; tone?: 
 }
 
 /**
- * Logo complet (hotte + nom). Sur fond bordeaux, la hotte se pose sur une pastille crème
- * pour ne pas se fondre dans le rouge.
+ * Logo complet. Sur bordeaux : le cadeau jaune seul. Sur les autres fonds (crème, sapin) :
+ * le cadeau dans la hotte rouge.
  */
 export function Logo({ size = 26, tone = "light", hideWordOnMobile = false }: { size?: number; tone?: Tone; hideWordOnMobile?: boolean }) {
-  const markSize = Math.round(size * 1.55);
-  const mark =
-    tone !== "light" ? (
-      <span className="logo-badge" style={{ width: size * 1.95, height: size * 1.95 }}>
-        <HotteMark size={Math.round(size * 1.5)} />
-      </span>
-    ) : (
-      <HotteMark size={markSize} />
-    );
+  const mark = tone === "bordeaux" ? <GiftMark size={Math.round(size * 1.45)} /> : <HotteMark size={Math.round(size * 1.6)} />;
   return (
-    <span className="logo" style={{ gap: size * 0.3 }}>
+    <span className="logo" style={{ gap: size * 0.32 }}>
       {mark}
       <span className={hideWordOnMobile ? "hidden sm:inline-flex" : "inline-flex"}>
         <Wordmark size={size} tone={tone} />
