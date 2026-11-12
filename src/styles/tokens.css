@@ -14,7 +14,10 @@
   /* Polices : Santa Natale pour les grands titres, Fraunces pour les titres de cartes et le
      « List » du logo, Inter pour tout le reste. */
   --font-sans: "Inter Variable", Inter, system-ui, sans-serif;
-  --font-display: "Fraunces Variable", Fraunces, Georgia, serif;
+  /* Titres : Courgette, manuscrite mais lisible même sur plusieurs lignes */
+  --font-display: Courgette, "Brush Script MT", cursive;
+  /* « List » du logo : Fraunces italique */
+  --font-brand: "Fraunces Variable", Fraunces, Georgia, serif;
   --font-script: "Santa Natale", "Fraunces Variable", Georgia, serif;
 
   /* Fonds et texte */

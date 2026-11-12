@@ -44,7 +44,7 @@ function InviteAside({ family, lead }: { family: Fam; lead: string }) {
 export function InvitePage({ family, mail }: { family: Fam; mail: boolean }) {
   const next = `/f/${family.slug}`;
   return (
-    <AuthLayout aside={<InviteAside family={family} lead={`${family.createdBy.firstName} vous invite à rejoindre`} />} footer={<HowItWorks onLight />}>
+    <AuthLayout tone="bordeaux" aside={<InviteAside family={family} lead={`${family.createdBy.firstName} vous invite à rejoindre`} />} footer={<HowItWorks onLight />}>
       <div>
         <h2>Rejoindre {family.name}</h2>
         <p className="lead">Créez votre compte pour voir les listes de chacun, réserver un cadeau ou participer à un cadeau à plusieurs.</p>
@@ -62,7 +62,7 @@ export function InvitePage({ family, mail }: { family: Fam; mail: boolean }) {
 /** Utilisateur connecté qui n'est pas encore membre. */
 export function JoinPage({ family, user, managed }: { family: Fam; user: CurrentUser; managed: (AvatarPerson & { id: string })[] }) {
   return (
-    <AuthLayout aside={<InviteAside family={family} lead={`${user.firstName}, ${family.createdBy.firstName} vous invite à rejoindre`} />}>
+    <AuthLayout tone="bordeaux" aside={<InviteAside family={family} lead={`${user.firstName}, ${family.createdBy.firstName} vous invite à rejoindre`} />}>
       <div>
         <h2>Rejoindre {family.name}</h2>
         <p className="lead">Un clic, et vous voyez les listes de toute la famille.</p>

@@ -2,6 +2,7 @@
 @import "@fontsource-variable/fraunces/full.css";
 @import "@fontsource-variable/fraunces/full-italic.css";
 @import "@fontsource-variable/inter/index.css";
+@import "@fontsource/courgette/latin-400.css";
 
 /* Organisation des styles :
    - tokens.css     couleurs et polices de la DA (une seule source de vérité)

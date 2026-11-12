@@ -67,8 +67,8 @@ export function Holly({ size = 26 }: { size?: number }) {
 }
 
 /**
- * Fond des en-têtes. Bordeaux pour tout ce qui se vit ensemble (accueil, familles, invitation),
- * vert sapin pour les pages personnelles (mon profil, mes courses).
+ * Fond des en-têtes. Vert sapin par défaut ; bordeaux en second, pour l'univers d'une famille
+ * (page famille, années passées, invitation à la rejoindre).
  */
 export type HeroTone = "bordeaux" | "sapin";
 
@@ -76,7 +76,7 @@ export type HeroTone = "bordeaux" | "sapin";
 export function FestiveHeader({
   user,
   current,
-  tone = "bordeaux",
+  tone = "sapin",
   children,
 }: {
   user: CurrentUser;
@@ -191,7 +191,7 @@ export function HowItWorks({ onLight = false }: { onLight?: boolean }) {
   );
 }
 
-/** Présentation du site, côté bordeaux des pages d'accueil. */
+/** Présentation du site, sur le fond coloré des pages d'accueil. */
 export function WelcomeAside({ title = "Les listes de Noël de toute la famille" }: { title?: string }) {
   return (
     <>
@@ -208,17 +208,17 @@ export function WelcomeAside({ title = "Les listes de Noël de toute la famille"
 
 /**
  * Mise en page des écrans sans session (accueil, inscription, invitation, mot de passe…) :
- * à gauche la présentation sur fond bordeaux, à droite le formulaire. Sur téléphone, le bordeaux
+ * à gauche la présentation sur fond sapin (bordeaux pour une invitation), à droite le formulaire. Sur téléphone, le fond coloré
  * passe en haut, en plus court, et le formulaire suit directement.
  */
-export function AuthLayout({ aside, children, footer }: { aside: ReactNode; children: ReactNode; footer?: ReactNode }) {
+export function AuthLayout({ aside, children, footer, tone = "sapin" }: { aside: ReactNode; children: ReactNode; footer?: ReactNode; tone?: HeroTone }) {
   return (
     <div className="auth">
-      <section className="auth-aside hero hero-bordeaux">
+      <section className={`auth-aside hero hero-${tone}`}>
         <Garland count={9} height={52} />
         <div className="auth-aside-inner">
           <Link href="/" className="logo" aria-label="HotteList, accueil">
-            <Logo size={26} tone="bordeaux" />
+            <Logo size={26} tone={tone === "sapin" ? "pine" : "bordeaux"} />
           </Link>
           {aside}
         </div>

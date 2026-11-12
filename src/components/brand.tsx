@@ -122,7 +122,7 @@ export function Wordmark({ size = 26, tone = "light" }: { size?: number; tone?: 
   return (
     <span className="wordmark" aria-hidden="true" style={{ gap: size * 0.18 }}>
       <span className="font-script" style={{ fontSize: size * 1.3, color: hotte }}>Hotte</span>
-      <span className="font-display" style={{ fontSize: size * 0.92, color: list }}>List</span>
+      <span className="font-brand" style={{ fontSize: size * 0.92, color: list }}>List</span>
     </span>
   );
 }

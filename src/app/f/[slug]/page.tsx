@@ -112,7 +112,7 @@ export default async function FamilyPage({ params, searchParams }: Props) {
 
   return (
     <div className="min-h-screen bg-creme">
-      <FestiveHeader user={user}>
+      <FestiveHeader user={user} tone="bordeaux">
         <div className="flex flex-wrap items-end justify-between gap-7 pb-0">
           <div className="flex min-w-0 flex-col gap-3">
             <div className="flex flex-wrap items-center gap-2.5">

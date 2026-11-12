@@ -104,7 +104,7 @@ function Stat({ label, value, sub, accent }: { label: string; value: string; sub
   return (
     <div className="panel flex flex-col gap-1 px-5 py-4" style={accent ? { borderColor: "#DDA3A7", background: "#FFF6F4" } : undefined}>
       <span className="text-xs font-bold tracking-wide text-gris-clair uppercase">{label}</span>
-      <span className="font-display text-[30px] leading-none font-bold" style={{ color: accent ? "#8A1C26" : "#1F3A2C" }}>{value}</span>
+      <span className="text-[28px] leading-none font-extrabold tracking-tight" style={{ color: accent ? "#8A1C26" : "#1F3A2C" }}>{value}</span>
       <span className="text-[13px] text-gris">{sub}</span>
     </div>
   );

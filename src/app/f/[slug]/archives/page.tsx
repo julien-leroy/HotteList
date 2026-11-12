@@ -42,7 +42,7 @@ export default async function Archives({ params }: { params: Promise<{ slug: str
 
   return (
     <div className="min-h-screen bg-creme">
-      <FestiveHeader user={user}>
+      <FestiveHeader user={user} tone="bordeaux">
         <div className="flex flex-col gap-2.5">
           <Link href={`/f/${family.slug}`} className="text-sm font-semibold no-underline" style={{ color: "var(--hero-soft)" }}>
             ← {family.name}
