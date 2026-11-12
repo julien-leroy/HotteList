@@ -1,5 +1,6 @@
 "use client";
 
+import { listTitleProps } from "@/lib/script-metrics";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { PersonLite, VisibleGift } from "@/lib/visibility";
@@ -170,11 +171,11 @@ export function FamilyBoard({ familyId, familySlug, viewerId, sections, openGift
                   <Avatar person={s.person} size={56} style={{ border: "3px solid #FFFDF7", boxShadow: "0 0 0 2px #D9A93E", fontSize: 18 }} />
                   <div className="flex flex-col gap-0.5">
                     {s.isMe ? (
-                      <h2 className="list-title text-[clamp(34px,9vw,44px)]">Ma liste</h2>
+                      <h2 {...listTitleProps("Ma liste", 44, 220)}>Ma liste</h2>
                     ) : (
                       <InlineEdit
                         as="h2"
-                        className="list-title text-[clamp(34px,9vw,44px)]"
+                        {...listTitleProps(s.nickname || s.person.firstName, 44, 220)}
                         value={s.nickname ?? ""}
                         display={s.person.firstName}
                         placeholder={s.realName.split(" ")[0]}

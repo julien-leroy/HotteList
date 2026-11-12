@@ -57,10 +57,10 @@ export default async function Profil({ searchParams }: { searchParams: Promise<{
 
   return (
     <div className="min-h-screen bg-creme">
-      <FestiveHeader user={user} current="profil">
+      <FestiveHeader user={user} current="profil" tone="sapin">
         <div className="flex flex-col gap-2.5">
           <HeroTitle>Mon profil</HeroTitle>
-          <p className="m-0 text-base text-[#F6D9D2]">Vos listes dans chaque famille, et les comptes que vous gérez.</p>
+          <p className="m-0 text-base hero-soft">Vos listes dans chaque famille, et les comptes que vous gérez.</p>
         </div>
       </FestiveHeader>
       <main className="mx-auto flex max-w-[1200px] flex-col gap-6 px-6 pt-7 pb-24">

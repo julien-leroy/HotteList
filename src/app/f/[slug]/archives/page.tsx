@@ -44,11 +44,11 @@ export default async function Archives({ params }: { params: Promise<{ slug: str
     <div className="min-h-screen bg-creme">
       <FestiveHeader user={user}>
         <div className="flex flex-col gap-2.5">
-          <Link href={`/f/${family.slug}`} className="text-sm font-semibold no-underline" style={{ color: "#F6D9D2" }}>
+          <Link href={`/f/${family.slug}`} className="text-sm font-semibold no-underline" style={{ color: "var(--hero-soft)" }}>
             ← {family.name}
           </Link>
           <HeroTitle>Années passées</HeroTitle>
-          <p className="m-0 text-base text-[#F6D9D2]">Ce qu&apos;on s&apos;est offert, année après année.</p>
+          <p className="m-0 text-base hero-soft">Ce qu&apos;on s&apos;est offert, année après année.</p>
         </div>
       </FestiveHeader>
       <main className="mx-auto flex max-w-[1200px] flex-col gap-10 px-6 pt-7 pb-24">

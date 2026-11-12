@@ -114,22 +114,22 @@ export default async function FamilyPage({ params, searchParams }: Props) {
     <div className="min-h-screen bg-creme">
       <FestiveHeader user={user}>
         <div className="flex flex-wrap items-end justify-between gap-7 pb-0">
-          <div className="flex flex-col gap-3">
+          <div className="flex min-w-0 flex-col gap-3">
             <div className="flex flex-wrap items-center gap-2.5">
               <span className="inline-flex items-center gap-2 text-[15px] font-semibold text-ivoire">
                 <IconStar className="text-or-clair" />
                 {over ? `${family.eventName} : terminé` : days === 0 ? `${family.eventName} : c'est le grand jour !` : `${family.eventName} · ${eventDay(family.eventDate)} · J-${days}`}
               </span>
-              <span className="text-[15px] text-[#F6D9D2]">· 
+              <span className="text-[15px] hero-soft">· 
                 {plural(family.memberships.length, "membre", "membres")} · {plural(wishCount, "souhait", "souhaits")}
               </span>
             </div>
-            <HeroTitle size={76}>
+            <HeroTitle size={76} text={family.name}>
               {isAdmin ? <FamilyNameEdit familyId={family.id} name={family.name} /> : family.name}
             </HeroTitle>
           </div>
           <div className="flex min-w-0 flex-[0_1_440px] flex-col gap-2">
-            <span className="text-sm font-medium text-[#F6D9D2]">Lien de la famille, à envoyer à tout le monde</span>
+            <span className="text-sm font-medium hero-soft">Lien de la famille, à envoyer à tout le monde</span>
             <CopyLink url={inviteUrl} />
             <div className="flex flex-wrap justify-end gap-2">
               <ShareButton url={inviteUrl} familyName={family.name} />

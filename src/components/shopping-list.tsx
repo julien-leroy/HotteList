@@ -1,5 +1,6 @@
 "use client";
 
+import { listTitleProps } from "@/lib/script-metrics";
 import { useState } from "react";
 import Link from "next/link";
 import { setPurchaseStatus } from "@/app/actions/gifts";
@@ -86,7 +87,7 @@ export function ShoppingList({ items }: { items: ShoppingItem[] }) {
         <section key={person.id} className="flex flex-col gap-3">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pb-2" style={{ borderBottom: "2px dotted #D9A93E" }}>
             <Avatar person={person} size={44} style={{ border: "3px solid #FFFDF7", boxShadow: "0 0 0 2px #D9A93E" }} />
-            <h2 className="list-title text-[clamp(30px,8vw,40px)]">Pour {person.firstName}</h2>
+            <h2 {...listTitleProps(`Pour ${person.firstName}`, 40, 250)}>Pour {person.firstName}</h2>
             <span className="text-sm whitespace-nowrap text-gris">· {list.length} cadeau{list.length > 1 ? "x" : ""}</span>
           </div>
           {list.map((i) => (

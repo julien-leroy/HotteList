@@ -125,7 +125,7 @@ export function Wordmark({ size = 26, tone = "light" }: { size?: number; tone?: 
 export function Logo({ size = 26, tone = "light", hideWordOnMobile = false }: { size?: number; tone?: Tone; hideWordOnMobile?: boolean }) {
   const markSize = Math.round(size * 1.55);
   const mark =
-    tone === "bordeaux" ? (
+    tone !== "light" ? (
       <span className="logo-badge" style={{ width: size * 1.95, height: size * 1.95 }}>
         <HotteMark size={Math.round(size * 1.5)} />
       </span>

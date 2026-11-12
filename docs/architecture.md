@@ -1,6 +1,6 @@
 # HotteList — architecture technique (version simplifiée)
 
-_Document de référence. Dernière mise à jour : 12 novembre 2026 (nouvelle DA : logo de la hotte, Santa Natale, nouvelles pages d'accueil)._
+_Document de référence. Dernière mise à jour : 12 novembre 2026 (nouvelle DA ; puis deux fonds d'en-tête et règle des titres)._
 _Développement lancé le 9 novembre 2026. Ajout de souhait et d'idée en popup depuis la v1.1. Code : https://github.com/julien-leroy/HotteList_
 
 ## 1. Décisions prises
@@ -24,7 +24,7 @@ _Développement lancé le 9 novembre 2026. Ajout de souhait et d'idée en popup 
 | Comptes gérés | Un adulte crée et administre des comptes « en procuration » (ex. ses enfants) et voit tout sur leurs listes |
 | Événement | Chaque famille a un **événement** : titre et date. Par défaut **Noël, le 25 décembre** ; à la création, « Changer » propose Noël, Anniversaire (« Anniversaire de … » pré-rempli) ou Autre, avec une date au choix (pas dans le passé). Modifiable ensuite par l'admin |
 | Fin de l'événement | Un encart « L'événement est terminé » avec un bouton **« Nettoyer les listes »** : il archive tous les cadeaux réservés ou à plusieurs, et laisse sur les listes ceux qui n'ont pas été offerts |
-| DA | Validée le 12 novembre 2026 (détail : document « da-hottelist » du projet). En-tête bordeaux pointillé, guirlande, montagnes sapin ; sac `#CF2B35`, or `#FFCB2E`, encre `#1F3A2C`, crème `#F7F1E3`. **Santa Natale** pour les grands titres et titres de listes, **Fraunces** pour les titres de cartes et le « List » du logo, **Inter** pour le reste |
+| DA | Validée le 12 novembre 2026 (détail : document « da-hottelist » du projet). En-têtes pointillés avec guirlande et montagnes, sur deux fonds : **bordeaux** (fond principal : accueil, connexion, invitation, mes familles, une famille) et **vert sapin** (pages personnelles : mon profil, mes courses), via `FestiveHeader tone`. Sac `#CF2B35`, or `#FFCB2E`, encre `#1F3A2C`, crème `#F7F1E3`. **Santa Natale** seulement pour les titres courts qui tiennent sur une ligne (`HeroTitle` et `listTitleProps` de `src/lib/script-metrics.ts` calculent la taille ; sinon Fraunces droite), « Hotte » épaissi par un contour de sa couleur, **Fraunces** pour les titres de cartes et le « List » du logo, **Inter** pour le reste |
 | Ma liste de courses | Page `/courses` : tout ce que j'offre, regroupé par destinataire, avec ma part estimée (cadeau à plusieurs divisé), le reste à acheter et un **statut privé** « à acheter / acheté / emballé ». Imprimable |
 | Tirage au sort | Option de famille (admin) : chacun tire une personne à qui offrir ; chacun ne voit que son tirage, admin compris |
 | Logo et favicon | La hotte : sac de toile rouge, cadeau doré avec ombre floue, lien vert noué d'or. Dessin source : `src/components/brand.tsx` (`HotteMark`, `Wordmark`, `Logo`). Sur bordeaux, la hotte est posée sur une pastille crème. Favicon `src/app/icon.svg` (version simplifiée), icônes d'application crème, logos de `public/brand/` (texte en tracés), image de partage `src/app/opengraph-image.png`, logo des e-mails `public/brand/hottelist-logo-blanc.png` |

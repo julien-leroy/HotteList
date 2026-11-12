@@ -8,12 +8,22 @@
   box-shadow: 0 4px 14px -6px rgba(40, 0, 8, .55);
 }
 .wordmark { display: inline-flex; align-items: baseline; line-height: 1; white-space: nowrap; }
-.wordmark .font-script { line-height: .9; }
+.wordmark .font-script {
+  line-height: .9;
+  /* Santa Natale n'a qu'une graisse : un contour de la même couleur épaissit « Hotte » */
+  -webkit-text-stroke: .045em currentColor;
+  paint-order: stroke fill;
+}
 .wordmark .font-display { font-style: italic; font-weight: 650; letter-spacing: -.01em; }
 
-/* Fond bordeaux pointillé de l'en-tête (celui du site d'origine) */
-.hero-bordeaux {
-  background-color: var(--color-bordeaux);
+/*
+ * En-têtes pointillés. Deux fonds seulement :
+ *  - bordeaux (le fond principal) : accueil, connexion, invitation, mes familles, une famille ;
+ *  - vert sapin : les pages personnelles, mon profil et mes courses.
+ * Chaque fond définit ses couleurs de texte secondaire (--hero-soft) et de montagnes (--hero-ridge).
+ */
+.hero {
+  --hero-room: min(100vw - 48px, 1152px); /* largeur dispo pour un titre sur une ligne */
   background-image:
     radial-gradient(rgba(255, 249, 238, .22) 1.3px, transparent 1.8px),
     radial-gradient(rgba(255, 249, 238, .12) 1px, transparent 1.4px);
@@ -21,21 +31,37 @@
   background-position: 0 0, 9px 13px;
   color: var(--color-ivoire);
 }
+.hero-bordeaux { background-color: var(--color-bordeaux); --hero-soft: #f6dcdd; --hero-ridge: var(--color-sapin); }
+.hero-sapin { background-color: var(--color-sapin); --hero-soft: #d5e5d8; --hero-ridge: #143826; }
+.hero-soft { color: var(--hero-soft); }
 
-/* Grand titre en Santa Natale sur le bordeaux */
+/*
+ * Titres. Santa Natale seulement pour un titre court qui tient sur UNE ligne (taille calculée
+ * dans le composant) ; dès qu'il faudrait passer à la ligne, Fraunces, plus sobre.
+ */
 .hero-title {
   margin: 0;
   font-family: var(--font-script);
   font-weight: 400;
-  line-height: 1.02;
+  line-height: 1.3; /* les hampes de Santa Natale montent haut : on leur laisse la place */
+  white-space: nowrap;
   color: var(--color-ivoire);
-  text-shadow: 0 3px 0 rgba(50, 0, 8, .35);
+  text-shadow: 0 3px 0 rgba(30, 0, 8, .3);
+}
+.hero-title-sober {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: -.015em;
+  color: var(--color-ivoire);
   text-wrap: balance;
 }
-.hero-kicker { margin: 0; font: 500 15px/1.4 var(--font-sans); color: #f6dcdd; }
+.hero-kicker { margin: 0; font: 500 15px/1.4 var(--font-sans); color: var(--hero-soft); }
 
-/* Titre de liste sur fond clair (« La liste de Maman ») */
-.list-title { margin: 0; font-family: var(--font-script); font-weight: 400; line-height: 1; color: var(--color-rouge); }
+/* Titres de listes sur fond clair (« Maman », « Pour Dominique ») */
+.list-title { margin: 0; font-family: var(--font-script); font-weight: 400; line-height: 1.25; white-space: nowrap; color: var(--color-rouge); }
+.list-title-sober { margin: 0; font-family: var(--font-display); font-weight: 650; line-height: 1.15; letter-spacing: -.01em; color: var(--color-rouge-texte); }
 
 /* Ampoules de la guirlande : verre coloré, culot sombre, reflet, halo qui scintille */
 .bulb {
@@ -89,14 +115,14 @@
   border-radius: 12px; background: rgba(255, 249, 238, .12); color: var(--color-or-clair);
 }
 .steps strong { display: block; font: 650 16px/1.3 var(--font-sans); color: var(--color-ivoire); }
-.steps span { display: block; font-size: 14px; line-height: 1.5; color: #f3d6d8; }
+.steps span { display: block; font-size: 14px; line-height: 1.5; color: var(--hero-soft); }
 .steps.on-light .ico { background: var(--color-or-pale); color: var(--color-rouge-texte); }
 .steps.on-light strong { color: var(--color-encre); }
 .steps.on-light span { color: var(--color-gris); }
 
 @media (min-width: 960px) {
   .auth { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); }
-  .auth-aside { min-height: 100vh; position: sticky; top: 0; }
+  .auth-aside { min-height: 100vh; position: sticky; top: 0; --hero-room: 40vw; }
   .auth-aside-inner { flex: 1; justify-content: center; gap: 30px; padding: 72px clamp(40px, 6vw, 96px) 150px; }
   .auth-main { justify-content: center; padding: 48px clamp(32px, 5vw, 72px); }
   .auth-panel { max-width: 460px; }

@@ -50,10 +50,10 @@ export default async function Courses() {
 
   return (
     <div className="min-h-screen bg-creme">
-      <FestiveHeader user={user} current="courses">
+      <FestiveHeader user={user} current="courses" tone="sapin">
         <div className="flex flex-col gap-2.5">
           <HeroTitle>Ma liste de courses</HeroTitle>
-          <p className="m-0 text-base text-[#F6D9D2]">Tout ce que vous offrez, pour qui, et où vous en êtes. Vous seul voyez cette page.</p>
+          <p className="m-0 text-base hero-soft">Tout ce que vous offrez, pour qui, et où vous en êtes. Vous seul voyez cette page.</p>
         </div>
       </FestiveHeader>
       <main className="mx-auto flex max-w-[1200px] flex-col gap-6 px-6 pt-7 pb-24">

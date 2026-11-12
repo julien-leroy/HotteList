@@ -1,3 +1,4 @@
+import { listTitleProps } from "@/lib/script-metrics";
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
@@ -62,7 +63,7 @@ export default async function Familles() {
                     </span>
                     {role === "ADMIN" && <span className="text-xs font-bold tracking-wide text-gris-clair uppercase">Admin</span>}
                   </div>
-                  <h2 className="list-title text-[clamp(36px,10vw,46px)]">{family.name}</h2>
+                  <h2 {...listTitleProps(family.name, 46, 280)}>{family.name}</h2>
                   <div className="mt-auto flex items-center justify-between gap-3">
                     <div className="flex">
                       {people.slice(0, 5).map((p, i) => (

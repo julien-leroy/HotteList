@@ -1,4 +1,4 @@
-import { AuthLayout, HowItWorks } from "./festive";
+import { AuthLayout, HeroTitle, HowItWorks } from "./festive";
 import { Avatar, type AvatarPerson } from "./avatar";
 import { SignupForm } from "./auth-forms";
 import { JoinButton } from "./join-button";
@@ -32,7 +32,7 @@ function InviteAside({ family, lead }: { family: Fam; lead: string }) {
         </div>
         <p className="hero-kicker" style={{ fontSize: 17 }}>{lead}</p>
       </div>
-      <h1 className="hero-title" style={{ fontSize: "clamp(52px, 7vw, 84px)" }}>{family.name}</h1>
+      <HeroTitle size={84}>{family.name}</HeroTitle>
       <p className="hero-kicker">
         {plural(people.length, "membre", "membres")} · {family.eventName}, {eventDay(family.eventDate)}
       </p>

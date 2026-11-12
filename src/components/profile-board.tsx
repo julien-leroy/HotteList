@@ -1,5 +1,6 @@
 "use client";
 
+import { listTitleProps } from "@/lib/script-metrics";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
@@ -263,7 +264,7 @@ function FamilyColumn({
   return (
     <section ref={setNodeRef} className={`col${highlight ? " over" : ""}`} aria-label={col.family.name} style={inTabs ? { borderTopLeftRadius: 0, borderTop: "3px solid #CF2B35" } : undefined}>
       <div className={`flex flex-wrap items-baseline justify-between gap-2.5 px-1 pb-2${inTabs ? " hidden" : ""}`} style={{ borderBottom: "2px dotted #D9A93E" }}>
-        <h2 className="list-title text-[clamp(30px,8vw,36px)]">{col.family.name}</h2>
+        <h2 {...listTitleProps(col.family.name, 36, 220)}>{col.family.name}</h2>
         <span className="text-[13px] text-gris">
           {col.gifts.length} souhait{col.gifts.length > 1 ? "s" : ""} · <Link href={`/f/${col.family.slug}`}>ouvrir</Link>
         </span>

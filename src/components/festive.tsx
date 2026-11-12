@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Logo } from "./brand";
+import { scriptWidthEm } from "@/lib/script-metrics";
 import { AvatarMenu } from "./avatar-menu";
 import { NotificationBell } from "./notification-bell";
 import type { CurrentUser } from "@/lib/auth";
@@ -45,7 +46,7 @@ export function Treeline({ fill = "#F7F1E3", height = 80 }: { fill?: string; hei
       style={{ position: "absolute", left: 0, right: 0, bottom: -1, display: "block" }}
     >
       <path
-        fill="#1F4D36"
+        style={{ fill: "var(--hero-ridge, #1F4D36)" }}
         d="M0 80 L0 60 L30 30 L60 60 L80 40 L110 12 L140 46 L160 30 L190 58 L210 44 L240 20 L270 52 L300 60 L320 36 L350 8 L380 44 L400 34 L430 60 L460 40 L480 26 L510 54 L540 60 L560 30 L590 4 L620 40 L640 30 L670 58 L700 46 L720 22 L750 54 L780 60 L800 34 L830 10 L860 46 L880 36 L910 60 L940 42 L960 24 L990 52 L1020 60 L1040 32 L1070 6 L1100 42 L1120 32 L1150 58 L1180 40 L1200 26 L1200 80 Z"
       />
       <path fill={fill} d="M0 80 L0 72 Q 300 62 600 72 T 1200 72 L1200 80 Z" />
@@ -65,14 +66,22 @@ export function Holly({ size = 26 }: { size?: number }) {
   );
 }
 
+/**
+ * Fond des en-têtes. Bordeaux pour tout ce qui se vit ensemble (accueil, familles, invitation),
+ * vert sapin pour les pages personnelles (mon profil, mes courses).
+ */
+export type HeroTone = "bordeaux" | "sapin";
+
 /** En-tête festif commun : guirlande, logo, navigation, puis le contenu du héros. */
 export function FestiveHeader({
   user,
   current,
+  tone = "bordeaux",
   children,
 }: {
   user: CurrentUser;
   current?: "familles" | "profil" | "courses";
+  tone?: HeroTone;
   children: ReactNode;
 }) {
   const navLink = (href: string, label: string, short: string, key: string, hideOnMobile = false) => (
@@ -93,11 +102,11 @@ export function FestiveHeader({
     </Link>
   );
   return (
-    <section className="hero-bordeaux relative overflow-hidden">
+    <section className={`hero hero-${tone} relative overflow-hidden`}>
       <Garland />
       <div className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-4 px-6 pt-1">
         <Link href="/familles" className="logo" aria-label="HotteList, mes familles">
-          <Logo size={24} tone="bordeaux" hideWordOnMobile />
+          <Logo size={24} tone={tone === "sapin" ? "pine" : "bordeaux"} hideWordOnMobile />
         </Link>
         <nav className="flex items-center gap-3.5 sm:gap-[18px]" aria-label="Navigation">
           {navLink("/familles", "Mes familles", "Familles", "familles")}
@@ -113,10 +122,33 @@ export function FestiveHeader({
   );
 }
 
-/** Grand titre de page en Santa Natale. */
-export function HeroTitle({ children, size = 84 }: { children: ReactNode; size?: number }) {
+/** Texte brut d'un titre, s'il n'est fait que de texte. */
+function plainText(node: ReactNode): string | null {
+  if (typeof node === "string" || typeof node === "number") return String(node);
+  if (Array.isArray(node)) {
+    const parts = node.map(plainText);
+    return parts.every((p) => p !== null) ? parts.join("") : null;
+  }
+  return null;
+}
+
+/**
+ * Grand titre de page. En Santa Natale s'il tient sur une seule ligne (la taille s'adapte à la
+ * largeur, voir --hero-room), sinon en Fraunces, plus sobre et lisible sur plusieurs lignes.
+ * `text` : le texte du titre quand `children` n'est pas du texte brut (champ modifiable…).
+ */
+export function HeroTitle({ children, text, size = 84 }: { children: ReactNode; text?: string; size?: number }) {
+  const t = text ?? plainText(children);
+  const w = t === null ? null : scriptWidthEm(t) * 1.06;
+  if (w !== null && w <= 9.2) {
+    return (
+      <h1 className="hero-title" style={{ fontSize: `min(${size}px, calc(var(--hero-room) / ${w.toFixed(2)}))` }}>
+        {children}
+      </h1>
+    );
+  }
   return (
-    <h1 className="hero-title" style={{ fontSize: `clamp(50px, 12vw, ${size}px)` }}>
+    <h1 className="hero-title-sober" style={{ fontSize: `clamp(32px, 5.4vw, ${Math.round(size * 0.62)}px)` }}>
       {children}
     </h1>
   );
@@ -163,7 +195,7 @@ export function HowItWorks({ onLight = false }: { onLight?: boolean }) {
 export function WelcomeAside({ title = "Les listes de Noël de toute la famille" }: { title?: string }) {
   return (
     <>
-      <h1 className="hero-title" style={{ fontSize: "clamp(46px, 6vw, 76px)", maxWidth: 620 }}>{title}</h1>
+      <h1 className="hero-title-sober" style={{ fontSize: "clamp(34px, 4.2vw, 56px)", maxWidth: 600 }}>{title}</h1>
       <p className="hero-kicker auth-desktop-only" style={{ fontSize: 17, maxWidth: 520 }}>
         Fini les cadeaux en double et les listes qui circulent par message : tout le monde au même endroit, sans gâcher la surprise.
       </p>
@@ -182,7 +214,7 @@ export function WelcomeAside({ title = "Les listes de Noël de toute la famille"
 export function AuthLayout({ aside, children, footer }: { aside: ReactNode; children: ReactNode; footer?: ReactNode }) {
   return (
     <div className="auth">
-      <section className="auth-aside hero-bordeaux">
+      <section className="auth-aside hero hero-bordeaux">
         <Garland count={9} height={52} />
         <div className="auth-aside-inner">
           <Link href="/" className="logo" aria-label="HotteList, accueil">
