@@ -34,6 +34,14 @@ function escapeHtml(s: string) {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 }
 
+/** Logo des e-mails : l'image (hotte + nom) servie par le site, avec le nom en texte si l'image est bloquée. */
+function emailLogo() {
+  const appUrl = (process.env.APP_URL ?? "").replace(/\/$/, "");
+  const text = `<span style="font-family:Georgia,'Times New Roman',serif;font-style:italic;font-weight:700;font-size:26px;color:#FFF9EE;">Hotte<span style="color:#FFCB2E;">List</span></span>`;
+  if (!appUrl) return text;
+  return `<img src="${appUrl}/brand/hottelist-logo-blanc.png" height="44" alt="HotteList" style="display:inline-block;height:44px;width:auto;border:0;font-family:Georgia,serif;font-style:italic;font-weight:700;font-size:24px;color:#FFF9EE;">`;
+}
+
 /** Les deux (trois) e-mails types : même mise en page aux couleurs de HotteList, texte selon l'usage. */
 export function renderCodeEmail(purpose: CodePurpose, firstName: string, code: string, minutes: number) {
   const c = COPY[purpose];
@@ -61,7 +69,7 @@ export function renderCodeEmail(purpose: CodePurpose, firstName: string, code: s
 <tr><td align="center">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#FFFDF7;border:1px solid #E3D6BA;border-radius:20px;overflow:hidden;">
     <tr><td style="background:#7E1621;padding:22px 28px;border-bottom:4px solid #D9A93E;">
-      <span style="font-family:Georgia,'Times New Roman',serif;font-style:italic;font-weight:700;font-size:26px;color:#FFF9EE;">Hotte<span style="color:#F2C75C;">List</span></span>
+      ${emailLogo()}
     </td></tr>
     <tr><td style="padding:30px 28px 8px;font-family:Arial,Helvetica,sans-serif;color:#1F3A2C;">
       <h1 style="margin:0 0 14px;font-family:Georgia,'Times New Roman',serif;font-size:26px;line-height:1.2;color:#1F3A2C;">${c.title}</h1>
@@ -76,7 +84,7 @@ export function renderCodeEmail(purpose: CodePurpose, firstName: string, code: s
       <p style="margin:0;">${c.outro}</p>
     </td></tr>
     <tr><td style="padding:14px 28px;background:#1F4D36;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#D8E8DE;">
-      HotteList, les listes de Noël de toute la famille${appUrl ? ` · <a href="${appUrl}" style="color:#F2C75C;">${escapeHtml(appUrl.replace(/^https?:\/\//, ""))}</a>` : ""}
+      HotteList, les listes de Noël de toute la famille${appUrl ? ` · <a href="${appUrl}" style="color:#FFCB2E;">${escapeHtml(appUrl.replace(/^https?:\/\//, ""))}</a>` : ""}
     </td></tr>
   </table>
 </td></tr></table>
@@ -129,8 +137,8 @@ export function renderReminderEmail(opts: {
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F7F1E3;padding:24px 12px;"><tr><td align="center">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#FFFDF7;border:1px solid #E3D6BA;border-radius:20px;overflow:hidden;">
     <tr><td style="background:#7E1621;padding:22px 28px;border-bottom:4px solid #D9A93E;">
-      <span style="font-family:Georgia,'Times New Roman',serif;font-style:italic;font-weight:700;font-size:26px;color:#FFF9EE;">Hotte<span style="color:#F2C75C;">List</span></span>
-      <span style="float:right;margin-top:6px;padding:4px 12px;border-radius:999px;background:#F2C75C;color:#5A1018;font-family:Arial,sans-serif;font-weight:700;font-size:13px;">J-${days}</span>
+      ${emailLogo()}
+      <span style="float:right;margin-top:6px;padding:4px 12px;border-radius:999px;background:#FFCB2E;color:#5A1018;font-family:Arial,sans-serif;font-weight:700;font-size:13px;">J-${days}</span>
     </td></tr>
     <tr><td style="padding:28px 28px 8px;font-family:Arial,Helvetica,sans-serif;color:#1F3A2C;">
       <h1 style="margin:0 0 12px;font-family:Georgia,'Times New Roman',serif;font-size:26px;line-height:1.2;">${escapeHtml(eventName)}, c'est ${when} !</h1>
@@ -138,10 +146,10 @@ export function renderReminderEmail(opts: {
       <p style="margin:0 0 8px;font-size:16px;line-height:1.5;">${free ? `<strong>${free} souhait${free > 1 ? "s attendent" : " attend"} encore quelqu'un :</strong>` : "Tous les souhaits ont trouvé quelqu'un. Bravo !"}</p>
       ${free ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:2px dotted #D9A93E;border-bottom:2px dotted #D9A93E;margin:6px 0 16px;">${lines.filter((l) => l.free).map(row).join("")}</table>` : ""}
       ${toBuy ? `<p style="margin:0 0 14px;font-size:15px;line-height:1.5;">Il vous reste <strong>${toBuy} cadeau${toBuy > 1 ? "x" : ""} à acheter</strong>.</p>` : ""}
-      <p style="margin:0 0 22px;">${btn(familyUrl, "Voir les listes", "#B3202E", "#FFF9EE")}${toBuy ? btn(coursesUrl, "Ma liste de courses", "#F6E7C1", "#5C4214") : ""}</p>
+      <p style="margin:0 0 22px;">${btn(familyUrl, "Voir les listes", "#CF2B35", "#FFF9EE")}${toBuy ? btn(coursesUrl, "Ma liste de courses", "#F6E7C1", "#5C4214") : ""}</p>
     </td></tr>
     <tr><td style="padding:14px 28px;background:#1F4D36;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#D8E8DE;">
-      Vous recevez ce rappel car votre adresse est confirmée sur HotteList. <a href="${settingsUrl}" style="color:#F2C75C;">Ne plus recevoir ces rappels</a>
+      Vous recevez ce rappel car votre adresse est confirmée sur HotteList. <a href="${settingsUrl}" style="color:#FFCB2E;">Ne plus recevoir ces rappels</a>
     </td></tr>
   </table>
 </td></tr></table>
@@ -185,7 +193,7 @@ export function renderMentionEmail(o: {
     const alt = labels.map((l) => escapeHtml(l).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
     commentHtml = commentHtml.replace(new RegExp(`@(${alt})`, "g"), (_, label) =>
       label === escapeHtml(o.meLabel)
-        ? `<span style="background:#F2C75C;color:#5A1018;font-weight:700;padding:1px 6px;border-radius:6px;">@${label}</span>`
+        ? `<span style="background:#FFCB2E;color:#5A1018;font-weight:700;padding:1px 6px;border-radius:6px;">@${label}</span>`
         : `<span style="color:#8A1C26;font-weight:700;">@${label}</span>`,
     );
   }
@@ -200,7 +208,7 @@ export function renderMentionEmail(o: {
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F7F1E3;padding:24px 12px;"><tr><td align="center">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:540px;background:#FFFDF7;border:1px solid #E3D6BA;border-radius:20px;overflow:hidden;">
     <tr><td style="background:#7E1621;padding:20px 28px;border-bottom:4px solid #D9A93E;">
-      <span style="font-family:Georgia,'Times New Roman',serif;font-style:italic;font-weight:700;font-size:26px;color:#FFF9EE;">Hotte<span style="color:#F2C75C;">List</span></span>
+      ${emailLogo()}
     </td></tr>
     <tr><td style="padding:26px 28px 6px;font-family:Arial,Helvetica,sans-serif;color:#1F3A2C;">
       <h1 style="margin:0 0 8px;font-family:Georgia,'Times New Roman',serif;font-size:24px;line-height:1.25;">${escapeHtml(o.author)} vous a mentionné</h1>
@@ -224,11 +232,11 @@ export function renderMentionEmail(o: {
       <div style="padding:14px 16px;border-left:5px solid #D9A93E;background:#FBF4E4;border-radius:4px 14px 14px 4px;font-size:16px;line-height:1.55;color:#1F3A2C;">${commentHtml}</div>
     </td></tr>
     <tr><td style="padding:20px 28px 26px;font-family:Arial,Helvetica,sans-serif;">
-      <a href="${o.giftUrl}" style="display:inline-block;padding:13px 22px;border-radius:999px;background:#B3202E;color:#FFF9EE;font-weight:700;font-size:15px;text-decoration:none;">Voir le cadeau et répondre</a>
+      <a href="${o.giftUrl}" style="display:inline-block;padding:13px 22px;border-radius:999px;background:#CF2B35;color:#FFF9EE;font-weight:700;font-size:15px;text-decoration:none;">Voir le cadeau et répondre</a>
       <p style="margin:16px 0 0;font-size:13px;color:#6B6553;line-height:1.5;">🤫 ${escapeHtml(o.recipientName)} ne voit pas les commentaires de ses cadeaux : la surprise est préservée.</p>
     </td></tr>
     <tr><td style="padding:14px 28px;background:#1F4D36;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#D8E8DE;">
-      Vous recevez cet e-mail car quelqu'un vous a mentionné sur HotteList. <a href="${o.settingsUrl}" style="color:#F2C75C;">Ne plus recevoir ces e-mails</a>
+      Vous recevez cet e-mail car quelqu'un vous a mentionné sur HotteList. <a href="${o.settingsUrl}" style="color:#FFCB2E;">Ne plus recevoir ces e-mails</a>
     </td></tr>
   </table>
 </td></tr></table>

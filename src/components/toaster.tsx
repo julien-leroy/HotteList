@@ -41,7 +41,7 @@ export function Toaster() {
             if (r && !r.ok) toast(r.error, true);
             else setMsg(null);
           }}
-          style={{ border: 0, background: "transparent", color: "#F2C75C", font: "700 14px var(--font-sans)", cursor: "pointer", textDecoration: "underline", textUnderlineOffset: 3, padding: "4px 2px" }}
+          style={{ border: 0, background: "transparent", color: "#FFCB2E", font: "700 14px var(--font-sans)", cursor: "pointer", textDecoration: "underline", textUnderlineOffset: 3, padding: "4px 2px" }}
         >
           {msg.undo.label ?? "Annuler"}
         </button>

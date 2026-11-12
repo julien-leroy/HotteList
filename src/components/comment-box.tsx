@@ -142,7 +142,7 @@ export function CommentText({ text, meId }: { text: string; meId: string }) {
           <span
             key={i}
             className="rounded-md px-1 font-bold"
-            style={s.id === meId ? { background: "#F2C75C", color: "#5A1018" } : { background: "#F6E7C1", color: "#8A1C26" }}
+            style={s.id === meId ? { background: "#FFCB2E", color: "#5A1018" } : { background: "#F6E7C1", color: "#8A1C26" }}
           >
             @{s.mention}
           </span>

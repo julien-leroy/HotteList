@@ -26,7 +26,7 @@ export function JoinButton({ familyId, familyName, managed }: { familyId: string
       )}
       <button
         type="button"
-        className="btn b-red w-full"
+        className="btn b-primary w-full"
         style={{ minHeight: 48, fontSize: 15 }}
         disabled={pending}
         onClick={() => start(() => joinFamily(familyId, picked))}

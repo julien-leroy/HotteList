@@ -130,7 +130,7 @@ export function GiftForm(props: Props) {
     <form
       onSubmit={submit}
       className={compact ? "flex flex-col gap-3" : bare ? "flex flex-wrap gap-6" : "flex flex-wrap gap-6 rounded-[20px] bg-papier p-6"}
-      style={compact || bare ? undefined : { border: "2px solid #B3202E", boxShadow: "0 18px 40px -26px rgba(90,20,25,.6)" }}
+      style={compact || bare ? undefined : { border: "2px solid #CF2B35", boxShadow: "0 18px 40px -26px rgba(90,20,25,.6)" }}
     >
       <div className="flex min-w-0 flex-[2_1_360px] flex-col gap-4">
         {bare ? null : props.mode === "create" ? (

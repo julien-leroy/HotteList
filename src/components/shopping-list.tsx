@@ -84,10 +84,10 @@ export function ShoppingList({ items }: { items: ShoppingItem[] }) {
 
       {[...groups.values()].map(({ person, items: list }) => (
         <section key={person.id} className="flex flex-col gap-3">
-          <div className="flex items-center gap-3 pb-2" style={{ borderBottom: "2px dotted #D9A93E" }}>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pb-2" style={{ borderBottom: "2px dotted #D9A93E" }}>
             <Avatar person={person} size={44} style={{ border: "3px solid #FFFDF7", boxShadow: "0 0 0 2px #D9A93E" }} />
-            <h2 className="font-display m-0 text-[28px] font-bold">Pour {person.firstName}</h2>
-            <span className="text-sm text-gris">· {list.length} cadeau{list.length > 1 ? "x" : ""}</span>
+            <h2 className="list-title text-[clamp(30px,8vw,40px)]">Pour {person.firstName}</h2>
+            <span className="text-sm whitespace-nowrap text-gris">· {list.length} cadeau{list.length > 1 ? "x" : ""}</span>
           </div>
           {list.map((i) => (
             <Row key={i.giftId} item={i} />

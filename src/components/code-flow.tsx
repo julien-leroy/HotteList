@@ -77,7 +77,7 @@ export function CodeFlow({ mode, next, initialEmail = "" }: { mode: "LOGIN" | "R
           <span className="text-xs text-gris-clair">L&apos;adresse de votre compte.</span>
         </div>
         {error && <Alert text={error} />}
-        <button className="btn b-red w-full" disabled={pending} autoFocus={Boolean(initialEmail)} style={{ minHeight: 48, fontSize: 15 }}>
+        <button className="btn b-primary w-full" disabled={pending} autoFocus={Boolean(initialEmail)} style={{ minHeight: 48, fontSize: 15 }}>
           {pending ? "Envoi…" : "Recevoir un code"}
         </button>
         <p className="m-0 text-center text-sm text-gris">
@@ -107,7 +107,7 @@ export function CodeFlow({ mode, next, initialEmail = "" }: { mode: "LOGIN" | "R
         </>
       )}
       {error && <Alert text={error} />}
-      <button className="btn b-red w-full" disabled={pending} style={{ minHeight: 48, fontSize: 15 }}>
+      <button className="btn b-primary w-full" disabled={pending} style={{ minHeight: 48, fontSize: 15 }}>
         {pending ? "Vérification…" : mode === "LOGIN" ? "Me connecter" : "Enregistrer et me connecter"}
       </button>
       <div className="flex flex-wrap justify-center gap-2">

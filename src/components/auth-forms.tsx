@@ -49,12 +49,9 @@ export function LoginForm({
         <input className="input" id="password" name="password" type="password" autoComplete="current-password" required />
       </div>
       <ErrorLine state={state} />
-      <button className="btn b-red w-full" disabled={pending} style={{ minHeight: 48, fontSize: 15 }}>
+      <button className="btn b-primary w-full" disabled={pending} style={{ minHeight: 48, fontSize: 15 }}>
         {pending ? "Connexion…" : "Se connecter"}
       </button>
-      <p className="m-0 text-center text-sm text-gris">
-        Pas encore de compte ? <Link href={withParams("/inscription", { next, email })}>Créer un compte</Link>
-      </p>
       {mail ? (
         <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-sm">
           <Link href={withParams("/connexion-code", { next, email })}>Recevoir un code par e-mail</Link>
@@ -131,7 +128,7 @@ export function SignupForm({
           <Link href={withParams("/mot-de-passe-oublie", { email: state.email })}>Mot de passe oublié ?</Link>
         </div>
       )}
-      <button className="btn b-red mt-1 w-full" disabled={pending} style={{ minHeight: 48, fontSize: 15 }}>
+      <button className="btn b-primary mt-1 w-full" disabled={pending} style={{ minHeight: 48, fontSize: 15 }}>
         {pending ? (mail ? "Envoi du code…" : "Création…") : mail ? "Recevoir mon code" : submitLabel}
       </button>
       <p className="m-0 text-center text-sm text-gris">
@@ -172,7 +169,7 @@ function SignupCode({ email, next, joinFamilyId, onEdit }: { email: string; next
       {error && (
         <p role="alert" className="m-0 rounded-xl border border-[#E7B9BC] bg-[#F8E6E6] px-3.5 py-2.5 text-sm font-semibold text-[#8A2730]">{error}</p>
       )}
-      <button className="btn b-red w-full" disabled={pending} style={{ minHeight: 48, fontSize: 15 }}>
+      <button className="btn b-primary w-full" disabled={pending} style={{ minHeight: 48, fontSize: 15 }}>
         {pending ? "Vérification…" : "Valider et entrer"}
       </button>
       <div className="flex flex-wrap justify-center gap-2">
@@ -210,7 +207,7 @@ export function ResetForm({ token }: { token: string }) {
         <input className="input" id="confirm" name="confirm" type="password" autoComplete="new-password" minLength={8} required />
       </div>
       <ErrorLine state={state} />
-      <button className="btn b-red w-full" disabled={pending} style={{ minHeight: 48 }}>
+      <button className="btn b-primary w-full" disabled={pending} style={{ minHeight: 48 }}>
         {pending ? "Enregistrement…" : "Enregistrer et me connecter"}
       </button>
     </form>

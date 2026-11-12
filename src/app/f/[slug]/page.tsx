@@ -116,11 +116,11 @@ export default async function FamilyPage({ params, searchParams }: Props) {
         <div className="flex flex-wrap items-end justify-between gap-7 pb-0">
           <div className="flex flex-col gap-3">
             <div className="flex flex-wrap items-center gap-2.5">
-              <span className="inline-flex items-center gap-2 rounded-full bg-or-clair px-3.5 py-1.5 text-sm font-bold text-bordeaux-fonce">
-                <IconStar />
+              <span className="inline-flex items-center gap-2 text-[15px] font-semibold text-ivoire">
+                <IconStar className="text-or-clair" />
                 {over ? `${family.eventName} : terminé` : days === 0 ? `${family.eventName} : c'est le grand jour !` : `${family.eventName} · ${eventDay(family.eventDate)} · J-${days}`}
               </span>
-              <span className="text-[15px] text-[#F6D9D2]">
+              <span className="text-[15px] text-[#F6D9D2]">· 
                 {plural(family.memberships.length, "membre", "membres")} · {plural(wishCount, "souhait", "souhaits")}
               </span>
             </div>

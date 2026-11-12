@@ -1,6 +1,7 @@
+import Link from "next/link";
 import { db } from "@/lib/db";
 import { tokenDigest } from "@/lib/auth";
-import { AuthShell } from "@/components/festive";
+import { AuthLayout, WelcomeAside } from "@/components/festive";
 import { ResetForm } from "@/components/auth-forms";
 
 export const metadata = { title: "Nouveau mot de passe" };
@@ -13,23 +14,26 @@ export default async function Reinitialiser({ params }: { params: Promise<{ toke
   });
   const valid = record && !record.usedAt && record.expiresAt > new Date();
   return (
-    <AuthShell>
-      <div className="flex w-full max-w-[480px] flex-col gap-4 rounded-[26px] border border-sable bg-papier px-8 py-8" style={{ borderTop: "6px solid #B3202E" }}>
-        {valid ? (
-          <>
-            <h1 className="font-display m-0 text-[32px] font-bold">Bonjour {record.user.firstName} !</h1>
-            <p className="m-0 text-gris">Choisissez votre nouveau mot de passe.</p>
+    <AuthLayout aside={<WelcomeAside />}>
+      {valid ? (
+        <>
+          <div>
+            <h2>Bonjour {record.user.firstName}{"\u00a0!"}</h2>
+            <p className="lead">Choisissez votre nouveau mot de passe.</p>
+          </div>
+          <div className="auth-card">
             <ResetForm token={token} />
-          </>
-        ) : (
-          <>
-            <h1 className="font-display m-0 text-[28px] font-bold">Lien expiré</h1>
-            <p className="m-0 leading-relaxed text-gris">
-              Ce lien a déjà servi ou a dépassé 24 h. Demandez-en un nouveau à l&apos;admin de votre famille.
-            </p>
-          </>
-        )}
-      </div>
-    </AuthShell>
+          </div>
+        </>
+      ) : (
+        <div>
+          <h2>Ce lien ne marche plus</h2>
+          <p className="lead">
+            Il a déjà servi ou a dépassé 24 h. Demandez-en un nouveau à quelqu&apos;un de votre famille.
+          </p>
+          <p className="mt-4 mb-0"><Link href="/">Retour à la connexion</Link></p>
+        </div>
+      )}
+    </AuthLayout>
   );
 }

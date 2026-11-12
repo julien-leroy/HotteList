@@ -1,6 +1,6 @@
 # HotteList — architecture technique (version simplifiée)
 
-_Document de référence. Dernière mise à jour : 10 novembre 2026 (inscription validée par code e-mail, pseudos par famille)._
+_Document de référence. Dernière mise à jour : 12 novembre 2026 (nouvelle DA : logo de la hotte, Santa Natale, nouvelles pages d'accueil)._
 _Développement lancé le 9 novembre 2026. Ajout de souhait et d'idée en popup depuis la v1.1. Code : https://github.com/julien-leroy/HotteList_
 
 ## 1. Décisions prises
@@ -24,10 +24,10 @@ _Développement lancé le 9 novembre 2026. Ajout de souhait et d'idée en popup 
 | Comptes gérés | Un adulte crée et administre des comptes « en procuration » (ex. ses enfants) et voit tout sur leurs listes |
 | Événement | Chaque famille a un **événement** : titre et date. Par défaut **Noël, le 25 décembre** ; à la création, « Changer » propose Noël, Anniversaire (« Anniversaire de … » pré-rempli) ou Autre, avec une date au choix (pas dans le passé). Modifiable ensuite par l'admin |
 | Fin de l'événement | Un encart « L'événement est terminé » avec un bouton **« Nettoyer les listes »** : il archive tous les cadeaux réservés ou à plusieurs, et laisse sur les listes ceux qui n'ont pas été offerts |
-| DA | Festive : rouge profond, vert sapin, or ; Fraunces + Inter ; boutons ghost aux couleurs douces (cf. canvas de design) |
+| DA | Validée le 12 novembre 2026 (détail : document « da-hottelist » du projet). En-tête bordeaux pointillé, guirlande, montagnes sapin ; sac `#CF2B35`, or `#FFCB2E`, encre `#1F3A2C`, crème `#F7F1E3`. **Santa Natale** pour les grands titres et titres de listes, **Fraunces** pour les titres de cartes et le « List » du logo, **Inter** pour le reste |
 | Ma liste de courses | Page `/courses` : tout ce que j'offre, regroupé par destinataire, avec ma part estimée (cadeau à plusieurs divisé), le reste à acheter et un **statut privé** « à acheter / acheté / emballé ». Imprimable |
 | Tirage au sort | Option de famille (admin) : chacun tire une personne à qui offrir ; chacun ne voit que son tirage, admin compris |
-| Logo et favicon | Tuile bordeaux pointillée avec cadeau doré (`src/app/icon.svg`) : favicon, icône d'application, en-tête du site et logos de `public/brand/` (fond Noël, sans fond couleur ou blanc, SVG vectoriels). Image d'aperçu des liens partagés : `src/app/opengraph-image.png` |
+| Logo et favicon | La hotte : sac de toile rouge, cadeau doré avec ombre floue, lien vert noué d'or. Dessin source : `src/components/brand.tsx` (`HotteMark`, `Wordmark`, `Logo`). Sur bordeaux, la hotte est posée sur une pastille crème. Favicon `src/app/icon.svg` (version simplifiée), icônes d'application crème, logos de `public/brand/` (texte en tracés), image de partage `src/app/opengraph-image.png`, logo des e-mails `public/brand/hottelist-logo-blanc.png` |
 
 ## 2. Vue d'ensemble
 
@@ -51,10 +51,10 @@ Tout le site tient dans un dossier, `/opt/hottelist`. Pour sauvegarder, il suffi
 | Authentification | **Maison, minimale** : mots de passe hachés avec scrypt (intégré à Node), sessions en base, cookie httpOnly | Better Auth écarté : il impose une adresse e-mail par utilisateur, incompatible avec les comptes gérés sans identifiant |
 | Validation | Zod | |
 | E-mails | Nodemailer (SMTP Amen) | Activés seulement si `SMTP_*` est renseigné dans `.env` |
-| Styles | Tailwind CSS 4 (tokens de la DA) + classes reprises du canvas de design | |
+| Styles | Tailwind CSS 4 | `src/styles/` : `tokens.css` (couleurs et polices, seule source), `base.css`, `festive.css` (logo, en-tête, guirlande, pages d'accueil), `components.css` (boutons, champs, cartes, popups) ; `src/app/globals.css` ne fait que les importer |
 | Popup, menus | Radix UI (Dialog, DropdownMenu) | Accessible au clavier |
 | Glisser-déposer | dnd-kit | Souris, tactile (appui long), clavier |
-| Polices | @fontsource-variable (Fraunces, Inter) | Auto-hébergées : aucune requête vers Google |
+| Polices | @fontsource-variable (Fraunces, Inter) + Santa Natale (`public/fonts/santa-natale.woff2`, réduite aux caractères latins) | Auto-hébergées : aucune requête vers Google. Santa Natale est gratuite pour un usage personnel et non commercial uniquement |
 | Lecture des liens | cheerio + requête HTTP maison | Lit seulement la page HTML (Open Graph, JSON-LD, balises Amazon) |
 | Lancement | **systemd** (service Debian, Node via nvm) | Redémarre tout seul |
 | Tests | Vitest | Règles de visibilité, blocage réseau local, lecture des pages produit |

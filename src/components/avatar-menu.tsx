@@ -18,7 +18,7 @@ export function AvatarMenu({ user }: { user: AvatarPerson & { login: string | nu
           aria-label={`Menu de ${user.firstName}`}
           className="cursor-pointer rounded-full border-0 bg-transparent p-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-or-clair"
         >
-          <Avatar person={user} size={40} style={{ border: "2px solid #F2C75C" }} />
+          <Avatar person={user} size={40} style={{ border: "2px solid #FFCB2E" }} />
         </button>
       </Dropdown.Trigger>
       <Dropdown.Portal>

@@ -1,6 +1,7 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser, safeNext } from "@/lib/auth";
-import { AuthShell, CardHero } from "@/components/festive";
+import { AuthLayout, HowItWorks, WelcomeAside } from "@/components/festive";
 import { SignupForm } from "@/components/auth-forms";
 import { mailEnabled } from "@/lib/mail";
 
@@ -10,19 +11,20 @@ export default async function Inscription({ searchParams }: { searchParams: Prom
   const { next, email } = await searchParams;
   const safe = safeNext(next) ?? undefined;
   if (await getCurrentUser()) redirect(safe ?? "/familles");
+  const loginHref = `/${safe || email ? `?${new URLSearchParams({ ...(safe ? { next: safe } : {}), ...(email ? { email } : {}) })}` : ""}`;
   return (
-    <AuthShell>
-      <div className="w-full max-w-[540px] overflow-hidden rounded-[26px] border border-sable bg-papier" style={{ boxShadow: "0 30px 60px -36px rgba(90,20,25,.55)" }}>
-        <CardHero>
-          <h1 className="font-display m-0 font-bold italic" style={{ fontSize: "clamp(38px,8vw,50px)", lineHeight: 1, letterSpacing: "-0.02em", textShadow: "0 3px 0 #5A1018" }}>
-            Bienvenue !
-          </h1>
-          <p className="m-0 text-[15px] text-[#F6D9D2]">Créez votre compte, puis votre famille ou rejoignez-en une.</p>
-        </CardHero>
-        <div className="px-8 pt-7 pb-8">
-          <SignupForm next={safe} mail={mailEnabled()} initialEmail={email ?? ""} />
-        </div>
+    <AuthLayout aside={<WelcomeAside />} footer={<HowItWorks onLight />}>
+      <nav className="auth-switch" aria-label="Connexion ou inscription">
+        <Link href={loginHref}>J&apos;ai déjà un compte</Link>
+        <Link href="/inscription" aria-current="page">Je suis nouveau</Link>
+      </nav>
+      <div>
+        <h2>Créer un compte</h2>
+        <p className="lead">Ensuite, créez votre famille ou rejoignez-en une avec le lien qu&apos;on vous a envoyé.</p>
       </div>
-    </AuthShell>
+      <div className="auth-card">
+        <SignupForm next={safe} mail={mailEnabled()} initialEmail={email ?? ""} />
+      </div>
+    </AuthLayout>
   );
 }

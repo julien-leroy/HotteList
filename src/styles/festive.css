@@ -1,0 +1,111 @@
+/* ---------- Identité et décor de Noël ---------- */
+
+/* Logo : la hotte + « Hotte » (Santa Natale) « List » (Fraunces italique) */
+.logo { display: inline-flex; align-items: center; text-decoration: none; }
+.logo-badge {
+  display: inline-flex; align-items: center; justify-content: center; flex: none;
+  border-radius: 999px; background: var(--color-ivoire);
+  box-shadow: 0 4px 14px -6px rgba(40, 0, 8, .55);
+}
+.wordmark { display: inline-flex; align-items: baseline; line-height: 1; white-space: nowrap; }
+.wordmark .font-script { line-height: .9; }
+.wordmark .font-display { font-style: italic; font-weight: 650; letter-spacing: -.01em; }
+
+/* Fond bordeaux pointillé de l'en-tête (celui du site d'origine) */
+.hero-bordeaux {
+  background-color: var(--color-bordeaux);
+  background-image:
+    radial-gradient(rgba(255, 249, 238, .22) 1.3px, transparent 1.8px),
+    radial-gradient(rgba(255, 249, 238, .12) 1px, transparent 1.4px);
+  background-size: 34px 34px, 19px 19px;
+  background-position: 0 0, 9px 13px;
+  color: var(--color-ivoire);
+}
+
+/* Grand titre en Santa Natale sur le bordeaux */
+.hero-title {
+  margin: 0;
+  font-family: var(--font-script);
+  font-weight: 400;
+  line-height: 1.02;
+  color: var(--color-ivoire);
+  text-shadow: 0 3px 0 rgba(50, 0, 8, .35);
+  text-wrap: balance;
+}
+.hero-kicker { margin: 0; font: 500 15px/1.4 var(--font-sans); color: #f6dcdd; }
+
+/* Titre de liste sur fond clair (« La liste de Maman ») */
+.list-title { margin: 0; font-family: var(--font-script); font-weight: 400; line-height: 1; color: var(--color-rouge); }
+
+/* Ampoules de la guirlande : verre coloré, culot sombre, reflet, halo qui scintille */
+.bulb {
+  position: relative; width: 13px; height: 18px;
+  border-radius: 50% 50% 50% 50% / 42% 42% 58% 58%;
+  animation: tw 2.4s ease-in-out infinite;
+}
+.bulb::before {
+  content: ""; position: absolute; left: 50%; top: -5px; width: 7px; height: 6px; margin-left: -3.5px;
+  border-radius: 2px; background: #2b1a12;
+}
+.bulb::after {
+  content: ""; position: absolute; left: 3px; top: 4px; width: 3px; height: 6px; border-radius: 50%;
+  background: rgba(255, 255, 255, .45);
+}
+.bulb.d1 { animation-delay: .4s; } .bulb.d2 { animation-delay: .9s; } .bulb.d3 { animation-delay: 1.5s; }
+@keyframes tw { 0%, 100% { opacity: 1; filter: brightness(1.1); } 50% { opacity: .6; filter: brightness(.85); } }
+
+/* Houx devant un titre */
+.holly { flex: none; }
+
+/* ---------- Pages d'accueil, de connexion et d'invitation ---------- */
+.auth {
+  display: grid; min-height: 100vh;
+  grid-template-columns: minmax(0, 1fr);
+  background: var(--color-creme);
+}
+.auth-aside { position: relative; overflow: hidden; display: flex; flex-direction: column; }
+.auth-aside-inner { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 22px; padding: 18px 24px 96px; }
+.auth-main { display: flex; flex-direction: column; align-items: center; padding: 8px 20px 56px; }
+.auth-panel { width: 100%; max-width: 440px; display: flex; flex-direction: column; gap: 20px; }
+.auth-panel h2 { margin: 0; font: 650 30px/1.15 var(--font-display); color: var(--color-encre); letter-spacing: -.01em; }
+.auth-panel .lead { margin: 0; font-size: 15px; line-height: 1.55; color: var(--color-gris); }
+.auth-card {
+  background: var(--color-papier); border: 1px solid var(--color-sable); border-radius: 22px;
+  padding: 26px 24px; box-shadow: 0 24px 50px -34px rgba(90, 20, 25, .45);
+}
+.auth-switch { display: grid; grid-template-columns: 1fr 1fr; padding: 4px; border-radius: 999px; background: var(--color-sable-pale); }
+.auth-switch a {
+  display: flex; align-items: center; justify-content: center; min-height: 42px; border-radius: 999px;
+  font: 600 14px var(--font-sans); color: var(--color-gris); text-decoration: none;
+}
+.auth-switch a:hover { color: var(--color-encre); }
+.auth-switch a[aria-current="page"] { background: var(--color-papier); color: var(--color-encre); box-shadow: 0 1px 3px rgba(60, 30, 10, .15); }
+
+/* Les trois promesses du site */
+.steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.steps li { display: flex; gap: 14px; align-items: flex-start; }
+.steps .ico {
+  flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px;
+  border-radius: 12px; background: rgba(255, 249, 238, .12); color: var(--color-or-clair);
+}
+.steps strong { display: block; font: 650 16px/1.3 var(--font-sans); color: var(--color-ivoire); }
+.steps span { display: block; font-size: 14px; line-height: 1.5; color: #f3d6d8; }
+.steps.on-light .ico { background: var(--color-or-pale); color: var(--color-rouge-texte); }
+.steps.on-light strong { color: var(--color-encre); }
+.steps.on-light span { color: var(--color-gris); }
+
+@media (min-width: 960px) {
+  .auth { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); }
+  .auth-aside { min-height: 100vh; position: sticky; top: 0; }
+  .auth-aside-inner { flex: 1; justify-content: center; gap: 30px; padding: 72px clamp(40px, 6vw, 96px) 150px; }
+  .auth-main { justify-content: center; padding: 48px clamp(32px, 5vw, 72px); }
+  .auth-panel { max-width: 460px; }
+  .auth-panel h2 { font-size: 34px; }
+  .auth-card { padding: 32px 30px; }
+  .auth-mobile-only { display: none !important; }
+}
+@media (max-width: 959.98px) {
+  .auth-desktop-only { display: none !important; }
+}
+
+@media (prefers-reduced-motion: reduce) { .bulb { animation: none; } }

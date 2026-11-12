@@ -1,0 +1,52 @@
+/* ---------- Direction artistique HotteList (validée le 12 novembre 2026) ----------
+   Une seule source pour les couleurs et les polices : Tailwind en tire ses classes
+   (bg-bordeaux, text-encre, font-script…) et le reste du CSS les lit avec var(--…). */
+
+@font-face {
+  font-family: "Santa Natale";
+  src: url("/fonts/santa-natale.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  /* Polices : Santa Natale pour les grands titres, Fraunces pour les titres de cartes et le
+     « List » du logo, Inter pour tout le reste. */
+  --font-sans: "Inter Variable", Inter, system-ui, sans-serif;
+  --font-display: "Fraunces Variable", Fraunces, Georgia, serif;
+  --font-script: "Santa Natale", "Fraunces Variable", Georgia, serif;
+
+  /* Fonds et texte */
+  --color-creme: #f7f1e3;
+  --color-papier: #fffdf7;
+  --color-ivoire: #fff9ee;
+  --color-sable: #e3d6ba;
+  --color-sable-fonce: #d8cbae;
+  --color-sable-pale: #f2eada;
+  --color-encre: #1f3a2c;
+  --color-gris: #5e5a48;
+  --color-gris-clair: #6b6553;
+
+  /* Rouges : la hotte */
+  --color-rouge: #cf2b35;
+  --color-rouge-vif: #ff4a55;
+  --color-rouge-doux: #a8323c;
+  --color-rouge-texte: #8a1c26;
+  --color-rouge-pale: #f8e6e6;
+  --color-bordeaux: #7e1621;
+  --color-bordeaux-fonce: #5a1018;
+
+  /* Verts : le lien et le décor */
+  --color-sapin: #1f4d36;
+  --color-sapin-clair: #2a6b4b;
+  --color-sapin-texte: #1f5539;
+  --color-sapin-pale: #e8f1eb;
+  --color-lien: #3f7a52;
+
+  /* Ors : le cadeau et le nœud */
+  --color-or: #d9a93e;
+  --color-or-clair: #ffcb2e;
+  --color-or-cadeau: #ffd146;
+  --color-or-pale: #f6e7c1;
+}

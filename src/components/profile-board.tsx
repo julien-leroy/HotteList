@@ -261,9 +261,9 @@ function FamilyColumn({
 }) {
   const { setNodeRef } = useDroppable({ id: col.family.id });
   return (
-    <section ref={setNodeRef} className={`col${highlight ? " over" : ""}`} aria-label={col.family.name} style={inTabs ? { borderTopLeftRadius: 0, borderTop: "3px solid #B3202E" } : undefined}>
+    <section ref={setNodeRef} className={`col${highlight ? " over" : ""}`} aria-label={col.family.name} style={inTabs ? { borderTopLeftRadius: 0, borderTop: "3px solid #CF2B35" } : undefined}>
       <div className={`flex flex-wrap items-baseline justify-between gap-2.5 px-1 pb-2${inTabs ? " hidden" : ""}`} style={{ borderBottom: "2px dotted #D9A93E" }}>
-        <h2 className="font-display m-0 text-[26px] font-bold italic">{col.family.name}</h2>
+        <h2 className="list-title text-[clamp(30px,8vw,36px)]">{col.family.name}</h2>
         <span className="text-[13px] text-gris">
           {col.gifts.length} souhait{col.gifts.length > 1 ? "s" : ""} · <Link href={`/f/${col.family.slug}`}>ouvrir</Link>
         </span>
@@ -323,7 +323,7 @@ function FamilyTab({
       onClick={onSelect}
       className="flex min-h-12 flex-none cursor-pointer items-center gap-2 rounded-t-2xl px-4 font-semibold"
       style={{
-        border: dropTarget ? "2px dashed #B3202E" : "1px solid #E3D6BA",
+        border: dropTarget ? "2px dashed #CF2B35" : "1px solid #E3D6BA",
         borderBottom: selected ? "3px solid #FFFDF7" : undefined,
         background: dropTarget ? "#FFF4E0" : selected ? "#FFFDF7" : "#F2EADA",
         color: selected ? "#1F3A2C" : "#6B6553",

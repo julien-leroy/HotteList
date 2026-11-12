@@ -29,8 +29,8 @@ export default async function Familles() {
     <div className="min-h-screen bg-creme">
       <FestiveHeader user={user} current="familles">
         <div className="flex flex-col gap-2.5">
-          <HeroTitle>Bonjour {user.firstName} !</HeroTitle>
-          <p className="m-0 text-base text-[#F6D9D2]">Vos familles, et de quoi en créer une nouvelle.</p>
+          <HeroTitle>Bonjour {user.firstName}{"\u00a0!"}</HeroTitle>
+          <p className="hero-kicker text-base">Vos familles, et de quoi en créer une nouvelle.</p>
         </div>
       </FestiveHeader>
 
@@ -53,7 +53,7 @@ export default async function Familles() {
                 key={family.id}
                 href={`/f/${family.slug}`}
                 className="card no-underline"
-                style={{ color: "#1F3A2C", borderTop: "6px solid #B3202E" }}
+                style={{ color: "#1F3A2C", borderTop: "6px solid #CF2B35" }}
               >
                 <div className="flex flex-1 flex-col gap-4 p-6">
                   <div className="flex items-center justify-between gap-3">
@@ -62,7 +62,7 @@ export default async function Familles() {
                     </span>
                     {role === "ADMIN" && <span className="text-xs font-bold tracking-wide text-gris-clair uppercase">Admin</span>}
                   </div>
-                  <h2 className="font-display m-0 text-[32px] leading-[1.05] font-bold italic">{family.name}</h2>
+                  <h2 className="list-title text-[clamp(36px,10vw,46px)]">{family.name}</h2>
                   <div className="mt-auto flex items-center justify-between gap-3">
                     <div className="flex">
                       {people.slice(0, 5).map((p, i) => (

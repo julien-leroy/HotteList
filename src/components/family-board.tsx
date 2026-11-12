@@ -170,11 +170,11 @@ export function FamilyBoard({ familyId, familySlug, viewerId, sections, openGift
                   <Avatar person={s.person} size={56} style={{ border: "3px solid #FFFDF7", boxShadow: "0 0 0 2px #D9A93E", fontSize: 18 }} />
                   <div className="flex flex-col gap-0.5">
                     {s.isMe ? (
-                      <h2 className="font-display m-0 text-[32px] leading-[1.1] font-bold">Ma liste</h2>
+                      <h2 className="list-title text-[clamp(34px,9vw,44px)]">Ma liste</h2>
                     ) : (
                       <InlineEdit
                         as="h2"
-                        className="font-display m-0 text-[32px] leading-[1.1] font-bold"
+                        className="list-title text-[clamp(34px,9vw,44px)]"
                         value={s.nickname ?? ""}
                         display={s.person.firstName}
                         placeholder={s.realName.split(" ")[0]}
@@ -358,8 +358,8 @@ function GiftCard({ gift, onOpen }: { gift: VisibleGift; onOpen: () => void }) {
           {gift.kind === "IDEE" && gift.ideaBy && <span className="idea">Idée de {gift.ideaBy.firstName}</span>}
           {st.kind === "OTHER" && <span className="band" style={{ background: "#8A1C26", color: "#FFF9EE" }}>Réservé par {st.by}</span>}
           {st.kind === "MINE" && <span className="band" style={{ background: "#1E6B47", color: "#FFF9EE" }}>Réservé par vous · {STATUS_LABEL[gift.secret!.myStatus ?? "A_ACHETER"]}</span>}
-          {st.kind === "GROUP" && <span className="band" style={{ background: "#F2C75C", color: "#4A1209" }}>À plusieurs · {st.people}{st.mine ? ` · ${STATUS_LABEL[gift.secret!.myStatus ?? "A_ACHETER"]}` : ""}</span>}
-          {gift.isNew && <span className="idea" style={{ background: "#B3202E", left: gift.kind === "IDEE" ? 10 : undefined, right: gift.kind === "IDEE" ? undefined : 10, top: gift.kind === "IDEE" ? 40 : 10 }}>Nouveau</span>}
+          {st.kind === "GROUP" && <span className="band" style={{ background: "#FFCB2E", color: "#4A1209" }}>À plusieurs · {st.people}{st.mine ? ` · ${STATUS_LABEL[gift.secret!.myStatus ?? "A_ACHETER"]}` : ""}</span>}
+          {gift.isNew && <span className="idea" style={{ background: "#CF2B35", left: gift.kind === "IDEE" ? 10 : undefined, right: gift.kind === "IDEE" ? undefined : 10, top: gift.kind === "IDEE" ? 40 : 10 }}>Nouveau</span>}
         </GiftVisual>
         <span className="flex flex-1 flex-col gap-2.5 px-3.5 pt-3.5 pb-2.5">
           <span className="flex items-start justify-between gap-2">
@@ -410,7 +410,7 @@ function GiftRow({ gift, onOpen }: { gift: VisibleGift; onOpen: () => void }) {
         <span className="flex min-w-0 flex-1 flex-col gap-[3px]">
           <span className="flex flex-wrap items-center gap-2">
             <span className="rt text-base font-semibold">{gift.title}</span>
-            {gift.isNew && <span className="pill" style={{ background: "#B3202E", color: "#FFF9EE", minHeight: 22, fontSize: 11, padding: "0 8px" }}>Nouveau</span>}
+            {gift.isNew && <span className="pill" style={{ background: "#CF2B35", color: "#FFF9EE", minHeight: 22, fontSize: 11, padding: "0 8px" }}>Nouveau</span>}
             {nb > 0 && (
               <span className="cm">
                 <IconComment size={12} />

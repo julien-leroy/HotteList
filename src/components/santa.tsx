@@ -18,7 +18,7 @@ export function SantaBanner({ receiver, budget, sinceLabel }: { receiver: P; bud
       >
         <div className="flex min-w-0 flex-[1_1_320px] items-center gap-4">
           <span className="flex h-14 w-14 flex-none items-center justify-center rounded-full" style={{ background: "#7E1621" }}>
-            <IconGift size={30} stroke="#F2C75C" />
+            <IconGift size={30} stroke="#FFCB2E" />
           </span>
           <div className="flex flex-col gap-0.5">
             <span className="text-[13px] font-bold tracking-wide text-[#8A6516] uppercase">Tirage au sort · {sinceLabel}</span>

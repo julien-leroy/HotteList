@@ -61,7 +61,7 @@ export function GiftDialog({
                 </span>
                 {st.kind === "OTHER" && <span className="band" style={{ background: "#8A1C26", color: "#FFF9EE", padding: "12px 16px", fontSize: 14 }}>Réservé par {st.by}</span>}
                 {st.kind === "MINE" && <span className="band" style={{ background: "#1E6B47", color: "#FFF9EE", padding: "12px 16px", fontSize: 14 }}>Réservé par vous</span>}
-                {st.kind === "GROUP" && <span className="band" style={{ background: "#F2C75C", color: "#4A1209", padding: "12px 16px", fontSize: 14 }}>Cadeau à plusieurs</span>}
+                {st.kind === "GROUP" && <span className="band" style={{ background: "#FFCB2E", color: "#4A1209", padding: "12px 16px", fontSize: 14 }}>Cadeau à plusieurs</span>}
               </GiftVisual>
 
               <div className="box-border flex min-w-0 flex-[1.3_1_380px] flex-col gap-4 px-7 pt-7 pb-6">
@@ -198,7 +198,7 @@ export function GiftDialog({
               <div className="flex flex-col gap-4 px-7 pt-6 pb-7" style={{ borderTop: "2px dotted #D9A93E", background: "#FFFAF0" }}>
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <h3 className="font-display m-0 flex items-center gap-2 text-[22px] font-bold">
-                    <IconComment size={20} style={{ color: "#B3202E" }} />
+                    <IconComment size={20} style={{ color: "#CF2B35" }} />
                     Commentaires · {s.comments.length}
                   </h3>
                   <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#4A4A3A]">
