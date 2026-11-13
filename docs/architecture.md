@@ -1,6 +1,6 @@
 # HotteList — architecture technique (version simplifiée)
 
-_Document de référence. Dernière mise à jour : 13 novembre 2026 (mode Secret Santa avec encart sur le côté ; avant : nouvelle DA, titres en Merienda)._
+_Document de référence. Dernière mise à jour : 13 novembre 2026 (téléchargement des listes en PDF / Excel ; Secret Santa avec « Découvrir »)._
 _Développement lancé le 9 novembre 2026. Ajout de souhait et d'idée en popup depuis la v1.1. Code : https://github.com/julien-leroy/HotteList_
 
 ## 1. Décisions prises
@@ -55,6 +55,7 @@ Tout le site tient dans un dossier, `/opt/hottelist`. Pour sauvegarder, il suffi
 | Popup, menus | Radix UI (Dialog, DropdownMenu) | Accessible au clavier |
 | Glisser-déposer | dnd-kit | Souris, tactile (appui long), clavier |
 | Polices | @fontsource-variable (Fraunces, Inter), @fontsource-variable/merienda + Santa Natale (`public/fonts/santa-natale.woff2`, réduite aux caractères latins) | Auto-hébergées : aucune requête vers Google. Santa Natale est gratuite pour un usage personnel et non commercial uniquement |
+| Export | pdfkit (PDF) et exceljs (Excel) | Hors bundle (`serverExternalPackages`) |
 | Lecture des liens | cheerio + requête HTTP maison | Lit seulement la page HTML (Open Graph, JSON-LD, balises Amazon) |
 | Lancement | **systemd** (service Debian, Node via nvm) | Redémarre tout seul |
 | Tests | Vitest | Règles de visibilité, blocage réseau local, lecture des pages produit |
@@ -95,6 +96,7 @@ Supprimés : Docker, PostgreSQL, sharp et stockage d'images, Better Auth.
 - **Partager l'invitation** : partage natif du téléphone, sinon message tout prêt copié.
 - **Profil en onglets** (une famille par onglet) : toujours sur mobile, au choix sur ordinateur (mémorisé). On peut lâcher une carte sur un autre onglet pour la déplacer.
 - **Installable** sur l'écran d'accueil (manifeste, icônes, plein écran).
+- **Télécharger** (page famille, en haut à droite des prénoms) : toutes les listes en **PDF** (A4 aux couleurs du site, une partie par personne, liens cliquables ; `src/lib/export-pdf.ts`, pdfkit, polices `src/assets/fonts/`) ou en **Excel** (feuille « Toutes les listes » + une feuille par personne : type, cadeau, prix, coup de cœur, statut, site, lien, description, commentaires ; `src/lib/export-xlsx.ts`, exceljs). Le contenu passe par `giftsVisibleTo` : exactement ce que la personne voit sur le site (rien sur les réservations de sa propre liste).
 
 ## 5 ter. Mentions dans les commentaires
 
@@ -177,6 +179,7 @@ Droits d'écriture vérifiés côté serveur, dans chaque action :
 | `/f/[slug]/archives` | Années passées |
 | `/f/[slug]` | Page famille avec tous les souhaits ; c'est aussi le lien d'invitation |
 | `/f/[slug]?cadeau=ID` | Popup d'un cadeau |
+| `/f/[slug]/export?format=pdf\|xlsx` | Téléchargement de toutes les listes de la famille (membres uniquement) |
 | `/reinitialiser/[token]` | Choisir un nouveau mot de passe (lien créé par un membre) |
 | `/mot-de-passe-oublie` | Mot de passe oublié par code e-mail |
 | `/connexion-code` | Connexion par code e-mail |

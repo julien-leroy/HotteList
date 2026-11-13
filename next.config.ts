@@ -15,6 +15,8 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   // Les images sont affichées directement depuis le site d'origine : pas d'optimisation côté serveur.
   images: { unoptimized: true },
+  // Export PDF / Excel : bibliothèques Node laissées hors du bundle (pdfkit lit ses fichiers de polices)
+  serverExternalPackages: ["pdfkit", "exceljs"],
   allowedDevOrigins: appHost && appHost !== "localhost" ? [appHost] : [],
 };
 
