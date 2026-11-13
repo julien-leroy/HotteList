@@ -1,6 +1,6 @@
 # HotteList — architecture technique (version simplifiée)
 
-_Document de référence. Dernière mise à jour : 12 novembre 2026 (nouvelle DA ; fond sapin par défaut, bordeaux pour les familles, titres en Merienda)._
+_Document de référence. Dernière mise à jour : 13 novembre 2026 (mode Secret Santa avec encart sur le côté ; avant : nouvelle DA, titres en Merienda)._
 _Développement lancé le 9 novembre 2026. Ajout de souhait et d'idée en popup depuis la v1.1. Code : https://github.com/julien-leroy/HotteList_
 
 ## 1. Décisions prises
@@ -26,7 +26,7 @@ _Développement lancé le 9 novembre 2026. Ajout de souhait et d'idée en popup 
 | Fin de l'événement | Un encart « L'événement est terminé » avec un bouton **« Nettoyer les listes »** : il archive tous les cadeaux réservés ou à plusieurs, et laisse sur les listes ceux qui n'ont pas été offerts |
 | DA | Validée le 12 novembre 2026 (détail : document « da-hottelist » du projet). En-têtes pointillés avec guirlande et montagnes, sur deux fonds : **vert sapin** par défaut (accueil, connexion, mes familles, profil, courses) et **bordeaux** en second pour l'univers d'une famille (page famille, années passées, invitation), via `tone` de `FestiveHeader` et `AuthLayout`. Sac `#CF2B35`, or `#FFCB2E`, encre `#1F3A2C`, crème `#F7F1E3`. **Santa Natale** seulement pour les titres courts qui tiennent sur une ligne (`HeroTitle` et `listTitleProps` de `src/lib/script-metrics.ts` calculent la taille ; sinon Merienda), « Hotte » épaissi par un contour de sa couleur, **Merienda** gras (manuscrite lisible) pour les autres titres, **Fraunces** italique seulement pour le « List » du logo, **Inter** pour le reste |
 | Ma liste de courses | Page `/courses` : tout ce que j'offre, regroupé par destinataire, avec ma part estimée (cadeau à plusieurs divisé), le reste à acheter et un **statut privé** « à acheter / acheté / emballé ». Imprimable |
-| Tirage au sort | Option de famille (admin) : chacun tire une personne à qui offrir ; chacun ne voit que son tirage, admin compris |
+| Secret Santa | **Mode de famille** (`Family.santaMode`), à cocher à la création ou dans les Réglages (admin). Un encart sur le côté de la page famille (en haut sur téléphone) suit le tirage : avant, les participants (membres avec leur compte, 3 minimum) et le bouton « Lancer le tirage » pour l'admin ; après, « Vous offrez un cadeau à … » avec le budget conseillé. La liste de la personne tirée passe **en premier**, sur fond doré. Chacun ne voit que son tirage, admin compris. Couper le mode annule le tirage |
 | Logo et favicon | La hotte : sac de toile rouge, cadeau doré avec ombre floue, lien vert noué d'or. Dessin source : `src/components/brand.tsx` (`HotteMark`, `Wordmark`, `Logo`). Sur crème et sapin, la hotte classique ; sur bordeaux, couleurs inversées (`HotteMark inverse` : sac sapin `#2A6B4B`, lien rouge vif `#FF4A55`). Favicon `src/app/icon.svg` et icônes d'application : le cadeau sur un carré bordeaux, logos de `public/brand/` (texte en tracés), image de partage `src/app/opengraph-image.png`, logo des e-mails `public/brand/hottelist-logo-blanc.png` |
 
 ## 2. Vue d'ensemble
@@ -88,7 +88,7 @@ Supprimés : Docker, PostgreSQL, sharp et stockage d'images, Better Auth.
 
 - **Confirmations** dans le style du site (plus de fenêtres grises du navigateur).
 - **Annuler** pendant 7 secondes après : réserver, participer, annuler sa réservation, supprimer un cadeau (suppression « douce » : `deletedAt`, restaurable 10 minutes).
-- **Notifications** (cloche) : quelqu'un rejoint un cadeau à plusieurs dont je fais partie, commente un cadeau que j'offre ou dont j'ai parlé, déplace ou retire un souhait que j'avais réservé, lance un tirage au sort. Jamais rien pour le destinataire du cadeau.
+- **Notifications** (cloche) : quelqu'un rejoint un cadeau à plusieurs dont je fais partie, commente un cadeau que j'offre ou dont j'ai parlé, déplace ou retire un souhait que j'avais réservé, lance le tirage du Secret Santa. Jamais rien pour le destinataire du cadeau.
 - **Badge « Nouveau »** sur les cadeaux ajoutés par d'autres depuis ma visite précédente (une visite = plus d'une heure d'absence, pour que les badges ne disparaissent pas au premier clic).
 - **Tri** (ordre de la liste, coups de cœur, prix) et **filtre de budget** sur la page famille ; les prix libres restent toujours affichés.
 - **Doublons** : à l'ajout, alerte si le même lien (site + chemin) ou le même titre est déjà dans la liste visible.
@@ -121,7 +121,7 @@ Les noms dans le code sont en anglais (`prisma/schema.prisma`).
 ```
 User           id, firstName, lastName?, login? (unique, vide pour un compte géré), passwordHash?, avatarColor, managedById?, email? (unique), emailVerifiedAt?, emailReminders, emailMentions
 Session        id (empreinte du jeton), userId, expiresAt
-Family         id, name, slug unique avec suffixe aléatoire (ex. famille-leroy-7kq2), createdById, eventName (défaut « Noël »), eventDate, reminderSentFor?
+Family         id, name, slug unique avec suffixe aléatoire (ex. famille-leroy-7kq2), createdById, eventName (défaut « Noël »), eventDate, reminderSentFor?, santaMode
 Membership     userId, familyId, role (ADMIN | MEMBRE), nickname?, joinedAt, lastSeenAt?, prevSeenAt?   — unique (userId, familyId)
 Gift           id, familyId, recipientId, createdById, kind (SOUHAIT | IDEE),
                title, description?, url?, price?, imageUrl?, siteOrigin?, favorite, position,
@@ -153,7 +153,7 @@ Droits d'écriture vérifiés côté serveur, dans chaque action :
 - Créer un lien de réinitialisation du mot de passe : **tout membre**, pour n'importe quel autre membre, **admin compris** (au cas où l'admin lui-même aurait perdu son accès).
 - Retirer quelqu'un de la famille (ex. un doublon) : **admin** de la famille. On ne peut pas retirer le dernier admin. La personne retirée garde son compte ; ses comptes gérés partent avec elle et ses réservations dans la famille sont libérées (comme quand on quitte la famille).
 - Statut d'achat : seulement le participant lui-même, et lui seul le voit.
-- Tirage au sort (lancer, refaire, annuler) : admin. Chaque participant ne reçoit que son propre tirage.
+- Secret Santa (activer, lancer, refaire, couper) : admin. Chaque participant ne reçoit que son propre tirage.
 - **Pseudo dans la famille** : chaque membre peut changer le nom sous lequel n'importe quel membre apparaît dans cette famille (clic sur le titre de sa liste, ex. « Dominique » → « Maman ») ; vide = retour au prénom. Le pseudo sert partout dans la famille : titres, puces, réservations, commentaires, @mentions, notifications, tirage au sort, archives. Le vrai prénom reste affiché en petit.
 - Nettoyer les listes, changer le titre ou la date de l'événement, renommer la famille (aussi d'un clic sur le nom en haut de la page), régénérer le lien, nommer ou retirer un admin : admin de la famille. Une famille garde toujours au moins un admin.
 
@@ -201,4 +201,4 @@ Toutes livrées le 9 novembre 2026 : socle, familles, cadeaux et visibilité, r�
 ## 14. Pistes pour plus tard
 
 - Transférer la gestion d'un compte géré à un autre adulte.
-- Tirage au sort avec exclusions (ex. ne pas tirer son conjoint).
+- Secret Santa avec exclusions (ex. ne pas tirer son conjoint).

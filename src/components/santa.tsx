@@ -1,50 +1,119 @@
 "use client";
 
 import { useState } from "react";
-import { cancelSecretSanta, drawSecretSanta } from "@/app/actions/santa";
+import { cancelSecretSanta, drawSecretSanta, setSantaMode } from "@/app/actions/santa";
+import { listTitleProps } from "@/lib/script-metrics";
 import { Avatar, type AvatarPerson } from "./avatar";
 import { IconGift } from "./icons";
 import { confirmDialog, useAction } from "./toaster";
 
 type P = AvatarPerson & { id: string };
 
-/** Bandeau du tirage au sort : chacun ne voit que la personne qu'il a tirée. */
-export function SantaBanner({ receiver, budget, sinceLabel }: { receiver: P; budget: string | null; sinceLabel: string }) {
+/** Encart Secret Santa, sur le côté de la page famille (en haut sur téléphone). */
+export function SantaAside({
+  familyId,
+  isAdmin,
+  candidates,
+  receiver,
+  receiverWishes,
+  budget,
+  drawnOn,
+}: {
+  familyId: string;
+  isAdmin: boolean;
+  /** Membres qui peuvent participer (ceux qui ont leur propre compte). */
+  candidates: P[];
+  /** La personne que j'ai tirée, ou null. */
+  receiver: P | null;
+  receiverWishes: number;
+  budget: string | null;
+  /** Date du tirage (« 12 novembre »), ou null s'il n'a pas encore eu lieu. */
+  drawnOn: string | null;
+}) {
+  const { pending, run } = useAction();
+  const ids = candidates.map((c) => c.id);
+  const draw = async (again: boolean) => {
+    if (again && !(await confirmDialog({ title: "Refaire le tirage ?", message: "Le tirage actuel sera remplacé : chacun découvrira une nouvelle personne.", confirmLabel: "Refaire le tirage", danger: true }))) return;
+    run(() => drawSecretSanta(familyId, ids, budget ?? ""), "Tirage fait ! Chacun a reçu une notification.");
+  };
+
   return (
-    <div className="mx-auto max-w-[1200px] px-6 pt-6">
-      <div
-        className="flex flex-wrap items-center justify-between gap-4 rounded-[22px] px-6 py-5"
-        style={{ background: "linear-gradient(135deg,#FFF4E0,#F8EDD2)", border: "2px dashed #D9A93E" }}
-      >
-        <div className="flex min-w-0 flex-[1_1_320px] items-center gap-4">
-          <span className="flex h-14 w-14 flex-none items-center justify-center rounded-full" style={{ background: "#7E1621" }}>
-            <IconGift size={30} stroke="#FFCB2E" />
-          </span>
-          <div className="flex flex-col gap-0.5">
-            <span className="text-[13px] font-bold tracking-wide text-[#8A6516] uppercase">Tirage au sort · {sinceLabel}</span>
-            <span className="font-display text-[26px] leading-tight font-bold">
-              Vous offrez un cadeau à <span className="text-rouge">{receiver.firstName}</span>
-            </span>
-            <span className="text-sm text-gris">
-              C&apos;est secret : personne d&apos;autre ne le sait.{budget ? ` Budget conseillé : ${budget}.` : ""}
-            </span>
-          </div>
-        </div>
-        <a className="btn b-red" href={`#p-${receiver.id}`}>
-          <Avatar person={receiver} size={26} /> Voir sa liste
-        </a>
+    <div className="santa-card">
+      <div className="santa-head">
+        <span className="santa-ico"><IconGift size={20} stroke="#FFCB2E" /></span>
+        <span className="santa-kicker">Secret Santa{drawnOn ? ` · tiré le ${drawnOn}` : ""}</span>
       </div>
+
+      {receiver ? (
+        <>
+          <p className="m-0 text-[15px] text-gris">Vous offrez un cadeau à</p>
+          <div className="flex items-center gap-3">
+            <Avatar person={receiver} size={46} style={{ border: "3px solid #FFFDF7", boxShadow: "0 0 0 2px #D9A93E" }} />
+            <span {...listTitleProps(receiver.firstName, 40, 200)}>{receiver.firstName}</span>
+          </div>
+          <p className="m-0 text-[13px] leading-normal text-gris">
+            C&apos;est secret : personne d&apos;autre ne le sait.
+            {budget ? <> Budget conseillé : <strong className="text-encre">{budget}</strong>.</> : null}
+          </p>
+          <a className="btn b-primary" href={`#p-${receiver.id}`}>
+            {receiverWishes > 0 ? `Voir ses ${receiverWishes > 1 ? `${receiverWishes} souhaits` : "souhait"}` : "Voir sa liste"}
+          </a>
+        </>
+      ) : drawnOn ? (
+        <>
+          <p className="m-0 text-[15px] leading-normal">Le tirage a été fait avant votre arrivée, vous n&apos;en faites pas partie.</p>
+          {isAdmin ? (
+            <button type="button" className="btn b-primary" disabled={pending || ids.length < 3} onClick={() => draw(true)}>
+              Refaire le tirage avec tout le monde
+            </button>
+          ) : (
+            <p className="m-0 text-[13px] text-gris">Demandez à un admin de refaire le tirage.</p>
+          )}
+        </>
+      ) : (
+        <>
+          <p className="m-0 text-[15px] leading-normal">
+            Chacun va tirer au sort une personne à qui offrir un cadeau. Vous ne connaîtrez que la vôtre.
+          </p>
+          <div className="flex flex-col gap-2">
+            <span className="text-[13px] font-semibold text-gris">
+              {candidates.length} participant{candidates.length > 1 ? "s" : ""} pour l&apos;instant
+            </span>
+            <div className="flex flex-wrap">
+              {candidates.map((c, k) => (
+                <Avatar key={c.id} person={c} size={32} style={{ marginLeft: k ? -6 : 0, border: "2px solid #FFFDF7" }} />
+              ))}
+            </div>
+          </div>
+          {isAdmin ? (
+            ids.length >= 3 ? (
+              <>
+                <button type="button" className="btn b-primary" disabled={pending} onClick={() => draw(false)}>
+                  Lancer le tirage
+                </button>
+                <p className="m-0 text-[12px] leading-normal text-gris">Attendez que tout le monde ait rejoint la famille : ceux qui arrivent après ne seront pas dans le tirage.</p>
+              </>
+            ) : (
+              <p className="m-0 text-[13px] leading-normal text-gris">Il faut au moins 3 personnes avec leur compte. Envoyez le lien de la famille pour les inviter.</p>
+            )
+          ) : (
+            <p className="m-0 text-[13px] leading-normal text-gris">L&apos;admin lancera le tirage quand tout le monde aura rejoint.</p>
+          )}
+        </>
+      )}
     </div>
   );
 }
 
-/** Réglages admin du tirage au sort (dans la popup Réglages). */
+/** Réglages admin du Secret Santa (dans la popup Réglages). */
 export function SantaSettings({
   familyId,
+  mode,
   candidates,
   current,
 }: {
   familyId: string;
+  mode: boolean;
   candidates: P[];
   current: { participantIds: string[]; budget: string | null } | null;
 }) {
@@ -53,10 +122,25 @@ export function SantaSettings({
   const { pending, run } = useAction();
   return (
     <div className="flex flex-col gap-3">
-      <h3 className="font-display m-0 text-[22px] font-bold">Tirage au sort</h3>
+      <h3 className="font-display m-0 text-[22px] font-bold">Secret Santa</h3>
       <p className="m-0 text-[13px] leading-normal text-gris">
         Chaque participant tire au hasard une personne à qui offrir un cadeau. Chacun ne voit que son propre tirage, admin compris.
       </p>
+      <label className="chk">
+        <input
+          type="checkbox"
+          checked={mode}
+          disabled={pending}
+          onChange={async (e) => {
+            const on = e.target.checked;
+            if (!on && current && !(await confirmDialog({ title: "Couper le Secret Santa ?", message: "Le tirage en cours sera annulé.", confirmLabel: "Couper", danger: true }))) return;
+            run(() => setSantaMode(familyId, on), on ? "Secret Santa activé." : "Secret Santa coupé.");
+          }}
+        />
+        Activer le Secret Santa dans cette famille
+      </label>
+      {mode && (
+        <>
       {current && (
         <p className="m-0 rounded-xl px-3.5 py-2.5 text-sm font-semibold" style={{ background: "#E8F1EB", border: "1px solid #9CC2AC", color: "#1F5539" }}>
           Tirage en cours avec {current.participantIds.length} participants.
@@ -99,6 +183,8 @@ export function SantaSettings({
           </button>
         )}
       </div>
+        </>
+      )}
     </div>
   );
 }

@@ -104,6 +104,14 @@ export function CreateFamilyForm({ first, christmas, today }: { first: boolean; 
         </fieldset>
       )}
 
+      <label className="flex cursor-pointer items-start gap-3 rounded-xl bg-papier px-3.5 py-3" style={{ border: "1px solid #E3D6BA" }}>
+        <input type="checkbox" name="santa" className="mt-0.5 flex-none" style={{ width: 20, height: 20, accentColor: "#1F4D36" }} />
+        <span className="flex flex-col gap-0.5">
+          <span className="text-[15px] font-semibold">Faire un Secret Santa</span>
+          <span className="text-[13px] leading-snug text-gris">Chacun tire au sort une personne à qui offrir un cadeau. Vous lancerez le tirage quand tout le monde aura rejoint.</span>
+        </span>
+      </label>
+
       {state?.error && <p role="alert" className="m-0 text-sm font-semibold text-[#8A2730]">{state.error}</p>}
       <button className="btn b-red self-start" disabled={pending || (editing && (!eventDate || eventName.trim().length < 2))}>
         {pending ? "Création…" : "Créer la famille"}

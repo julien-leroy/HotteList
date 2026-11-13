@@ -37,6 +37,7 @@ export async function drawSecretSanta(familyId: string, participantIds: string[]
     const family = await db.family.findUniqueOrThrow({ where: { id: familyId } });
     await db.$transaction(async (tx) => {
       await tx.secretSanta.deleteMany({ where: { familyId } });
+      await tx.family.update({ where: { id: familyId }, data: { santaMode: true } });
       await tx.secretSanta.create({
         data: {
           familyId,
@@ -48,10 +49,26 @@ export async function drawSecretSanta(familyId: string, participantIds: string[]
       await tx.notification.createMany({
         data: ids.map((userId) => ({
           userId,
-          text: `Tirage au sort dans ${family.name} : découvrez à qui vous offrez un cadeau !`,
+          text: `Secret Santa dans ${family.name} : découvrez à qui vous offrez un cadeau !`,
           link: `/f/${family.slug}`,
         })),
       });
+    });
+    revalidatePath("/", "layout");
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Une erreur est survenue." };
+  }
+}
+
+/** Active ou coupe le mode Secret Santa. Le couper annule aussi le tirage en cours. */
+export async function setSantaMode(familyId: string, on: boolean): Promise<ActionResult> {
+  try {
+    const user = await requireUser();
+    await requireAdmin(user.id, familyId);
+    await db.$transaction(async (tx) => {
+      await tx.family.update({ where: { id: familyId }, data: { santaMode: on } });
+      if (!on) await tx.secretSanta.deleteMany({ where: { familyId } });
     });
     revalidatePath("/", "layout");
     return { ok: true };

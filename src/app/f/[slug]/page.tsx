@@ -10,7 +10,7 @@ import { FamilyBoard, type Section } from "@/components/family-board";
 import { FamilySettings } from "@/components/family-settings";
 import { EventOver } from "@/components/event-over";
 import { InvitePage, JoinPage } from "@/components/invite";
-import { SantaBanner } from "@/components/santa";
+import { SantaAside } from "@/components/santa";
 import { mailEnabled } from "@/lib/mail";
 import { ShareButton } from "@/components/share-button";
 import { FamilyNameEdit } from "@/components/family-name-edit";
@@ -76,13 +76,16 @@ export default async function FamilyPage({ params, searchParams }: Props) {
   // Pseudo de chacun dans cette famille (sinon son prénom)
   const nick = new Map(family.memberships.filter((m) => m.nickname).map((m) => [m.userId, m.nickname!]));
   const shown = (u: { id: string; firstName: string; lastName: string | null }) => (nick.has(u.id) ? nick.get(u.id)! : u.firstName);
-  const rank = (id: string) => (id === user.id ? 0 : user.managedIds.includes(id) ? 1 : 2);
+  // Secret Santa : la personne que j'ai tirée passe en premier, puis moi, mes comptes gérés, les autres
+  const santaChild = family.santaMode && myDraw ? myDraw.receiverId : null;
+  const rank = (id: string) => (id === santaChild ? -1 : id === user.id ? 0 : user.managedIds.includes(id) ? 1 : 2);
   const members = family.memberships.slice().sort((a, b) => rank(a.userId) - rank(b.userId));
   const sections: Section[] = members.map((m) => ({
     person: { id: m.user.id, firstName: shown(m.user), lastName: m.nickname ? null : m.user.lastName, avatarColor: m.user.avatarColor },
     realName: [m.user.firstName, m.user.lastName].filter(Boolean).join(" "),
     nickname: m.nickname,
     isMe: m.userId === user.id,
+    isSantaChild: m.userId === santaChild,
     isManaged: user.managedIds.includes(m.userId),
     managerName: m.user.managedById
       ? (() => {
@@ -92,6 +95,11 @@ export default async function FamilyPage({ params, searchParams }: Props) {
       : null,
     gifts: gifts.filter((g) => g.recipientId === m.userId),
   }));
+
+  // Participants possibles au Secret Santa : les membres qui ont leur propre compte
+  const santaCandidates = family.memberships
+    .filter((m) => !m.user.managedById)
+    .map((m) => ({ id: m.user.id, firstName: shown(m.user), lastName: m.nickname ? null : m.user.lastName, avatarColor: m.user.avatarColor }));
 
   const wishCount = gifts.filter((g) => g.kind === "SOUHAIT").length;
   const over = isEventOver(family.eventDate);
@@ -156,7 +164,8 @@ export default async function FamilyPage({ params, searchParams }: Props) {
                 santa={
                   isAdmin
                     ? {
-                        candidates: family.memberships.filter((m) => !m.user.managedById).map((m) => ({ id: m.user.id, firstName: shown(m.user), lastName: m.nickname ? null : m.user.lastName, avatarColor: m.user.avatarColor })),
+                        mode: family.santaMode,
+                        candidates: santaCandidates,
                         current: santa ? { participantIds: santa.assignments.map((a) => a.giverId), budget: santa.budget } : null,
                       }
                     : null
@@ -167,14 +176,6 @@ export default async function FamilyPage({ params, searchParams }: Props) {
         </div>
       </FestiveHeader>
 
-      {myDraw && (
-        <SantaBanner
-          receiver={{ ...myDraw.receiver, firstName: shown(myDraw.receiver), lastName: nick.has(myDraw.receiver.id) ? null : myDraw.receiver.lastName }}
-          budget={santa?.budget ?? null}
-          sinceLabel={`tiré le ${santa!.createdAt.toLocaleDateString("fr-FR", { day: "numeric", month: "long", timeZone: "Europe/Paris" })}`}
-        />
-      )}
-
       {recap && <EventOver eventName={family.eventName} familyId={family.id} isAdmin={isAdmin} taken={recap.taken} free={recap.free} />}
 
       <FamilyBoard
@@ -183,6 +184,19 @@ export default async function FamilyPage({ params, searchParams }: Props) {
         viewerId={user.id}
         sections={sections}
         openGiftId={cadeau ?? null}
+        aside={
+          family.santaMode ? (
+            <SantaAside
+              familyId={family.id}
+              isAdmin={isAdmin}
+              candidates={santaCandidates}
+              receiver={myDraw ? { ...myDraw.receiver, firstName: shown(myDraw.receiver), lastName: nick.has(myDraw.receiver.id) ? null : myDraw.receiver.lastName } : null}
+              receiverWishes={myDraw ? gifts.filter((g) => g.recipientId === myDraw.receiverId && g.kind === "SOUHAIT").length : 0}
+              budget={santa?.budget ?? null}
+              drawnOn={santa ? santa.createdAt.toLocaleDateString("fr-FR", { day: "numeric", month: "long", timeZone: "Europe/Paris" }) : null}
+            />
+          ) : null
+        }
       />
     </div>
   );

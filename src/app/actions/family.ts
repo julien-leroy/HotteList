@@ -46,6 +46,7 @@ export async function createFamily(_: FormState, formData: FormData): Promise<Fo
       createdById: user.id,
       eventName,
       eventDate,
+      santaMode: formData.get("santa") === "on",
       memberships: { create: { userId: user.id, role: "ADMIN" } },
     },
   });

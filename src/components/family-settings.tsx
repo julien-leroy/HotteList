@@ -35,7 +35,7 @@ export function FamilySettings({
   meId: string;
   members: Member[];
   myManaged: (AvatarPerson & { id: string; inFamily: boolean })[];
-  santa: { candidates: (AvatarPerson & { id: string })[]; current: { participantIds: string[]; budget: string | null } | null } | null;
+  santa: { mode: boolean; candidates: (AvatarPerson & { id: string })[]; current: { participantIds: string[]; budget: string | null } | null } | null;
 }) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(family.name);
@@ -179,7 +179,7 @@ export function FamilySettings({
 
             {santa && (
               <div className={section}>
-                <SantaSettings familyId={family.id} candidates={santa.candidates} current={santa.current} />
+                <SantaSettings familyId={family.id} mode={santa.mode} candidates={santa.candidates} current={santa.current} />
               </div>
             )}
 

@@ -66,6 +66,8 @@ model Family {
   eventName   String       @default("Noël")
   /// date (AAAA-MM-JJ) de l'événement pour lequel le rappel J-7 est parti
   reminderSentFor String?
+  /// mode Secret Santa : chacun tire au sort une personne à qui offrir (tirage lancé par un admin)
+  santaMode   Boolean      @default(false)
   createdAt   DateTime     @default(now())
   memberships Membership[]
   gifts       Gift[]

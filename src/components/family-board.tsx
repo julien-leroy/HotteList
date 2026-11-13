@@ -1,7 +1,7 @@
 "use client";
 
 import { listTitleProps } from "@/lib/script-metrics";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import type { PersonLite, VisibleGift } from "@/lib/visibility";
 import { formatPrice } from "@/lib/format";
@@ -9,7 +9,7 @@ import { Avatar } from "./avatar";
 import { GiftVisual, SourceBadge, statusOf, tintFor, type Status } from "./gift-ui";
 import { AddGiftDialog } from "./gift-form";
 import { GiftDialog } from "./gift-dialog";
-import { IconBookmark, IconComment, IconGrid, IconGroup, IconHidden, IconList, IconPlus } from "./icons";
+import { IconBookmark, IconComment, IconGift, IconGrid, IconGroup, IconHidden, IconList, IconPlus } from "./icons";
 import { useAction } from "./toaster";
 import { priceValue } from "./price";
 import { mentionLabels } from "@/lib/mentions";
@@ -44,6 +44,8 @@ function arrange(list: VisibleGift[], sort: Sort, budget: Budget) {
 export type Section = {
   person: PersonLite;
   isMe: boolean;
+  /** La personne que j'ai tirée au Secret Santa : sa liste passe en premier, mise en valeur. */
+  isSantaChild?: boolean;
   isManaged: boolean;
   managerName: string | null;
   /** Prénom + nom réels (le titre affiche le pseudo de la famille s'il y en a un). */
@@ -58,6 +60,8 @@ type Props = {
   viewerId: string;
   sections: Section[];
   openGiftId: string | null;
+  /** Encart sur le côté (Secret Santa), en haut sur téléphone. */
+  aside?: ReactNode;
 };
 
 /** Même calcul que le serveur : membres avec compte, hors destinataire ; puis on retire moi-même. */
@@ -69,7 +73,7 @@ function mentionPeople(sections: Section[], recipientId: string, meId: string): 
     .filter((p) => p.id !== meId);
 }
 
-export function FamilyBoard({ familyId, familySlug, viewerId, sections, openGiftId }: Props) {
+export function FamilyBoard({ familyId, familySlug, viewerId, sections, openGiftId, aside }: Props) {
   const router = useRouter();
   const [mode, setMode] = useState<"cards" | "list">("cards");
   const [onlyFree, setOnlyFree] = useState(false);
@@ -98,14 +102,18 @@ export function FamilyBoard({ familyId, familySlug, viewerId, sections, openGift
 
   return (
     <>
+      <div className={aside ? "board board-with-aside" : "board"}>
+      {aside && <aside className="board-aside" aria-label="Secret Santa">{aside}</aside>}
+      <div className="board-main">
       {/* BARRE D'OUTILS */}
-      <div className="mx-auto max-w-[1200px] px-6 pt-5">
+      <div>
         <div className="panel flex flex-wrap items-center justify-between gap-3.5 p-3">
           <nav aria-label="Aller à la liste de" className="flex flex-wrap gap-2">
             {sections.map((s) => (
-              <a key={s.person.id} className="chip" href={`#p-${s.person.id}`}>
+              <a key={s.person.id} className={s.isSantaChild ? "chip chip-santa" : "chip"} href={`#p-${s.person.id}`} title={s.isSantaChild ? "Votre Secret Santa" : undefined}>
                 <Avatar person={s.person} size={32} />
                 {s.isMe ? "Moi" : s.person.firstName}
+                {s.isSantaChild && <IconGift size={15} stroke="#B8862A" />}
               </a>
             ))}
           </nav>
@@ -142,7 +150,7 @@ export function FamilyBoard({ familyId, familySlug, viewerId, sections, openGift
       </div>
 
       {/* LISTES PAR PERSONNE */}
-      <main className="mx-auto flex max-w-[1200px] flex-col gap-12 px-6 pt-7 pb-24">
+      <main className="flex flex-col gap-12 pt-7">
         {sections.map((s) => {
           const canWish = s.isMe || s.isManaged;
           const gifts = arrange(
@@ -165,7 +173,12 @@ export function FamilyBoard({ familyId, familySlug, viewerId, sections, openGift
           const isAdding = adding === s.person.id;
 
           return (
-            <section key={s.person.id} id={`p-${s.person.id}`} className="flex flex-col gap-[18px]" style={{ scrollMarginTop: 16 }}>
+            <section key={s.person.id} id={`p-${s.person.id}`} className={s.isSantaChild ? "santa-zone flex flex-col gap-[18px]" : "flex flex-col gap-[18px]"} style={{ scrollMarginTop: 16 }}>
+              {s.isSantaChild && (
+                <span className="santa-tag">
+                  <IconGift size={15} stroke="currentColor" /> Votre Secret Santa
+                </span>
+              )}
               <div className="flex flex-wrap items-center justify-between gap-3.5 pb-3.5" style={{ borderBottom: "2px dotted #D9A93E" }}>
                 <div className="flex items-center gap-3.5">
                   <Avatar person={s.person} size={56} style={{ border: "3px solid #FFFDF7", boxShadow: "0 0 0 2px #D9A93E", fontSize: 18 }} />
@@ -268,6 +281,8 @@ export function FamilyBoard({ familyId, familySlug, viewerId, sections, openGift
           );
         })}
       </main>
+      </div>
+      </div>
 
       {opened && openedSection && (
         <GiftDialog
