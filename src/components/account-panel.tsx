@@ -83,7 +83,7 @@ function EmailForm({ email, pendingEmail, login, reminders, mentions }: Props) {
           </p>
           <label className="chk text-sm">
             <input type="checkbox" defaultChecked={reminders} disabled={pending} onChange={(e) => run(() => setEmailPref("reminders", e.target.checked), e.target.checked ? "Rappels activés." : "Rappels désactivés.")} />
-            M&apos;envoyer un rappel une semaine avant chaque événement
+            M&apos;envoyer un rappel une semaine avant chaque événement, et le tirage du Secret Santa
           </label>
           <label className="chk text-sm">
             <input type="checkbox" defaultChecked={mentions} disabled={pending} onChange={(e) => run(() => setEmailPref("mentions", e.target.checked), e.target.checked ? "E-mails de mention activés." : "E-mails de mention désactivés.")} />

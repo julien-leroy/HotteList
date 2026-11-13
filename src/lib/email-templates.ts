@@ -243,3 +243,45 @@ export function renderMentionEmail(o: {
 </body></html>`;
   return { subject, text, html };
 }
+
+/** « Le Secret Santa est tiré » : sans le nom, pour garder la surprise de « Découvrir » sur le site. */
+export function renderSantaEmail(o: { firstName: string; familyName: string; eventName: string; count: number; budget: string | null; familyUrl: string; settingsUrl: string; again: boolean }) {
+  const subject = o.again ? `Nouveau tirage du Secret Santa (${o.familyName}) : découvrez votre chanceux` : `Secret Santa (${o.familyName}) : découvrez à qui vous offrez un cadeau !`;
+  const text = [
+    `Bonjour ${o.firstName},`,
+    "",
+    o.again
+      ? `Le Secret Santa de la famille ${o.familyName} vient d'être tiré à nouveau, entre ${o.count} personnes.`
+      : `Le Secret Santa de la famille ${o.familyName} pour ${o.eventName} vient d'être tiré, entre ${o.count} personnes.`,
+    "Une personne de la famille compte sur vous pour son cadeau. Pour savoir qui, cliquez sur « Découvrir » sur le site :",
+    o.familyUrl,
+    o.budget ? `\nBudget conseillé : ${o.budget}.` : "",
+    "",
+    "Chut : personne d'autre ne connaît votre tirage, pas même l'admin.",
+    "",
+    `Ne plus recevoir ces e-mails : ${o.settingsUrl}`,
+  ].join("\n");
+  const html = `<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${escapeHtml(subject)}</title></head>
+<body style="margin:0;padding:0;background:#F7F1E3;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F7F1E3;padding:24px 12px;"><tr><td align="center">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#FFFDF7;border:1px solid #E3D6BA;border-radius:20px;overflow:hidden;">
+    <tr><td style="background:#7E1621;padding:22px 28px;border-bottom:4px solid #D9A93E;">${emailLogo()}</td></tr>
+    <tr><td align="center" style="padding:30px 28px 8px;font-family:Arial,Helvetica,sans-serif;color:#1F3A2C;">
+      <p style="margin:0 0 8px;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#8A6516;">Secret Santa · ${escapeHtml(o.familyName)}</p>
+      <h1 style="margin:0 0 14px;font-family:Georgia,'Times New Roman',serif;font-size:28px;line-height:1.2;">${o.again ? "Nouveau tirage !" : "Le tirage est fait !"}</h1>
+      <p style="margin:0 0 6px;font-size:16px;line-height:1.5;">Bonjour ${escapeHtml(o.firstName)}, le Secret Santa ${o.again ? "a été relancé" : `pour ${escapeHtml(o.eventName)} est tiré`} entre <strong>${o.count} personnes</strong>.</p>
+      <p style="margin:0 0 22px;font-size:16px;line-height:1.5;">Quelqu'un de la famille compte sur vous pour son cadeau.<br><strong>Qui est le chanceux ?</strong></p>
+      <div style="margin:0 auto 18px;width:84px;height:84px;line-height:84px;border-radius:50%;background:#7E1621;font-size:44px;color:#FFCB2E;font-family:Georgia,serif;">?</div>
+      <p style="margin:0 0 20px;"><a href="${o.familyUrl}" style="display:inline-block;padding:14px 28px;border-radius:999px;background:#CF2B35;color:#FFF9EE;font-weight:700;font-size:16px;text-decoration:none;">Découvrir</a></p>
+      ${o.budget ? `<p style="margin:0 0 10px;font-size:15px;">Budget conseillé : <strong>${escapeHtml(o.budget)}</strong></p>` : ""}
+      <p style="margin:0 0 24px;font-size:13px;color:#6B6658;">Chut : personne d'autre ne connaît votre tirage, pas même l'admin.</p>
+    </td></tr>
+    <tr><td style="padding:14px 28px;background:#1F4D36;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#D8E8DE;">
+      Vous recevez cet e-mail car votre adresse est confirmée sur HotteList. <a href="${o.settingsUrl}" style="color:#FFCB2E;">Ne plus recevoir ces e-mails</a>
+    </td></tr>
+  </table>
+</td></tr></table>
+</body></html>`;
+  return { subject, text, html };
+}

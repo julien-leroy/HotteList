@@ -214,6 +214,8 @@ model SecretSantaAssignment {
   santaId    String
   giverId    String
   receiverId String
+  /// moment où le participant a cliqué sur « Découvrir » (null : animation de tirage à voir)
+  revealedAt DateTime?
   santa      SecretSanta @relation(fields: [santaId], references: [id], onDelete: Cascade)
   giver      User        @relation("SantaGiver", fields: [giverId], references: [id], onDelete: Cascade)
   receiver   User        @relation("SantaReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
