@@ -2,7 +2,7 @@ import type { CSSProperties } from "react";
 
 /*
  * Identité HotteList : la hotte (sac de toile rouge, cadeau doré, lien vert noué d'or)
- * et le nom « Hotte » (Santa Natale) + « List » (Fraunces italique).
+ * et le nom « Hotte » (Damion) + « List » (Fraunces italique).
  * Dessin d'origine dans une boîte de 54 unités (viewBox 6 6 54 54).
  */
 

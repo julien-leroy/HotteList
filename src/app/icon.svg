@@ -1,10 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <!-- Favicon HotteList : cadeau plein, cerclé de bordeaux, sans fond (lisible en 16 px sur onglet clair ou foncé) -->
-  <g stroke="#7E1621" stroke-width="3.5" stroke-linejoin="round">
-    <path d="M32 18 C25 3 8 5 11 14 C13 19.5 23 20 32 18 Z" fill="#FFCB2E"/>
-    <path d="M32 18 C39 3 56 5 53 14 C51 19.5 41 20 32 18 Z" fill="#FFCB2E"/>
-    <rect x="4" y="18" width="56" height="15" rx="3" fill="#FFCB2E"/>
-    <rect x="8.5" y="33" width="47" height="27" rx="3" fill="#FFCB2E"/>
-    <rect x="27" y="18" width="10" height="42" fill="#CF2B35"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="19.5 29 27 27">
+  <!-- Favicon HotteList : le cadeau du logo, au trait doré épais, sur fond bordeaux -->
+  <rect x="19.5" y="29" width="27" height="27" rx="5" fill="#7E1621"/>
+  <g transform="translate(-0.5 0.6) rotate(-6 33 45)" fill="none" stroke="#FFCB2E" stroke-width="2.9" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M24.5 37h17v5h-17z"/>
+    <path d="M26 42h14v10.5H26z"/>
+    <path d="M33 37v15.5"/>
+    <path d="M33 37c-2-4.6-7.6-4.6-6.6-1 .8 2.2 6.6 1 6.6 1zm0 0c2-4.6 7.6-4.6 6.6-1-.8 2.2-6.6 1-6.6 1z"/>
   </g>
 </svg>

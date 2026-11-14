@@ -59,9 +59,19 @@ export default async function Courses() {
       <main className="mx-auto flex max-w-[1200px] flex-col gap-6 px-6 pt-7 pb-24">
         {draws.map((d) => (
           <p key={d.santaId} className="m-0 rounded-[18px] px-5 py-4 text-[15px]" style={{ background: "#FFF4E0", border: "2px dashed #D9A93E" }}>
-            <strong>Tirage au sort dans {d.santa.family.name} :</strong> vous offrez à <strong>{d.receiver.firstName}</strong>
-            {d.santa.budget ? ` (budget conseillé : ${d.santa.budget})` : ""}.{" "}
-            <Link href={`/f/${d.santa.family.slug}#p-${d.receiver.id}`}>Voir sa liste</Link>
+            {d.revealedAt ? (
+              <>
+                <strong>Secret Santa dans {d.santa.family.name} :</strong> vous offrez à <strong>{d.receiver.firstName}</strong>
+                {d.santa.budget ? ` (budget conseillé : ${d.santa.budget})` : ""}.{" "}
+                <Link href={`/f/${d.santa.family.slug}#p-${d.receiver.id}`}>Voir sa liste</Link>
+              </>
+            ) : (
+              // Pas encore découvert : le nom ne sort pas d'ici, la surprise se fait sur la page famille
+              <>
+                <strong>Secret Santa dans {d.santa.family.name} :</strong> le tirage est fait !{" "}
+                <Link href={`/f/${d.santa.family.slug}`}>Découvrir à qui vous offrez un cadeau</Link>
+              </>
+            )}
           </p>
         ))}
         {items.length === 0 ? (

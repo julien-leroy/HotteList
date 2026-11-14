@@ -2,23 +2,15 @@
    Une seule source pour les couleurs et les polices : Tailwind en tire ses classes
    (bg-bordeaux, text-encre, font-script…) et le reste du CSS les lit avec var(--…). */
 
-@font-face {
-  font-family: "Santa Natale";
-  src: url("/fonts/santa-natale.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
 @theme {
-  /* Polices : Santa Natale pour les grands titres, Fraunces pour les titres de cartes et le
-     « List » du logo, Inter pour tout le reste. */
+  /* Polices : Damion (manuscrite) pour « Hotte » et les titres courts, Merienda pour les autres
+     titres, Fraunces italique pour le « List » du logo, Inter pour tout le reste. */
   --font-sans: "Inter Variable", Inter, system-ui, sans-serif;
   /* Titres : Merienda, manuscrite, droite et très lisible même sur plusieurs lignes */
   --font-display: "Merienda Variable", Merienda, "Brush Script MT", cursive;
   /* « List » du logo : Fraunces italique */
   --font-brand: "Fraunces Variable", Fraunces, Georgia, serif;
-  --font-script: "Santa Natale", "Merienda Variable", Merienda, cursive; /* les caractères absents (chiffres, ponctuation) passent en Merienda */
+  --font-script: Damion, "Merienda Variable", Merienda, cursive;
 
   /* Fonds et texte */
   --color-creme: #f7f1e3;

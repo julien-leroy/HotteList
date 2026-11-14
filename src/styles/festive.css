@@ -1,14 +1,9 @@
 /* ---------- Identité et décor de Noël ---------- */
 
-/* Logo : la hotte + « Hotte » (Santa Natale) « List » (Fraunces italique) */
+/* Logo : la hotte + « Hotte » (Damion) « List » (Fraunces italique) */
 .logo { display: inline-flex; align-items: center; text-decoration: none; }
 .wordmark { display: inline-flex; align-items: baseline; line-height: 1; white-space: nowrap; }
-.wordmark .font-script {
-  line-height: .9;
-  /* Santa Natale n'a qu'une graisse : un contour de la même couleur épaissit « Hotte » */
-  -webkit-text-stroke: .045em currentColor;
-  paint-order: stroke fill;
-}
+.wordmark .font-script { line-height: .9; }
 .wordmark .font-brand { font-style: italic; font-weight: 650; letter-spacing: -.01em; }
 
 /*
@@ -31,14 +26,14 @@
 .hero-soft { color: var(--hero-soft); }
 
 /*
- * Titres. Santa Natale seulement pour un titre court qui tient sur UNE ligne (taille calculée
+ * Titres. Damion (manuscrite) seulement pour un titre court qui tient sur UNE ligne (taille calculée
  * dans le composant) ; dès qu'il faudrait passer à la ligne, Fraunces, plus sobre.
  */
 .hero-title {
   margin: 0;
   font-family: var(--font-script);
   font-weight: 400;
-  line-height: 1.3; /* les hampes de Santa Natale montent haut : on leur laisse la place */
+  line-height: 1.25;
   white-space: nowrap;
   color: var(--color-ivoire);
   text-shadow: 0 3px 0 rgba(30, 0, 8, .3);

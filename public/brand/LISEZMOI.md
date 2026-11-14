@@ -12,6 +12,6 @@ L'icône est la hotte : sac de toile rouge, cadeau doré dessiné dessus avec un
 Sur fond bordeaux, la hotte passe en couleurs inversées : sac sapin `#2A6B4B`, plis `#1A4A33`, lien rouge vif `#FF4A55` (cadeau et nœud restent dorés). Sur crème et sapin, la hotte classique. Les petites icônes (favicon, icônes d'application, notifications) : le cadeau sur un carré bordeaux.
 
 Les SVG sont vectoriels : le texte est converti en tracés, ils s'affichent à l'identique partout et s'agrandissent sans perte.
-Polices : Santa Natale (« Hotte », gratuite pour un usage personnel et non commercial), Fraunces italique 650 (« List »).
+Polices : Damion (« Hotte », licence libre OFL), Fraunces italique 650 (« List »), Merienda (phrase).
 Couleurs : sac `#CF2B35`, cadeau `#FFD146`, lien `#3F7A52`, nœud `#FFCB2E`, bordeaux `#7E1621`, crème `#FFF9EE`, encre `#1F3A2C`.
 Le dessin source de la hotte est le composant `src/components/brand.tsx`.

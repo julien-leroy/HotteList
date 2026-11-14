@@ -3,6 +3,7 @@
 @import "@fontsource-variable/fraunces/full-italic.css";
 @import "@fontsource-variable/inter/index.css";
 @import "@fontsource-variable/merienda/index.css";
+@import "@fontsource/damion/400.css";
 
 /* Organisation des styles :
    - tokens.css     couleurs et polices de la DA (une seule source de vérité)

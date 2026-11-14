@@ -134,7 +134,7 @@ function plainText(node: ReactNode): string | null {
 }
 
 /**
- * Grand titre de page. En Santa Natale s'il tient sur une seule ligne (la taille s'adapte à la
+ * Grand titre de page. En Damion s'il tient sur une seule ligne (la taille s'adapte à la
  * largeur, voir --hero-room), sinon en Fraunces, plus sobre et lisible sur plusieurs lignes.
  * `text` : le texte du titre quand `children` n'est pas du texte brut (champ modifiable…).
  */
