@@ -109,7 +109,43 @@ fi
 
 # --------------------------------------------------------------------------- 2. sauvegarde
 step "Sauvegarde de la base"
-BACKUP_FILE="$(./deploy/backup.sh | sed -n 's/^Sauvegarde : //p')" || fail "la sauvegarde a échoué (sqlite3 installé ? base verrouillée ?)"
+command -v sqlite3 >/dev/null || fail "sqlite3 n'est pas installé :  sudo apt install sqlite3"
+
+# Droits : en mode WAL, SQLite doit pouvoir écrire dans data/ et dans les fichiers -wal / -shm,
+# même pour une sauvegarde. Sinon il répond juste « disk I/O error ».
+mkdir -p data/backups 2>/dev/null || true
+not_mine=""
+for f in data data/backups "$DB" "$DB-wal" "$DB-shm" "$DB-journal"; do
+  [ -e "$f" ] || continue
+  [ -w "$f" ] || not_mine="$not_mine
+    $(stat -c '%U:%G  %A' "$f")  $f"
+done
+if [ -n "$not_mine" ]; then
+  me="$(id -un)"
+  owners="$(echo "$not_mine" | awk 'NF {split($1, o, ":"); print o[1]}' | sort -u | tr '\n' ' ')"
+  printf '\n  \033[31mCes fichiers ne sont pas modifiables par %s :\033[0m%s\n\n' "$me" "$not_mine"
+  echo "  Si c'est bien $me qui fait tourner le site, remets-les à son nom (les données ne changent pas) :"
+  echo "      sudo chown -R $me: $APP_DIR/data"
+  case " $owners" in *" hottelist "*)
+    echo "  S'ils appartiennent à l'utilisateur hottelist parce que c'est lui qui fait tourner le site, lance plutôt :"
+    echo "      sudo -iu hottelist $APP_DIR/deploy/deploy.sh" ;;
+  esac
+  exit 1
+fi
+
+# Place disque : il faut de quoi copier la base, plus la compilation
+need_kb=$(( $(du -k "$DB" 2>/dev/null | cut -f1 || echo 0) * 2 + 1500000 ))
+free_kb="$(df -Pk data | awk 'NR==2 {print $4}')"
+if [ "${free_kb:-0}" -lt "$need_kb" ]; then
+  fail "plus assez de place sur le disque ($(( free_kb / 1024 )) Mo libres, il en faut environ $(( need_kb / 1024 ))).
+  Pour voir ce qui prend de la place :  df -h  et  du -sh data/backups .next node_modules"
+fi
+
+if ! backup_out="$(./deploy/backup.sh 2>&1)"; then
+  echo "$backup_out" | sed 's/^/    /'
+  fail "la sauvegarde a échoué (base verrouillée par un autre programme ? voir le message ci-dessus)"
+fi
+BACKUP_FILE="$(echo "$backup_out" | sed -n 's/^Sauvegarde : //p')"
 if [ -n "$BACKUP_FILE" ]; then ok "$BACKUP_FILE"; else ok "pas encore de base"; fi
 
 # --------------------------------------------------------------------------- 3. code
