@@ -137,7 +137,14 @@ else
     echo "    Ferme-le (console sqlite3, SQLite GUI en train d'écrire, ancien serveur…) puis relance."
     stopped_msg; exit 1
   fi
-  npx prisma migrate deploy || { stopped_msg; fail "la migration a échoué"; }
+  # Base créée sans « migrate deploy » (ex. prisma db push) : on note d'abord comme appliquées
+  # les migrations déjà présentes, sinon Prisma voudrait tout recréer (« table "User" already exists »)
+  node --no-warnings deploy/baseline-migrations.mjs "$DB" || { stopped_msg; fail "impossible de remettre d'accord l'historique des migrations"; }
+  if ! out="$(npx prisma migrate deploy 2>&1)"; then
+    echo "$out"; stopped_msg; fail "la migration a échoué"
+  fi
+  echo "$out" | grep -E 'migration\.sql|└─' | sed 's/^/    /' || true
+  ok "base à jour"
 
   # ------------------------------------------------------------------------- 6. compilation
   step "Compilation"
