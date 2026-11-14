@@ -141,6 +141,16 @@ if [ "${free_kb:-0}" -lt "$need_kb" ]; then
   Pour voir ce qui prend de la place :  df -h  et  du -sh data/backups .next node_modules"
 fi
 
+# Un autre programme qui garde la base ouverte (SQLite Admin, console sqlite3, extension d'éditeur…)
+# fait échouer la sauvegarde et la migration avec un vague « disk I/O error »
+holders="$(db_holders)"
+if [ -n "$holders" ]; then
+  warn "un autre programme a la base ouverte :"
+  echo "$holders"
+  echo "    Ferme-le (ou  kill <PID>), vérifie avec  fuser -v $DB*  puis relance ./deploy/deploy.sh"
+  exit 1
+fi
+
 if ! backup_out="$(./deploy/backup.sh 2>&1)"; then
   echo "$backup_out" | sed 's/^/    /'
   fail "la sauvegarde a échoué (base verrouillée par un autre programme ? voir le message ci-dessus)"
