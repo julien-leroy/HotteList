@@ -80,7 +80,10 @@ export default async function FamilyPage({ params, searchParams }: Props) {
   // (seulement une fois découverte : avant, le nom ne quitte pas le serveur)
   const santaChild = family.santaMode && myDraw?.revealedAt ? myDraw.receiverId : null;
   const rank = (id: string) => (id === santaChild ? -1 : id === user.id ? 0 : user.managedIds.includes(id) ? 1 : 2);
-  const members = family.memberships.slice().sort((a, b) => rank(a.userId) - rank(b.userId));
+  // Ceux qui n'ont encore aucun souhait passent après ceux qui en ont (sauf moi : c'est là que j'ajoute les miens)
+  const hasWishes = new Set(gifts.filter((g) => g.kind === "SOUHAIT").map((g) => g.recipientId));
+  const empty = (id: string) => (id !== user.id && id !== santaChild && !hasWishes.has(id) ? 1 : 0);
+  const members = family.memberships.slice().sort((a, b) => empty(a.userId) - empty(b.userId) || rank(a.userId) - rank(b.userId));
   const sections: Section[] = members.map((m) => ({
     person: { id: m.user.id, firstName: shown(m.user), lastName: m.nickname ? null : m.user.lastName, avatarColor: m.user.avatarColor },
     realName: [m.user.firstName, m.user.lastName].filter(Boolean).join(" "),
@@ -150,7 +153,7 @@ export default async function FamilyPage({ params, searchParams }: Props) {
                 </Link>
               )}
               <FamilySettings
-                family={{ id: family.id, name: family.name, eventName: family.eventName, eventDate: parisDay(family.eventDate) }}
+                family={{ id: family.id, slug: family.slug, name: family.name, eventName: family.eventName, eventDate: parisDay(family.eventDate) }}
                 today={parisDay(new Date())}
                 isAdmin={isAdmin}
                 meId={user.id}

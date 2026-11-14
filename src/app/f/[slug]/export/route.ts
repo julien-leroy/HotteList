@@ -26,7 +26,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
   const shown = (u: { id: string; firstName: string }) => nick.get(u.id) ?? u.firstName;
   // Même ordre que la page : moi, mes comptes gérés, puis les autres
   const rank = (id: string) => (id === user.id ? 0 : user.managedIds.includes(id) ? 1 : 2);
-  const members = family.memberships.slice().sort((a, b) => rank(a.userId) - rank(b.userId));
+  // Ceux qui n'ont aucun souhait à la fin
+  const hasWishes = new Set(gifts.filter((g) => g.kind === "SOUHAIT").map((g) => g.recipientId));
+  const empty = (id: string) => (id !== user.id && !hasWishes.has(id) ? 1 : 0);
+  const members = family.memberships.slice().sort((a, b) => empty(a.userId) - empty(b.userId) || rank(a.userId) - rank(b.userId));
 
   const data: ExportData = {
     familyName: family.name,

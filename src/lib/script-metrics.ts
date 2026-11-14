@@ -7,6 +7,17 @@ const ADV = [248,484,287,676,574,1729,1729,185,471,435,309,418,1729,418,1729,586
 const MAP = new Map<string, number>();
 for (let i = 0; i < CHARS.length; i++) MAP.set(CHARS[i], ADV[i]);
 
+/**
+ * La version gratuite de Santa Natale remplace les chiffres, « , . % & » par un tampon
+ * « PERSONAL USE ONLY » et n'a pas œ æ ni les tirets longs : un titre qui en contient passe en Merienda.
+ */
+const NOT_IN_SCRIPT = /[0-9,.%&œæŒÆ–—]/;
+export function scriptCanRender(text: string): boolean {
+  if (NOT_IN_SCRIPT.test(text)) return false;
+  for (const ch of text) if (ch !== " " && !MAP.has(ch)) return false;
+  return true;
+}
+
 /** Largeur du texte en em, en Santa Natale (caractère inconnu : 0,5 em). */
 export function scriptWidthEm(text: string): number {
   let w = 0;
@@ -21,7 +32,7 @@ export function scriptWidthEm(text: string): number {
 export function listTitleProps(text: string, maxPx: number, room = 290, minPx = 26) {
   const w = scriptWidthEm(text) * 1.05;
   const px = Math.floor(Math.min(maxPx, room / w));
-  return px >= minPx
+  return px >= minPx && scriptCanRender(text)
     ? { className: "list-title", style: { fontSize: px } }
     : { className: "list-title-sober", style: { fontSize: Math.round(Math.min(maxPx * 0.6, 28)) } };
 }

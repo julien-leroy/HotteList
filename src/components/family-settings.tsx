@@ -15,6 +15,7 @@ import {
 import { Avatar, type AvatarPerson } from "./avatar";
 import { CopyLink } from "./copy-link";
 import { SantaSettings } from "./santa";
+import { DownloadMenu } from "./download-menu";
 import { IconClose, IconSettings } from "./icons";
 import { confirmDialog, useAction } from "./toaster";
 
@@ -29,7 +30,7 @@ export function FamilySettings({
   santa,
   today,
 }: {
-  family: { id: string; name: string; eventName: string; eventDate: string };
+  family: { id: string; slug: string; name: string; eventName: string; eventDate: string };
   today: string;
   isAdmin: boolean;
   meId: string;
@@ -182,6 +183,14 @@ export function FamilySettings({
                 <SantaSettings familyId={family.id} mode={santa.mode} memberCount={santa.memberCount} current={santa.current} />
               </div>
             )}
+
+            <div className={section}>
+              <h3 className="font-display m-0 text-[22px] font-bold">Télécharger les listes</h3>
+              <div className="flex items-center gap-3.5">
+                <DownloadMenu familySlug={family.slug} align="start" />
+                <p className="m-0 text-[13px] leading-normal text-gris">Toutes les listes de la famille en PDF (à imprimer) ou en tableau Excel. Vous n&apos;y voyez que ce que vous voyez sur le site.</p>
+              </div>
+            </div>
 
             {myManaged.length > 0 && (
               <div className={section}>

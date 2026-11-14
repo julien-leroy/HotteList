@@ -18,7 +18,7 @@
   --font-display: "Merienda Variable", Merienda, "Brush Script MT", cursive;
   /* « List » du logo : Fraunces italique */
   --font-brand: "Fraunces Variable", Fraunces, Georgia, serif;
-  --font-script: "Santa Natale", "Fraunces Variable", Georgia, serif;
+  --font-script: "Santa Natale", "Merienda Variable", Merienda, cursive; /* les caractères absents (chiffres, ponctuation) passent en Merienda */
 
   /* Fonds et texte */
   --color-creme: #f7f1e3;

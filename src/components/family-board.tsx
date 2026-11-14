@@ -5,12 +5,12 @@ import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import type { PersonLite, VisibleGift } from "@/lib/visibility";
 import { formatPrice } from "@/lib/format";
+import { DownloadMenu } from "./download-menu";
 import { Avatar } from "./avatar";
 import { GiftVisual, SourceBadge, statusOf, tintFor, type Status } from "./gift-ui";
 import { AddGiftDialog } from "./gift-form";
 import { GiftDialog } from "./gift-dialog";
-import * as Dropdown from "@radix-ui/react-dropdown-menu";
-import { IconBookmark, IconComment, IconDownload, IconGift, IconGrid, IconGroup, IconHidden, IconList, IconPlus } from "./icons";
+import { IconBookmark, IconComment, IconGift, IconGrid, IconGroup, IconHidden, IconList, IconPlus } from "./icons";
 import { useAction } from "./toaster";
 import { priceValue } from "./price";
 import { mentionLabels } from "@/lib/mentions";
@@ -109,8 +109,7 @@ export function FamilyBoard({ familyId, familySlug, viewerId, sections, openGift
       {/* BARRE D'OUTILS */}
       <div>
         <div className="panel flex flex-wrap items-center justify-between gap-3.5 p-3">
-          <div className="flex w-full items-start gap-3">
-          <nav aria-label="Aller à la liste de" className="flex flex-1 flex-wrap gap-2">
+          <nav aria-label="Aller à la liste de" className="flex flex-wrap gap-2">
             {sections.map((s) => (
               <a key={s.person.id} className={s.isSantaChild ? "chip chip-santa" : "chip"} href={`#p-${s.person.id}`} title={s.isSantaChild ? "Votre Secret Santa" : undefined}>
                 <Avatar person={s.person} size={32} />
@@ -119,29 +118,6 @@ export function FamilyBoard({ familyId, familySlug, viewerId, sections, openGift
               </a>
             ))}
           </nav>
-            <Dropdown.Root>
-              <Dropdown.Trigger asChild>
-                <button type="button" className="btn b-soft dl-btn flex-none" aria-label="Télécharger toutes les listes" title="Télécharger toutes les listes">
-                  <IconDownload size={18} /> <span className="dl-label">Télécharger</span>
-                </button>
-              </Dropdown.Trigger>
-              <Dropdown.Portal>
-                <Dropdown.Content className="menu" align="end" sideOffset={8}>
-                  <p className="m-0 px-3 pt-1.5 pb-2 text-xs font-semibold text-gris">Toutes les listes de la famille</p>
-                  <Dropdown.Item asChild className="menu-item no-underline">
-                    <a href={`/f/${familySlug}/export?format=pdf`} download style={{ color: "#1F3A2C" }}>
-                      <span className="dl-tag" style={{ background: "#F6DCDD", color: "#8A1C26" }}>PDF</span> À imprimer ou partager
-                    </a>
-                  </Dropdown.Item>
-                  <Dropdown.Item asChild className="menu-item no-underline">
-                    <a href={`/f/${familySlug}/export?format=xlsx`} download style={{ color: "#1F3A2C" }}>
-                      <span className="dl-tag" style={{ background: "#DDEBE1", color: "#1F4D36" }}>XLS</span> Tableau Excel
-                    </a>
-                  </Dropdown.Item>
-                </Dropdown.Content>
-              </Dropdown.Portal>
-            </Dropdown.Root>
-          </div>
           <div className="flex flex-wrap items-center gap-3.5">
             <label className="sr-only" htmlFor="tri">Trier</label>
             <select id="tri" className="input" style={{ minHeight: 44, width: "auto", fontSize: 14, fontWeight: 600 }} value={sort} onChange={(e) => setSort(e.target.value as Sort)}>
@@ -305,6 +281,9 @@ export function FamilyBoard({ familyId, familySlug, viewerId, sections, openGift
             </section>
           );
         })}
+        <div className="flex justify-center pt-2">
+          <DownloadMenu familySlug={familySlug} />
+        </div>
       </main>
       </div>
       </div>

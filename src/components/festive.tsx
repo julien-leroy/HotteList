@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Logo } from "./brand";
-import { scriptWidthEm } from "@/lib/script-metrics";
+import { scriptCanRender, scriptWidthEm } from "@/lib/script-metrics";
 import { AvatarMenu } from "./avatar-menu";
 import { NotificationBell } from "./notification-bell";
 import type { CurrentUser } from "@/lib/auth";
@@ -40,10 +40,11 @@ export function Treeline({ fill = "#F7F1E3", height = 80 }: { fill?: string; hei
     <svg
       aria-hidden="true"
       width="100%"
-      height={height}
       viewBox="0 0 1200 80"
       preserveAspectRatio="xMidYMax slice"
-      style={{ position: "absolute", left: 0, right: 0, bottom: -1, display: "block" }}
+      // La hauteur suit la largeur (rapport 1200 × 80) : les sommets ne sont jamais rognés sur grand écran.
+      // Sur téléphone, on garde 80 px et ce sont les côtés qui sont coupés.
+      style={{ position: "absolute", left: 0, right: 0, bottom: -1, display: "block", height: `max(${height}px, 6.667vw)`, zIndex: 0 }}
     >
       <path
         style={{ fill: "var(--hero-ridge, #1F4D36)" }}
@@ -140,7 +141,7 @@ function plainText(node: ReactNode): string | null {
 export function HeroTitle({ children, text, size = 84 }: { children: ReactNode; text?: string; size?: number }) {
   const t = text ?? plainText(children);
   const w = t === null ? null : scriptWidthEm(t) * 1.06;
-  if (w !== null && w <= 9.2) {
+  if (w !== null && w <= 9.2 && scriptCanRender(t!)) {
     return (
       <h1 className="hero-title" style={{ fontSize: `min(${size}px, calc(var(--hero-room) / ${w.toFixed(2)}))` }}>
         {children}
