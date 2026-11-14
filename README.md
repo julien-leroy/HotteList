@@ -28,7 +28,7 @@ npm test                # tests des règles de visibilité et de la lecture des 
 | `src/app/actions/` | Actions serveur : comptes, familles, cadeaux, comptes gérés |
 | `src/app/f/[slug]` | Page famille (et lien d'invitation) |
 | `src/app/profil` | Mes listes par famille : glisser-déposer, déplacer ou copier |
-| `deploy/` | Service systemd, script de mise à jour, sauvegarde, exemple Caddy |
+| `deploy/` | Script de mise à jour (`deploy.sh`), sauvegarde, exemple Caddy, service systemd facultatif |
 | `docs/` | Architecture et guide de déploiement |
 
 ## Déploiement

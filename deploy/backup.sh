@@ -7,6 +7,6 @@ cd "$(dirname "$0")/.."
 mkdir -p data/backups
 [ -f data/hottelist.db ] || { echo "Pas encore de base."; exit 0; }
 stamp=$(date +%Y-%m-%d_%H%M)
-sqlite3 data/hottelist.db ".backup 'data/backups/hottelist-$stamp.db'"
+sqlite3 -cmd ".timeout 5000" data/hottelist.db ".backup 'data/backups/hottelist-$stamp.db'"
 find data/backups -name 'hottelist-*.db' -mtime +30 -delete
 echo "Sauvegarde : data/backups/hottelist-$stamp.db"
