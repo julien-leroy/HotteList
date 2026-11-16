@@ -215,7 +215,6 @@ export function GiftForm(props: Props) {
               <span className="tag self-start">{formatPrice(d.price)}</span>
             </div>
           </div>
-          <span className="text-xs leading-snug text-gris">L&apos;image est affichée directement depuis le site de l&apos;article.</span>
         </div>
       )}
     </form>

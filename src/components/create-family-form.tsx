@@ -4,6 +4,7 @@ import { useActionState, useRef, useState } from "react";
 import { createFamily } from "@/app/actions/family";
 import { eventDay } from "@/lib/format";
 import { IconStar } from "./icons";
+import { InfoTip } from "./info-tip";
 
 type Preset = "noel" | "anniversaire" | "autre";
 
@@ -51,7 +52,6 @@ export function CreateFamilyForm({ first, christmas, today }: { first: boolean; 
     >
       <div className="flex flex-col gap-1">
         <h2 className="font-display m-0 text-2xl font-bold text-[#8A1C26]">{first ? "Créez votre première famille" : "Nouvelle famille"}</h2>
-        <p className="m-0 text-sm text-gris">Vous en serez l&apos;admin, et vous recevrez un lien à partager.</p>
       </div>
       <div className="flex flex-col gap-1.5">
         <label className="label" htmlFor="fam-name">Nom de la famille</label>
@@ -104,13 +104,13 @@ export function CreateFamilyForm({ first, christmas, today }: { first: boolean; 
         </fieldset>
       )}
 
-      <label className="flex cursor-pointer items-start gap-3 rounded-xl bg-papier px-3.5 py-3" style={{ border: "1px solid #E3D6BA" }}>
-        <input type="checkbox" name="santa" className="mt-0.5 flex-none" style={{ width: 20, height: 20, accentColor: "#1F4D36" }} />
-        <span className="flex flex-col gap-0.5">
-          <span className="text-[15px] font-semibold">Activer le Secret Santa</span>
-          <span className="text-[13px] leading-snug text-gris">Chacun tirera au sort une personne à qui offrir un cadeau. Vous lancerez le tirage depuis la page de la famille, une fois que tout le monde l&apos;aura rejointe.</span>
-        </span>
-      </label>
+      <div className="flex items-center">
+        <label className="chk">
+          <input type="checkbox" name="santa" />
+          Activer le Secret Santa
+        </label>
+        <InfoTip>Chacun tire au sort une personne à qui offrir un cadeau. Le tirage se lance depuis la page de la famille.</InfoTip>
+      </div>
 
       {state?.error && <p role="alert" className="m-0 text-sm font-semibold text-[#8A2730]">{state.error}</p>}
       <button className="btn b-red self-start" disabled={pending || (editing && (!eventDate || eventName.trim().length < 2))}>

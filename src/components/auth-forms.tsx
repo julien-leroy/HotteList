@@ -4,6 +4,7 @@ import { useActionState, useState, useTransition } from "react";
 import Link from "next/link";
 import { confirmSignup, login, resendSignupCode, signup, resetPasswordWithToken, type FormState } from "@/app/actions/auth";
 import { CodeInput } from "./code-flow";
+import { InfoTip } from "./info-tip";
 
 function ErrorLine({ state }: { state: FormState }) {
   if (!state?.error) return null;
@@ -40,9 +41,11 @@ export function LoginForm({
     <form action={action} className="flex flex-col gap-[18px]">
       {next && <input type="hidden" name="next" value={next} />}
       <div className="flex flex-col gap-1.5">
-        <label className="label" htmlFor="login">{mail ? "Adresse e-mail" : "E-mail ou pseudo"}</label>
+        <span className="label">
+          <label htmlFor="login">{mail ? "Adresse e-mail" : "E-mail ou pseudo"}</label>
+          {mail && <InfoTip align="start">Compte créé avant les e-mails ? Votre ancien identifiant fonctionne toujours.</InfoTip>}
+        </span>
         <input className="input" id="login" name="login" autoComplete="username" inputMode="email" value={id} onChange={(e) => setId(e.target.value)} placeholder={mail ? "vous@exemple.fr" : undefined} required />
-        {mail && <span className="text-xs text-gris-clair">Compte créé avant les e-mails ? Votre ancien identifiant fonctionne toujours.</span>}
       </div>
       <div className="flex flex-col gap-1.5">
         <label className="label" htmlFor="password">Mot de passe</label>
@@ -106,9 +109,11 @@ export function SignupForm({
       </div>
       {mail ? (
         <div className="flex flex-col gap-1.5">
-          <label className="label" htmlFor="email">Adresse e-mail</label>
+          <span className="label">
+            <label htmlFor="email">Adresse e-mail</label>
+            <InfoTip align="start">Vous recevrez un code pour la valider. Elle sert ensuite à vous connecter.</InfoTip>
+          </span>
           <input className="input" id="email" name="email" type="email" inputMode="email" placeholder="vous@exemple.fr" autoComplete="email" value={f.email} onChange={set("email")} required />
-          <span className="text-xs text-gris-clair">Vous recevrez un code pour la valider. Elle sert ensuite à vous connecter.</span>
         </div>
       ) : (
         <div className="flex flex-col gap-1.5">

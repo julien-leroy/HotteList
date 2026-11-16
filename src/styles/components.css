@@ -289,3 +289,25 @@ textarea.gf-desc { min-height: 96px; }
 .install-key { display: inline-flex; align-items: center; gap: 5px; padding: 1px 8px; border-radius: 8px; background: var(--color-ivoire); border: 1px solid var(--color-sable); font-weight: 600; white-space: nowrap; }
 .install-modal .btn:not(.b-icon) { width: 100%; }
 .install-modal .b-quiet { margin-top: -6px; }
+
+/* Info-bulle « i » (InfoTip) : au survol ou au toucher */
+.tip { position: relative; display: inline-flex; vertical-align: middle; margin-left: 6px; }
+.tip-i {
+  width: 18px; height: 18px; display: grid; place-items: center; padding: 0; flex: none;
+  border-radius: 50%; border: 1.5px solid currentColor; background: transparent; opacity: .55;
+  font: italic 700 11px/1 Georgia, serif; color: inherit; cursor: help;
+}
+.tip-i:hover, .tip-i:focus-visible, .tip:focus-within .tip-i { opacity: 1; }
+.tip-box {
+  position: absolute; bottom: calc(100% + 8px); left: 50%; z-index: 70;
+  width: max-content; max-width: min(260px, 80vw); padding: 9px 12px; border-radius: 10px;
+  background: var(--color-encre); color: var(--color-ivoire); font: 500 12.5px/1.45 var(--font-sans);
+  font-style: normal; letter-spacing: 0; text-transform: none; text-align: left; white-space: normal;
+  box-shadow: 0 10px 24px -12px rgba(0, 0, 0, .5);
+  opacity: 0; visibility: hidden; transform: translate(-50%, 4px); transition: opacity .15s, transform .15s, visibility .15s;
+  pointer-events: none;
+}
+.tip-start .tip-box { left: -6px; transform: translate(0, 4px); }
+.tip-end .tip-box { left: auto; right: -6px; transform: translate(0, 4px); }
+.tip:hover .tip-box, .tip:focus-within .tip-box { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
+.tip-start:hover .tip-box, .tip-start:focus-within .tip-box, .tip-end:hover .tip-box, .tip-end:focus-within .tip-box { transform: translate(0, 0); }

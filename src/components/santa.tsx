@@ -8,6 +8,7 @@ import { listTitleProps } from "@/lib/script-metrics";
 import { Avatar, type AvatarPerson } from "./avatar";
 import { IconGift } from "./icons";
 import { confirmDialog, toast, useAction } from "./toaster";
+import { InfoTip } from "./info-tip";
 
 type P = AvatarPerson & { id: string };
 
@@ -57,10 +58,11 @@ export function SantaAside({
             <Avatar person={state.receiver} size={46} style={{ border: "3px solid #FFFDF7", boxShadow: "0 0 0 2px #D9A93E" }} />
             <span {...listTitleProps(state.receiver.firstName, 40, 200)}>{state.receiver.firstName}</span>
           </div>
-          <p className="m-0 text-[13px] leading-normal text-gris">
-            C&apos;est secret : personne d&apos;autre ne le sait.
-            {budget ? <> Budget conseillé : <strong className="text-encre">{budget}</strong>.</> : null}
-          </p>
+          {budget && (
+            <p className="m-0 text-[13px] text-gris">
+              Budget conseillé : <strong className="text-encre">{budget}</strong>
+            </p>
+          )}
           <a className="btn b-primary" href={`#p-${state.receiver.id}`}>
             {state.wishes > 0 ? `Voir ${state.wishes > 1 ? `ses ${state.wishes} souhaits` : "son souhait"}` : "Voir sa liste"}
           </a>
@@ -107,7 +109,10 @@ export function SantaAside({
 
       {state.kind === "none" && (
         <>
-          <p className="m-0 text-[15px] leading-normal">Chacun va tirer au sort une personne de la famille à qui offrir un cadeau. Vous ne connaîtrez que la vôtre.</p>
+          <p className="m-0 text-[15px] leading-normal">
+            Chacun tire au sort une personne à qui offrir un cadeau.
+            <InfoTip>Chacun ne découvre que la sienne, admin compris.</InfoTip>
+          </p>
           {memberCount >= 3 ? (
             isAdmin ? (
               <button type="button" className="btn b-primary" disabled={pending} onClick={launch}>
@@ -117,9 +122,7 @@ export function SantaAside({
               <p className="m-0 text-[13px] text-gris">L&apos;admin va lancer le tirage.</p>
             )
           ) : (
-            <p className="m-0 text-[13px] leading-normal text-gris">
-              Il faut au moins 3 membres dans la famille. {isAdmin ? "Envoyez-leur le lien de la famille ; vous lancerez le tirage ensuite." : ""}
-            </p>
+            <p className="m-0 text-[13px] text-gris">Il faut au moins 3 membres pour lancer le tirage.</p>
           )}
         </>
       )}
@@ -263,10 +266,10 @@ export function SantaSettings({
 
   return (
     <div className="flex flex-col gap-3">
-      <h3 className="font-display m-0 text-[22px] font-bold">Secret Santa</h3>
-      <p className="m-0 text-[13px] leading-normal text-gris">
-        Tous les membres de la famille qui ont leur compte tirent au sort une personne à qui offrir un cadeau. Chacun la découvre en cliquant sur « Découvrir » et ne voit que la sienne, admin compris.
-      </p>
+      <h3 className="font-display m-0 text-[22px] font-bold">
+        Secret Santa
+        <InfoTip align="start">Les membres qui ont leur compte tirent au sort une personne à qui offrir un cadeau. Chacun la découvre avec « Découvrir » et ne voit que la sienne, admin compris.</InfoTip>
+      </h3>
       <label className="chk">
         <input
           type="checkbox"

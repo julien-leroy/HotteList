@@ -88,6 +88,7 @@ Supprimés : Docker, PostgreSQL, sharp et stockage d'images, Better Auth.
 ## 5 bis. Confort
 
 - **Confirmations** dans le style du site (plus de fenêtres grises du navigateur).
+- **Textes courts** : pas de paragraphes d'explication sous les champs ; les précisions utiles sont dans une info-bulle « i » (`InfoTip`, `src/components/info-tip.tsx`), au survol ou au toucher.
 - **Annuler** pendant 7 secondes après : réserver, participer, annuler sa réservation, supprimer un cadeau (suppression « douce » : `deletedAt`, restaurable 10 minutes).
 - **Notifications** (cloche) : quelqu'un rejoint un cadeau à plusieurs dont je fais partie, commente un cadeau que j'offre ou dont j'ai parlé, déplace ou retire un souhait que j'avais réservé, lance le tirage du Secret Santa. Jamais rien pour le destinataire du cadeau.
 - **Badge « Nouveau »** sur les cadeaux ajoutés par d'autres depuis ma visite précédente (une visite = plus d'une heure d'absence, pour que les badges ne disparaissent pas au premier clic).

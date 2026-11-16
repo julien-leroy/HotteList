@@ -18,6 +18,7 @@ import { SantaSettings } from "./santa";
 import { DownloadMenu } from "./download-menu";
 import { IconClose, IconSettings } from "./icons";
 import { confirmDialog, useAction } from "./toaster";
+import { InfoTip } from "./info-tip";
 
 type Member = AvatarPerson & { id: string; role: "ADMIN" | "MEMBRE"; managed: boolean; nickname: string | null };
 
@@ -98,8 +99,10 @@ export function FamilySettings({
                   </div>
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <span className="label">Lien de la famille</span>
-                  <p className="m-0 text-[13px] text-gris">Si le lien a circulé trop loin, créez-en un nouveau : l&apos;ancien ne marchera plus.</p>
+                  <span className="label">
+                    Lien de la famille
+                    <InfoTip align="start">Si le lien a circulé trop loin, créez-en un nouveau : l&apos;ancien ne marchera plus.</InfoTip>
+                  </span>
                   <button
                     className="btn b-red self-start"
                     disabled={pending}
@@ -120,11 +123,11 @@ export function FamilySettings({
             )}
 
             <div className={section}>
-              <h3 className="font-display m-0 text-[22px] font-bold">Télécharger les listes</h3>
-              <div className="flex items-center gap-3.5">
-                <DownloadMenu familySlug={family.slug} align="start" />
-                <p className="m-0 text-[13px] leading-normal text-gris">Toutes les listes de la famille en PDF (à imprimer) ou en tableau Excel. Vous n&apos;y voyez que ce que vous voyez sur le site.</p>
-              </div>
+              <h3 className="font-display m-0 text-[22px] font-bold">
+                Télécharger les listes
+                <InfoTip align="start">En PDF ou en Excel. Vous n&apos;y trouvez que ce que vous voyez sur le site.</InfoTip>
+              </h3>
+              <DownloadMenu familySlug={family.slug} align="start" />
             </div>
 
             <div className={section}>

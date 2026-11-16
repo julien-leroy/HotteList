@@ -6,11 +6,12 @@ import { useRouter } from "next/navigation";
 import type { PersonLite, VisibleGift } from "@/lib/visibility";
 import { formatPrice } from "@/lib/format";
 import { DownloadMenu } from "./download-menu";
+import { InfoTip } from "./info-tip";
 import { Avatar } from "./avatar";
 import { GiftVisual, SourceBadge, statusOf, tintFor, type Status } from "./gift-ui";
 import { AddGiftDialog } from "./gift-form";
 import { GiftDialog } from "./gift-dialog";
-import { IconBookmark, IconComment, IconGift, IconGrid, IconGroup, IconHidden, IconList, IconPlus } from "./icons";
+import { IconBookmark, IconComment, IconGift, IconGrid, IconGroup, IconList, IconPlus } from "./icons";
 import { useAction } from "./toaster";
 import { priceValue } from "./price";
 import { mentionLabels } from "@/lib/mentions";
@@ -214,6 +215,7 @@ export function FamilyBoard({ familyId, familySlug, viewerId, sections, openGift
                             onSave={(v) => setNickname(familyId, s.person.id, v)}
                           />{" "}
                           · {sub}
+                          <InfoTip align="start">Chut ! Les réservations, commentaires et idées des autres sur vos souhaits vous restent cachés.</InfoTip>
                         </>
                       ) : (
                         <>
@@ -229,12 +231,6 @@ export function FamilyBoard({ familyId, familySlug, viewerId, sections, openGift
                 </button>
               </div>
 
-              {s.isMe && (
-                <p className="m-0 flex items-center gap-2 text-sm font-semibold text-sapin">
-                  <IconHidden size={18} />
-                  Chut ! Sur vos souhaits, les réservations, les commentaires et les idées des autres restent cachés.
-                </p>
-              )}
 
               <AddGiftDialog
                 open={isAdding}

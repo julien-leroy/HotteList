@@ -9,6 +9,7 @@ import { setManagedInFamily } from "@/app/actions/family";
 import { Avatar } from "./avatar";
 import { IconPlus } from "./icons";
 import { confirmDialog, useAction } from "./toaster";
+import { InfoTip } from "./info-tip";
 
 type Fam = { id: string; name: string };
 
@@ -104,10 +105,10 @@ function CreateManaged({ families, onDone }: { families: Fam[]; onDone: (id?: st
     <div className="flex flex-wrap gap-7 rounded-[22px] bg-papier p-[26px]" style={{ border: "2px solid #D9BE7E" }}>
       <div className="flex min-w-0 flex-[1_1_320px] flex-col gap-4">
         <div className="flex flex-col gap-1">
-          <h2 className="font-display m-0 text-[26px] font-bold">Nouveau compte géré</h2>
-          <p className="m-0 text-sm leading-normal text-gris">
-            Pour un enfant ou un proche sans e-mail. Vous écrivez ses souhaits à sa place et vous voyez tout : réservations, participants, commentaires.
-          </p>
+          <h2 className="font-display m-0 text-[26px] font-bold">
+            Nouveau compte géré
+            <InfoTip align="start">Pour un enfant ou un proche sans e-mail : vous écrivez ses souhaits à sa place et vous voyez tout (réservations, commentaires).</InfoTip>
+          </h2>
         </div>
         <div className="flex flex-col gap-1.5">
           <label className="label" htmlFor="np">Prénom</label>
@@ -183,7 +184,7 @@ function GiveAccess({ person, onDone }: { person: PersonLite; onDone: () => void
   return (
     <div className="flex flex-col gap-3.5 rounded-2xl bg-papier p-5">
       <p className="m-0 text-sm leading-normal text-gris">
-        {person.firstName} pourra se connecter et gérer sa liste. Attention : le compte devient autonome. Vous ne le gérerez plus, et ses réservations et commentaires lui seront cachés comme pour tout le monde.
+        {person.firstName} pourra se connecter seul·e. Vous ne gérerez plus ce compte.
       </p>
       <div className="flex flex-wrap gap-3">
         <div className="flex flex-[1_1_200px] flex-col gap-1.5">

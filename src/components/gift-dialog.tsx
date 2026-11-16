@@ -144,7 +144,6 @@ export function GiftDialog({
                             </span>
                           ))}
                         </div>
-                        <p className="m-0 text-[13px] text-gris">Qui paie quoi ? Mettez-vous d&apos;accord dans les commentaires.</p>
                         <div className="flex flex-wrap gap-2.5">
                           {!st.mine && gift.can.take && <button className="btn b-gold" disabled={pending} onClick={() => run(() => joinGroup(gift.id), "Vous participez ! C'est dans votre liste de courses.", undefined, { run: () => leaveGift(gift.id) })}>Participer</button>}
                           {st.mine && <button className="btn b-quiet" disabled={pending} onClick={() => run(() => leaveGift(gift.id))}>Ne plus participer</button>}
@@ -207,7 +206,7 @@ export function GiftDialog({
                   </span>
                 </div>
                 {s.comments.length === 0 && (
-                  <p className="m-0 text-sm text-gris">Pas encore de commentaire. Une question sur la taille, le budget, qui achète ?</p>
+                  <p className="m-0 text-sm text-gris">Pas encore de commentaire.</p>
                 )}
                 <div className="flex flex-col gap-3">
                   {s.comments.map((c) => (

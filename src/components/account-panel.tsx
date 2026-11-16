@@ -4,6 +4,7 @@ import { useState } from "react";
 import { changePassword, confirmEmail, removeEmail, requestEmailVerification, setEmailPref, updateMyName } from "@/app/actions/email";
 import { CodeInput } from "./code-flow";
 import { confirmDialog, useAction } from "./toaster";
+import { InfoTip } from "./info-tip";
 
 type Props = {
   firstName: string;
@@ -70,10 +71,10 @@ function EmailForm({ email, pendingEmail, login, reminders, mentions }: Props) {
 
   return (
     <div className="flex flex-col gap-3">
-      <h3 className="label m-0 text-[15px]">Mon adresse e-mail</h3>
-      <p className="m-0 text-[13px] leading-normal text-gris">
-        Pour récupérer votre mot de passe ou vous connecter avec un code. Elle n&apos;est visible par personne et ne sert à rien d&apos;autre.
-      </p>
+      <h3 className="label m-0 text-[15px]">
+        Mon adresse e-mail
+        <InfoTip align="start">Pour récupérer votre mot de passe ou vous connecter avec un code. Personne d&apos;autre ne la voit.</InfoTip>
+      </h3>
 
       {email && !editing && !waiting && (
         <>

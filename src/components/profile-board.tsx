@@ -212,9 +212,6 @@ export function ProfileBoard({ person, isSelf, columns }: Props) {
                 inTabs
               />
             </div>
-            {cols.length > 1 && (
-              <p className="m-0 mt-2 text-[13px] text-gris">Astuce : faites glisser une carte sur l&apos;onglet d&apos;une autre famille pour l&apos;y déplacer.</p>
-            )}
           </div>
         ) : (
         <div className="grid items-start gap-5" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(min(340px,100%),1fr))" }}>
