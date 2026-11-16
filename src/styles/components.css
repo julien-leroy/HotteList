@@ -290,7 +290,8 @@ textarea.gf-desc { min-height: 96px; }
 .install-modal .btn:not(.b-icon) { width: 100%; }
 .install-modal .b-quiet { margin-top: -6px; }
 
-/* Info-bulle « i » (InfoTip) : au survol ou au toucher */
+/* Info-bulle « i » (InfoTip) : au survol ou au toucher.
+ * Cachée = display:none, pour qu'elle ne prenne jamais de place (sinon la page défile sur le côté). */
 .tip { position: relative; display: inline-flex; vertical-align: middle; margin-left: 6px; }
 .tip-i {
   width: 18px; height: 18px; display: grid; place-items: center; padding: 0; flex: none;
@@ -299,15 +300,29 @@ textarea.gf-desc { min-height: 96px; }
 }
 .tip-i:hover, .tip-i:focus-visible, .tip:focus-within .tip-i { opacity: 1; }
 .tip-box {
-  position: absolute; bottom: calc(100% + 8px); left: 50%; z-index: 70;
+  display: none;
+  position: absolute; bottom: calc(100% + 8px); left: 50%; z-index: 70; transform: translateX(-50%);
   width: max-content; max-width: min(260px, 80vw); padding: 9px 12px; border-radius: 10px;
   background: var(--color-encre); color: var(--color-ivoire); font: 500 12.5px/1.45 var(--font-sans);
   font-style: normal; letter-spacing: 0; text-transform: none; text-align: left; white-space: normal;
   box-shadow: 0 10px 24px -12px rgba(0, 0, 0, .5);
-  opacity: 0; visibility: hidden; transform: translate(-50%, 4px); transition: opacity .15s, transform .15s, visibility .15s;
   pointer-events: none;
+  animation: tip-in .15s ease-out;
 }
-.tip-start .tip-box { left: -6px; transform: translate(0, 4px); }
-.tip-end .tip-box { left: auto; right: -6px; transform: translate(0, 4px); }
-.tip:hover .tip-box, .tip:focus-within .tip-box { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
-.tip-start:hover .tip-box, .tip-start:focus-within .tip-box, .tip-end:hover .tip-box, .tip-end:focus-within .tip-box { transform: translate(0, 0); }
+.tip-start .tip-box { left: -6px; transform: none; }
+.tip-end .tip-box { left: auto; right: -6px; transform: none; }
+.tip:hover .tip-box, .tip:focus-within .tip-box { display: block; }
+@keyframes tip-in { from { opacity: 0; } }
+/* Sur téléphone : l'info s'affiche en bas de l'écran, sur toute la largeur, jamais coupée */
+@media (max-width: 640px) {
+  .tip-box, .tip-start .tip-box, .tip-end .tip-box {
+    position: fixed; left: 12px; right: 12px; bottom: calc(16px + env(safe-area-inset-bottom)); top: auto;
+    transform: none; width: auto; max-width: none; padding: 12px 14px; font-size: 14px; z-index: 80;
+  }
+}
+
+/* Filtres segmentés : sur petit téléphone, ils défilent dans leur cadre au lieu de dépasser */
+.seg { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+.seg::-webkit-scrollbar { display: none; }
+.seg button { flex: none; }
+@media (max-width: 380px) { .seg button { padding: 0 10px; gap: 6px; } }
