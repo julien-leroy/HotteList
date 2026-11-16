@@ -173,7 +173,7 @@ export function GiftForm(props: Props) {
         </div>
         <div className="flex flex-col gap-1.5">
           <label className="label" htmlFor={`${idBase}-d`}>Description <span className="opt">(facultatif)</span></label>
-          <textarea className="input" id={`${idBase}-d`} value={d.description} onChange={set("description")} maxLength={2000} placeholder="Taille, couleur, modèle, pourquoi ça lui plairait…" />
+          <textarea className="input gf-desc" id={`${idBase}-d`} value={d.description} onChange={set("description")} maxLength={2000} placeholder="Taille, couleur, modèle, pourquoi ça lui plairait…" />
         </div>
         {showImageField ? (
           <div className="flex flex-col gap-1.5">
@@ -181,7 +181,7 @@ export function GiftForm(props: Props) {
             <input className="input" id={`${idBase}-i`} type="url" value={d.imageUrl} onChange={set("imageUrl")} placeholder="https://…/image.jpg" />
           </div>
         ) : (
-          <button type="button" className="btn b-quiet self-start" onClick={() => setShowImageField(true)}>
+          <button type="button" className="gf-link self-start" onClick={() => setShowImageField(true)}>
             Choisir l&apos;image moi-même
           </button>
         )}
@@ -196,15 +196,15 @@ export function GiftForm(props: Props) {
             Coup de cœur
           </label>
         )}
-        <div className="flex flex-wrap gap-2.5">
-          <button className="btn b-red" type="submit" disabled={pending || looking}>
+        <div className="gf-actions">
+          <button className="btn b-primary" type="submit" disabled={pending || looking}>
             {pending ? "Enregistrement…" : props.mode === "edit" ? "Enregistrer" : props.kind === "IDEE" ? "Ajouter l'idée" : "Ajouter à la liste"}
           </button>
           <button className="btn b-quiet" type="button" onClick={props.onDone}>Annuler</button>
         </div>
       </div>
       {!compact && (
-        <div className="flex max-w-[240px] flex-[1_1_200px] flex-col gap-2">
+        <div className="hidden max-w-[240px] flex-[1_1_200px] flex-col gap-2 sm:flex">
           <span className="label">Aperçu</span>
           <div className="card" style={{ pointerEvents: "none" }}>
             <GiftVisual key={d.imageUrl} gift={{ id: idBase, imageUrl: d.imageUrl || null, title: d.title }} iconSize={72}>
@@ -237,15 +237,15 @@ export function AddGiftDialog(props: {
     <Dialog.Root open={props.open} onOpenChange={(o) => !o && props.onClose()}>
       <Dialog.Portal>
         <Dialog.Overlay className="veil">
-          <Dialog.Content className="modal flex max-w-[860px] flex-col gap-5 p-7" aria-describedby={undefined} onOpenAutoFocus={(e) => {
+          <Dialog.Content className="modal add-modal flex max-w-[860px] flex-col gap-4 p-5 sm:gap-5 sm:p-7" aria-describedby={undefined} onOpenAutoFocus={(e) => {
             // laisser autoFocus placer le curseur dans le champ du lien
             const el = (e.currentTarget as HTMLElement | null)?.querySelector("input");
             if (el) { e.preventDefault(); el.focus(); }
           }}>
             <div className="flex items-start justify-between gap-4">
               <div className="flex flex-col gap-1">
-                <Dialog.Title className="font-display m-0 text-[28px] font-bold">{props.title}</Dialog.Title>
-                <p className="m-0 text-sm text-gris">{props.hint}</p>
+                <Dialog.Title className="font-display m-0 text-[22px] font-bold sm:text-[28px]">{props.title}</Dialog.Title>
+                <p className="m-0 hidden text-sm text-gris sm:block">{props.hint}</p>
               </div>
               <Dialog.Close asChild>
                 <button className="btn b-soft b-icon" type="button" aria-label="Fermer" style={{ borderRadius: "50%", flex: "none" }}>

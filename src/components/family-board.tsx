@@ -118,25 +118,25 @@ export function FamilyBoard({ familyId, familySlug, viewerId, sections, openGift
               </a>
             ))}
           </nav>
-          <div className="flex flex-wrap items-center gap-3.5">
+          <div className="filters">
             <label className="sr-only" htmlFor="tri">Trier</label>
-            <select id="tri" className="input" style={{ minHeight: 44, width: "auto", fontSize: 14, fontWeight: 600 }} value={sort} onChange={(e) => setSort(e.target.value as Sort)}>
+            <select id="tri" className="input filter-select" value={sort} onChange={(e) => setSort(e.target.value as Sort)}>
               <option value="ordre">Ordre de la liste</option>
               <option value="coeur">Coups de cœur d&apos;abord</option>
               <option value="prix-asc">Prix croissant</option>
               <option value="prix-desc">Prix décroissant</option>
             </select>
             <label className="sr-only" htmlFor="budget">Budget</label>
-            <select id="budget" className="input" style={{ minHeight: 44, width: "auto", fontSize: 14, fontWeight: 600 }} value={budget} onChange={(e) => setBudget(e.target.value as Budget)}>
+            <select id="budget" className="input filter-select" value={budget} onChange={(e) => setBudget(e.target.value as Budget)}>
               <option value="tous">Tous les prix</option>
               <option value="20">Jusqu&apos;à 20 €</option>
               <option value="50">Jusqu&apos;à 50 €</option>
               <option value="100">Jusqu&apos;à 100 €</option>
               <option value="plus">Plus de 100 €</option>
             </select>
-            <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 text-sm font-semibold">
+            <label className="filter-free inline-flex min-h-11 cursor-pointer items-center gap-2 text-sm font-semibold">
               <input type="checkbox" checked={onlyFree} onChange={(e) => setOnlyFree(e.target.checked)} style={{ width: 20, height: 20, accentColor: "#1E6B47" }} />
-              Seulement les disponibles
+              <span>Seulement les <span className="hidden sm:inline">disponibles</span><span className="sm:hidden">dispos</span></span>
             </label>
             <div className="seg" role="group" aria-label="Affichage">
               <button type="button" aria-pressed={mode === "cards"} onClick={() => pickMode("cards")}>
@@ -371,7 +371,7 @@ function GiftCard({ gift, onOpen }: { gift: VisibleGift; onOpen: () => void }) {
   const taken = st.kind === "OTHER" || st.kind === "MINE";
   const nb = gift.secret?.comments.length ?? 0;
   return (
-    <article className={`card${taken ? " taken" : ""}`}>
+    <article className={`card gift-card${taken ? " taken" : ""}`}>
       <button className="open" type="button" onClick={onOpen} aria-label={`Ouvrir : ${gift.title}`}>
         <GiftVisual gift={gift} taken={taken}>
           <SourceBadge site={gift.siteOrigin} />
@@ -381,16 +381,17 @@ function GiftCard({ gift, onOpen }: { gift: VisibleGift; onOpen: () => void }) {
           {st.kind === "GROUP" && <span className="band" style={{ background: "#FFCB2E", color: "#4A1209" }}>À plusieurs · {st.people}{st.mine ? ` · ${STATUS_LABEL[gift.secret!.myStatus ?? "A_ACHETER"]}` : ""}</span>}
           {gift.isNew && <span className="idea" style={{ background: "#CF2B35", left: gift.kind === "IDEE" ? 10 : undefined, right: gift.kind === "IDEE" ? undefined : 10, top: gift.kind === "IDEE" ? 40 : 10 }}>Nouveau</span>}
         </GiftVisual>
-        <span className="flex flex-1 flex-col gap-2.5 px-3.5 pt-3.5 pb-2.5">
+        <span className="gift-info">
           <span className="flex items-start justify-between gap-2">
             <span className="line-clamp-2 text-base leading-[1.35] font-semibold">{gift.title}</span>
             {nb > 0 && (
-              <span className="cm" title={`${nb} commentaire(s)`}>
-                <IconComment /> {nb}
+              <span className="cm" title={`${nb} commentaire${nb > 1 ? "s" : ""}`} aria-label={`${nb} commentaire${nb > 1 ? "s" : ""}`}>
+                <IconComment size={17} /> {nb}
               </span>
             )}
           </span>
-          <span className="mt-auto flex items-center justify-between gap-2">
+          {gift.description && <span className="gift-desc">{gift.description}</span>}
+          <span className="flex items-center justify-between gap-2">
             <span className="tag">{formatPrice(gift.price)}</span>
             {gift.favorite && <span className="text-xs font-bold text-rouge">Coup de cœur</span>}
           </span>

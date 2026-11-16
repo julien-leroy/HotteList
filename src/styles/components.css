@@ -40,7 +40,9 @@ textarea.input{padding:12px 14px;min-height:84px;resize:vertical;line-height:1.5
 .band{position:absolute;left:0;right:0;bottom:0;z-index:1;padding:8px 12px;font:700 13px var(--font-sans);border-top:2px solid var(--color-or)}
 .tag{display:inline-flex;align-items:center;gap:6px;padding:3px 10px 3px 8px;border-radius:6px 999px 999px 6px;background:var(--color-or-pale);color:#5C4214;font:700 13px var(--font-sans);white-space:nowrap}
 .tag::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--color-papier);box-shadow:0 0 0 1.5px #C9A04A}
-.cm{display:inline-flex;align-items:center;gap:4px;flex:none;padding:3px 8px 3px 6px;border-radius:999px;background:var(--color-rouge);color:var(--color-ivoire);font:700 12px var(--font-sans)}
+/* Indicateur de commentaires : petite bulle au trait rouge, discrète */
+.cm{display:inline-flex;align-items:center;gap:3px;flex:none;margin-top:1px;color:var(--color-rouge);font:700 12px/1 var(--font-sans)}
+.cm svg{fill:none;stroke:currentColor;stroke-width:2;stroke-linejoin:round}
 .plus{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;min-height:300px;border:2px dashed var(--color-or);border-radius:18px;background:repeating-linear-gradient(45deg,var(--color-ivoire) 0 14px,#FBF1DC 14px 28px);color:var(--color-rouge-texte);font:600 15px var(--font-sans);cursor:pointer;padding:20px;text-align:center}
 .plus:hover{border-color:var(--color-rouge);background:#FFF4E0}
 .plus .orb{display:flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:50%;background:var(--color-rouge);color:var(--color-ivoire);box-shadow:inset -6px -8px 0 rgba(0,0,0,.15),0 8px 18px -8px rgba(179,32,46,.8)}
@@ -231,3 +233,53 @@ textarea.input{padding:12px 14px;min-height:84px;resize:vertical;line-height:1.5
 .dl-icon:hover { background: #d2e5f6; transform: translateY(-1px); }
 .dl-icon:focus-visible { outline: 3px solid #7fb0dd; outline-offset: 2px; }
 .dl-tag { display: inline-grid; place-items: center; min-width: 38px; height: 22px; margin-right: 8px; border-radius: 6px; font: 800 11px/1 var(--font-sans); letter-spacing: .04em; }
+
+/* ---------- Carte d'un cadeau (page famille) ----------
+ * Hauteur fixe : la photo prend la place qui reste. S'il y a une description, ses premières
+ * lignes s'affichent et la photo rétrécit d'autant (la description entière est dans la popup).
+ */
+.gift-card { height: 384px; }
+.gift-card .open { min-height: 0; }
+.gift-card .ph { aspect-ratio: auto; flex: 1 1 0; min-height: 110px; }
+.gift-info { display: flex; flex: none; flex-direction: column; gap: 8px; padding: 12px 14px 10px; }
+.gift-desc {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--color-gris);
+  white-space: pre-line;
+}
+@media (max-width: 640px) { .gift-card { height: 360px; } }
+
+/* ---------- Formulaire d'ajout / modification d'un cadeau ---------- */
+.gf-link { padding: 0; border: 0; background: none; font: 600 13px var(--font-sans); color: var(--color-sapin); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.gf-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+textarea.gf-desc { min-height: 96px; }
+@media (max-width: 640px) {
+  textarea.gf-desc { min-height: 64px; }
+  /* Sur téléphone, les boutons restent collés en bas de la popup : pas besoin de faire défiler */
+  .add-modal .gf-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    margin: 0 -20px -20px;
+    padding: 12px 20px calc(12px + env(safe-area-inset-bottom));
+    background: var(--color-papier);
+    border-top: 1px solid var(--color-sable);
+    box-shadow: 0 -10px 20px -14px rgba(60, 20, 20, .35);
+  }
+  .add-modal .gf-actions .btn { flex: 1; }
+}
+
+/* Filtres de la page famille : sur une ou deux lignes compactes sur téléphone */
+.filters { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
+.filter-select { min-height: 44px; width: auto; font-size: 14px; font-weight: 600; }
+@media (max-width: 640px) {
+  .filters { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px 10px; }
+  .filter-select { width: 100%; min-width: 0; padding-left: 12px; padding-right: 8px; font-size: 13.5px; }
+  .filter-free { font-size: 13.5px; }
+  .filters .seg { justify-self: end; }
+}
