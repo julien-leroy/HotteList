@@ -46,14 +46,13 @@ function emailLogo() {
 export function renderCodeEmail(purpose: CodePurpose, firstName: string, code: string, minutes: number) {
   const c = COPY[purpose];
   const appUrl = (process.env.APP_URL ?? "").replace(/\/$/, "");
-  const spaced = `${code.slice(0, 3)} ${code.slice(3)}`;
   const name = escapeHtml(firstName);
   const text = [
     `Bonjour ${firstName},`,
     "",
     c.intro,
     "",
-    `    ${spaced}`,
+    `    ${code}`,
     "",
     `Ce code est valable ${minutes} minutes et ne sert qu'une fois.`,
     c.outro,
@@ -77,7 +76,7 @@ export function renderCodeEmail(purpose: CodePurpose, firstName: string, code: s
       <p style="margin:0 0 20px;font-size:16px;line-height:1.5;">${c.intro}</p>
     </td></tr>
     <tr><td align="center" style="padding:0 28px;">
-      <div style="display:inline-block;padding:16px 28px;border-radius:14px;background:#F6E7C1;border:2px dashed #D9A93E;font-family:'Courier New',Courier,monospace;font-size:34px;font-weight:700;letter-spacing:6px;color:#5A1018;">${spaced}</div>
+      <div style="display:inline-block;padding:16px 28px;border-radius:14px;background:#F6E7C1;border:2px dashed #D9A93E;font-family:'Courier New',Courier,monospace;font-size:34px;font-weight:700;letter-spacing:8px;color:#5A1018;-webkit-user-select:all;user-select:all;">${code}</div>
     </td></tr>
     <tr><td style="padding:20px 28px 28px;font-family:Arial,Helvetica,sans-serif;color:#5E5A48;font-size:14px;line-height:1.55;">
       <p style="margin:0 0 10px;">Ce code est valable <strong>${minutes} minutes</strong> et ne sert qu'une fois.</p>
