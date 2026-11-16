@@ -13,35 +13,11 @@ import { AddGiftDialog } from "./gift-form";
 import { GiftDialog } from "./gift-dialog";
 import { IconBookmark, IconComment, IconGift, IconGrid, IconGroup, IconList, IconPlus } from "./icons";
 import { useAction } from "./toaster";
-import { priceValue } from "./price";
 import { mentionLabels } from "@/lib/mentions";
 import type { MentionPerson } from "./comment-box";
 import { joinGroup, leaveGift, takeGift } from "@/app/actions/gifts";
 import { setNickname } from "@/app/actions/family";
 import { InlineEdit } from "./inline-edit";
-
-type Sort = "ordre" | "coeur" | "prix-asc" | "prix-desc";
-type Budget = "tous" | "20" | "50" | "100" | "plus";
-
-function arrange(list: VisibleGift[], sort: Sort, budget: Budget) {
-  let out = list;
-  if (budget !== "tous") {
-    out = out.filter((g) => {
-      const v = priceValue(g.price);
-      if (v == null) return true; // prix libre : toujours affiché
-      return budget === "plus" ? v > 100 : v <= Number(budget);
-    });
-  }
-  if (sort === "ordre") return out;
-  const val = (g: VisibleGift) => priceValue(g.price);
-  return out.slice().sort((a, b) => {
-    if (sort === "coeur") return Number(b.favorite) - Number(a.favorite);
-    const va = val(a), vb = val(b);
-    if (va == null) return 1;
-    if (vb == null) return -1;
-    return sort === "prix-asc" ? va - vb : vb - va;
-  });
-}
 
 export type Section = {
   person: PersonLite;
@@ -78,9 +54,6 @@ function mentionPeople(sections: Section[], recipientId: string, meId: string): 
 export function FamilyBoard({ familyId, familySlug, viewerId, sections, openGiftId, aside }: Props) {
   const router = useRouter();
   const [mode, setMode] = useState<"cards" | "list">("cards");
-  const [onlyFree, setOnlyFree] = useState(false);
-  const [sort, setSort] = useState<Sort>("ordre");
-  const [budget, setBudget] = useState<Budget>("tous");
   const [adding, setAdding] = useState<string | null>(null);
 
   useEffect(() => {
@@ -107,47 +80,24 @@ export function FamilyBoard({ familyId, familySlug, viewerId, sections, openGift
       <div className={aside ? "board board-with-aside" : "board"}>
       {aside && <aside className="board-aside" aria-label="Secret Santa">{aside}</aside>}
       <div className="board-main">
-      {/* BARRE D'OUTILS */}
-      <div>
-        <div className="panel flex flex-wrap items-center justify-between gap-3.5 p-3">
-          <nav aria-label="Aller à la liste de" className="flex flex-wrap gap-2">
-            {sections.map((s) => (
-              <a key={s.person.id} className={s.isSantaChild ? "chip chip-santa" : "chip"} href={`#p-${s.person.id}`} title={s.isSantaChild ? "Votre Secret Santa" : undefined}>
-                <Avatar person={s.person} size={32} />
-                {s.isMe ? "Moi" : s.person.firstName}
-                {s.isSantaChild && <IconGift size={15} stroke="#B8862A" />}
-              </a>
-            ))}
-          </nav>
-          <div className="filters">
-            <label className="sr-only" htmlFor="tri">Trier</label>
-            <select id="tri" className="input filter-select" value={sort} onChange={(e) => setSort(e.target.value as Sort)}>
-              <option value="ordre">Ordre de la liste</option>
-              <option value="coeur">Coups de cœur d&apos;abord</option>
-              <option value="prix-asc">Prix croissant</option>
-              <option value="prix-desc">Prix décroissant</option>
-            </select>
-            <label className="sr-only" htmlFor="budget">Budget</label>
-            <select id="budget" className="input filter-select" value={budget} onChange={(e) => setBudget(e.target.value as Budget)}>
-              <option value="tous">Tous les prix</option>
-              <option value="20">Jusqu&apos;à 20 €</option>
-              <option value="50">Jusqu&apos;à 50 €</option>
-              <option value="100">Jusqu&apos;à 100 €</option>
-              <option value="plus">Plus de 100 €</option>
-            </select>
-            <label className="filter-free inline-flex min-h-11 cursor-pointer items-center gap-2 text-sm font-semibold">
-              <input type="checkbox" checked={onlyFree} onChange={(e) => setOnlyFree(e.target.checked)} style={{ width: 20, height: 20, accentColor: "#1E6B47" }} />
-              <span>Seulement les <span className="hidden sm:inline">disponibles</span><span className="sm:hidden">dispos</span></span>
-            </label>
-            <div className="seg" role="group" aria-label="Affichage">
-              <button type="button" aria-pressed={mode === "cards"} onClick={() => pickMode("cards")}>
-                <IconGrid /> Cartes
-              </button>
-              <button type="button" aria-pressed={mode === "list"} onClick={() => pickMode("list")}>
-                <IconList /> Liste
-              </button>
-            </div>
-          </div>
+      {/* BARRE D'OUTILS : membres à gauche, cartes / liste à droite */}
+      <div className="panel toolbar">
+        <nav aria-label="Aller à la liste de" className="toolbar-people">
+          {sections.map((s) => (
+            <a key={s.person.id} className={s.isSantaChild ? "chip chip-sm chip-santa" : "chip chip-sm"} href={`#p-${s.person.id}`} title={s.isSantaChild ? "Votre Secret Santa" : undefined}>
+              <Avatar person={s.person} size={26} />
+              {s.isMe ? "Moi" : s.person.firstName}
+              {s.isSantaChild && <IconGift size={14} stroke="#B8862A" />}
+            </a>
+          ))}
+        </nav>
+        <div className="seg seg-sm" role="group" aria-label="Affichage">
+          <button type="button" aria-pressed={mode === "cards"} onClick={() => pickMode("cards")} title="Cartes">
+            <IconGrid /> <span className="seg-label">Cartes</span>
+          </button>
+          <button type="button" aria-pressed={mode === "list"} onClick={() => pickMode("list")} title="Liste">
+            <IconList /> <span className="seg-label">Liste</span>
+          </button>
         </div>
       </div>
 
@@ -155,16 +105,7 @@ export function FamilyBoard({ familyId, familySlug, viewerId, sections, openGift
       <main className="flex flex-col gap-12 pt-7">
         {sections.map((s) => {
           const canWish = s.isMe || s.isManaged;
-          const gifts = arrange(
-            onlyFree
-              ? s.gifts.filter((g) => {
-                  const st = statusOf(g);
-                  return st.kind === "HIDDEN" || st.kind === "FREE" || (st.kind === "GROUP" && !st.mine);
-                })
-              : s.gifts,
-            sort,
-            budget,
-          );
+          const gifts = s.gifts;
           const wishes = s.gifts.filter((g) => g.kind === "SOUHAIT").length;
           const ideas = s.gifts.length - wishes;
           const sub = s.isMe
@@ -243,9 +184,6 @@ export function FamilyBoard({ familyId, familySlug, viewerId, sections, openGift
                 hint={canWish ? (s.isMe ? "Collez un lien : le titre, l'image et le prix se remplissent tout seuls. Toute la famille le verra." : `Collez un lien : le titre, l'image et le prix se remplissent tout seuls.`) : `${s.person.firstName} ne verra jamais cette idée. Le reste de la famille pourra la réserver et la commenter.`}
               />
 
-              {gifts.length === 0 && s.gifts.length > 0 && (
-                <p className="m-0 text-sm text-gris">{onlyFree ? "Rien de disponible ici avec ces filtres." : "Rien dans ce budget ici."}</p>
-              )}
 
               {mode === "cards" ? (
                 <div className="grid gap-[18px]" style={{ gridTemplateColumns: "repeat(auto-fill,minmax(min(210px,100%),1fr))" }}>

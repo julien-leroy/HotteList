@@ -93,9 +93,9 @@ Supprimés : Docker, PostgreSQL, sharp et stockage d'images, Better Auth.
 - **Notifications** (cloche) : quelqu'un rejoint un cadeau à plusieurs dont je fais partie, commente un cadeau que j'offre ou dont j'ai parlé, déplace ou retire un souhait que j'avais réservé, lance le tirage du Secret Santa. Jamais rien pour le destinataire du cadeau.
 - **Badge « Nouveau »** sur les cadeaux ajoutés par d'autres depuis ma visite précédente (une visite = plus d'une heure d'absence, pour que les badges ne disparaissent pas au premier clic).
 - **Cartes des cadeaux** : hauteur fixe ; la photo prend la place qui reste et rétrécit quand il y a une description, dont les 3 premières lignes s'affichent (le texte entier dans la popup). Commentaires signalés par une petite bulle au trait rouge et leur nombre.
-- **Sur téléphone** : l'ajout d'un article n'affiche pas l'aperçu et garde les boutons collés en bas de la popup ; les filtres tiennent sur deux lignes.
+- **Sur téléphone** : l'ajout d'un article n'affiche pas l'aperçu et garde les boutons collés en bas de la popup ; la barre de la famille tient sur une ligne (membres qui défilent sur le côté, bascule Cartes / Liste en icônes).
 - **Ordre des listes** sur la page famille : la personne tirée au Secret Santa, moi, mes comptes gérés, les autres ; ceux qui n'ont encore **aucun souhait** passent à la fin (même ordre dans l'export).
-- **Tri** (ordre de la liste, coups de cœur, prix) et **filtre de budget** sur la page famille ; les prix libres restent toujours affichés.
+- **Barre de la page famille** : uniquement les membres (raccourcis vers leur liste) et la bascule Cartes / Liste, sur une seule ligne. Tri, budget et « seulement les disponibles » ont été retirés le 16/11 pour alléger.
 - **Doublons** : à l'ajout, alerte si le même lien (site + chemin) ou le même titre est déjà dans la liste visible.
 - **Partager l'invitation** : partage natif du téléphone, sinon message tout prêt copié.
 - **Profil en onglets** (une famille par onglet) : toujours sur mobile, au choix sur ordinateur (mémorisé). On peut lâcher une carte sur un autre onglet pour la déplacer.
