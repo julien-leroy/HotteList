@@ -113,6 +113,20 @@ export function FamilySettings({
               </div>
             )}
 
+            {santa && (
+              <div className={section}>
+                <SantaSettings familyId={family.id} mode={santa.mode} memberCount={santa.memberCount} current={santa.current} />
+              </div>
+            )}
+
+            <div className={section}>
+              <h3 className="font-display m-0 text-[22px] font-bold">Télécharger les listes</h3>
+              <div className="flex items-center gap-3.5">
+                <DownloadMenu familySlug={family.slug} align="start" />
+                <p className="m-0 text-[13px] leading-normal text-gris">Toutes les listes de la famille en PDF (à imprimer) ou en tableau Excel. Vous n&apos;y voyez que ce que vous voyez sur le site.</p>
+              </div>
+            </div>
+
             <div className={section}>
               <h3 className="font-display m-0 text-[22px] font-bold">Membres · {members.length}</h3>
               <ul className="m-0 flex list-none flex-col gap-2 p-0">
@@ -176,20 +190,6 @@ export function FamilySettings({
                   <CopyLink url={resetUrl.url} light={false} />
                 </div>
               )}
-            </div>
-
-            {santa && (
-              <div className={section}>
-                <SantaSettings familyId={family.id} mode={santa.mode} memberCount={santa.memberCount} current={santa.current} />
-              </div>
-            )}
-
-            <div className={section}>
-              <h3 className="font-display m-0 text-[22px] font-bold">Télécharger les listes</h3>
-              <div className="flex items-center gap-3.5">
-                <DownloadMenu familySlug={family.slug} align="start" />
-                <p className="m-0 text-[13px] leading-normal text-gris">Toutes les listes de la famille en PDF (à imprimer) ou en tableau Excel. Vous n&apos;y voyez que ce que vous voyez sur le site.</p>
-              </div>
             </div>
 
             {myManaged.length > 0 && (

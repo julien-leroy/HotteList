@@ -102,32 +102,19 @@ export async function drawSecretSanta(familyId: string, budget?: string): Promis
 }
 
 /**
- * Active ou coupe le mode Secret Santa. L'activer lance le tirage tout de suite s'il y a au moins
- * 3 membres (sinon il se lancera depuis l'encart dès qu'ils seront là). Le couper annule le tirage.
+ * Active ou coupe le mode Secret Santa. L'activer fait seulement apparaître l'encart sur la page
+ * famille : le tirage se lance ensuite depuis l'encart (ou les Réglages). Le couper annule le tirage.
  */
 export async function setSantaMode(familyId: string, on: boolean): Promise<ActionResult> {
   try {
     const user = await requireUser();
     await requireAdmin(user.id, familyId);
-    let message = on ? "Secret Santa activé." : "Secret Santa coupé.";
-    let drawn: Awaited<ReturnType<typeof draw>> | null = null;
     await db.$transaction(async (tx) => {
       await tx.family.update({ where: { id: familyId }, data: { santaMode: on } });
-      if (!on) {
-        await tx.secretSanta.deleteMany({ where: { familyId } });
-        return;
-      }
-      const n = await tx.membership.count({ where: { familyId, user: { managedById: null } } });
-      if (n >= 3) {
-        drawn = await draw(tx, familyId, user.id, null);
-        message = `Secret Santa lancé entre ${n} personnes : chacun va découvrir le sien.`;
-      } else {
-        message = "Secret Santa activé. Le tirage pourra se faire dès qu'il y aura 3 membres.";
-      }
+      if (!on) await tx.secretSanta.deleteMany({ where: { familyId } });
     });
-    if (drawn) await mailParticipants(drawn);
     revalidatePath("/", "layout");
-    return { ok: true, message };
+    return { ok: true, message: on ? "Secret Santa activé : lancez le tirage depuis la page de la famille." : "Secret Santa coupé." };
   } catch (e) {
     return { ok: false, error: errMsg(e) };
   }

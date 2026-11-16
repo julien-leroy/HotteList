@@ -193,17 +193,15 @@ export default async function FamilyPage({ params, searchParams }: Props) {
         sections={sections}
         openGiftId={cadeau ?? null}
         aside={
-          // Encart Secret Santa : toujours pour les admins (bouton pour le lancer), pour les autres une fois lancé
-          family.santaMode || isAdmin ? (
+          // Encart Secret Santa : seulement si l'option est activée (à la création ou dans les Réglages)
+          family.santaMode ? (
             <SantaAside
               familyId={family.id}
               isAdmin={isAdmin}
               memberCount={santaCandidates.length}
               pool={santaCandidates.filter((c) => c.id !== user.id && santa?.assignments.some((a) => a.giverId === c.id))}
               state={
-                !family.santaMode
-                  ? { kind: "off" }
-                  : !santa
+                !santa
                   ? { kind: "none" }
                   : !myDraw
                     ? { kind: "outside" }

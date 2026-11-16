@@ -13,7 +13,6 @@ type P = AvatarPerson & { id: string };
 
 /** Où en est le Secret Santa pour moi. */
 export type SantaState =
-  | { kind: "off" } // pas de Secret Santa dans la famille (vu seulement par les admins)
   | { kind: "none" } // pas encore de tirage
   | { kind: "outside" } // tirage fait avant mon arrivée
   | { kind: "toDiscover" } // tirage fait, je n'ai pas encore cliqué sur « Découvrir »
@@ -43,7 +42,6 @@ export function SantaAside({
   const { pending, run } = useAction();
   const [revealing, setRevealing] = useState(false);
   const launch = () => run(() => drawSecretSanta(familyId), undefined, (r) => r.ok && r.message && toast(r.message));
-  const start = () => run(() => setSantaMode(familyId, true), undefined, (r) => r.ok && r.message && toast(r.message));
 
   return (
     <div className="santa-card">
@@ -51,22 +49,6 @@ export function SantaAside({
         <span className="santa-ico"><IconGift size={20} stroke="#FFCB2E" /></span>
         <span className="santa-kicker">Secret Santa{drawnOn ? ` · tiré le ${drawnOn}` : ""}</span>
       </div>
-
-      {state.kind === "off" && (
-        <>
-          <p className="m-0 text-[15px] leading-normal">
-            Envie d&apos;un Secret Santa ? Chaque membre tire au sort une personne de la famille à qui offrir un cadeau, et ne connaît que la sienne.
-          </p>
-          <button type="button" className="btn b-primary" disabled={pending} onClick={start}>
-            {pending ? "Lancement…" : "Lancer un Secret Santa"}
-          </button>
-          <p className="m-0 text-[12px] leading-normal text-gris">
-            {memberCount >= 3
-              ? `Le tirage se fait tout de suite entre les ${memberCount} membres ; chacun le découvre en cliquant sur « Découvrir ».`
-              : "Il faut au moins 3 membres : le tirage pourra se faire dès qu'ils auront rejoint la famille."}
-          </p>
-        </>
-      )}
 
       {state.kind === "revealed" && (
         <>
@@ -129,7 +111,7 @@ export function SantaAside({
           {memberCount >= 3 ? (
             isAdmin ? (
               <button type="button" className="btn b-primary" disabled={pending} onClick={launch}>
-                {pending ? "Tirage…" : `Lancer le tirage (${memberCount} personnes)`}
+                {pending ? "Tirage…" : `Lancer le tirage (${memberCount} personne${memberCount > 1 ? "s" : ""})`}
               </button>
             ) : (
               <p className="m-0 text-[13px] text-gris">L&apos;admin va lancer le tirage.</p>
@@ -275,6 +257,9 @@ export function SantaSettings({
   const { pending, run } = useAction();
   const [budget, setBudget] = useState(current?.budget ?? "");
   const withMessage = (r: { ok: boolean; message?: string }) => r.ok && r.message && toast(r.message);
+  // La case suit le clic tout de suite, sans attendre la réponse du serveur (et revient si ça échoue)
+  const [on, setOn] = useState(mode);
+  useEffect(() => setOn(mode), [mode]);
 
   return (
     <div className="flex flex-col gap-3">
@@ -285,18 +270,19 @@ export function SantaSettings({
       <label className="chk">
         <input
           type="checkbox"
-          checked={mode}
+          checked={on}
           disabled={pending}
           onChange={async (e) => {
-            const on = e.target.checked;
-            if (!on && current && !(await confirmDialog({ title: "Couper le Secret Santa ?", message: "Le tirage en cours sera annulé.", confirmLabel: "Couper", danger: true }))) return;
-            run(() => setSantaMode(familyId, on), undefined, withMessage);
+            const next = e.target.checked;
+            if (!next && current && !(await confirmDialog({ title: "Couper le Secret Santa ?", message: "Le tirage en cours sera annulé.", confirmLabel: "Couper", danger: true }))) return;
+            setOn(next);
+            run(() => setSantaMode(familyId, next), undefined, (r) => (r.ok ? withMessage(r) : setOn(!next)));
           }}
         />
         Activer le Secret Santa dans cette famille
       </label>
 
-      {mode && current && (
+      {on && current && (
         <>
           <p className="m-0 rounded-xl px-3.5 py-2.5 text-sm font-semibold" style={{ background: "#E8F1EB", border: "1px solid #9CC2AC", color: "#1F5539" }}>
             Tiré le {current.drawnOn} entre {current.total} personnes · {current.revealed === current.total ? "tout le monde a découvert le sien" : `${current.revealed} sur ${current.total} l'ont découvert`}.
@@ -323,14 +309,14 @@ export function SantaSettings({
         </>
       )}
 
-      {mode && !current && (
+      {on && !current && (
         <>
           <div className="flex max-w-[220px] flex-col gap-1.5">
             <label className="label" htmlFor="santa-budget">Budget conseillé <span className="opt">(facultatif)</span></label>
             <input className="input" id="santa-budget" value={budget} onChange={(e) => setBudget(e.target.value)} placeholder="Ex. 30 €" maxLength={40} />
           </div>
           <button className="btn b-red self-start" disabled={pending || memberCount < 3} onClick={() => run(() => drawSecretSanta(familyId, budget), undefined, withMessage)}>
-            Lancer le tirage ({memberCount} personnes)
+            Lancer le tirage ({memberCount} personne{memberCount > 1 ? "s" : ""})
           </button>
           {memberCount < 3 && <p className="m-0 text-[13px] text-gris">Il faut au moins 3 membres avec leur compte.</p>}
         </>
