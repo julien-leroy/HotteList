@@ -4,6 +4,7 @@ import { Logo } from "./brand";
 import { scriptCanRender, scriptWidthEm } from "@/lib/script-metrics";
 import { AvatarMenu } from "./avatar-menu";
 import { NotificationBell } from "./notification-bell";
+import { InstallButton } from "./install-app";
 import type { CurrentUser } from "@/lib/auth";
 
 const BULB_COLORS = ["#F2C65A", "#FF4A5C", "#5FB37C", "#6F8FD8", "#F2C65A", "#FF4A5C", "#5FB37C", "#E8823A"];
@@ -113,6 +114,7 @@ export function FestiveHeader({
           {navLink("/familles", "Mes familles", "Familles", "familles")}
           {navLink("/courses", "Mes courses", "Courses", "courses")}
           {navLink("/profil", "Mon profil", "Profil", "profil", true)}
+          <InstallButton />
           <NotificationBell />
           <AvatarMenu user={user} />
         </nav>

@@ -283,3 +283,9 @@ textarea.gf-desc { min-height: 96px; }
   .filter-free { font-size: 13.5px; }
   .filters .seg { justify-self: end; }
 }
+
+/* Proposition d'installation de l'application */
+.install-steps { margin: 0; padding-left: 22px; list-style: decimal; display: flex; flex-direction: column; gap: 10px; font-size: 15px; line-height: 1.5; }
+.install-key { display: inline-flex; align-items: center; gap: 5px; padding: 1px 8px; border-radius: 8px; background: var(--color-ivoire); border: 1px solid var(--color-sable); font-weight: 600; white-space: nowrap; }
+.install-modal .btn:not(.b-icon) { width: 100%; }
+.install-modal .b-quiet { margin-top: -6px; }

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { ConfirmHost, Toaster } from "@/components/toaster";
+import { INSTALL_CAPTURE_SCRIPT, InstallPrompt } from "@/components/install-app";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -17,7 +18,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="fr">
       <body>
+        {/* Garde de côté la proposition d'installation du navigateur (voir install-app.tsx) */}
+        <script dangerouslySetInnerHTML={{ __html: INSTALL_CAPTURE_SCRIPT }} />
         {children}
+        <InstallPrompt />
         <Toaster />
         <ConfirmHost />
       </body>
