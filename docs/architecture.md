@@ -1,6 +1,6 @@
 # HotteList — architecture technique (version simplifiée)
 
-_Document de référence. Dernière mise à jour : 16 novembre 2026 (cartes avec description, ajout sur téléphone, Secret Santa lancé depuis l'encart ; titres en Damion, favicon, montagnes en entier, ordre des listes, bouton de téléchargement ; avant : export PDF / Excel, Secret Santa)._
+_Document de référence. Dernière mise à jour : 16 novembre 2026 (barre de la famille allégée, plus de défilement horizontal sur téléphone ; cartes avec description, ajout sur téléphone, Secret Santa lancé depuis l'encart ; titres en Damion, favicon, montagnes en entier, ordre des listes, bouton de téléchargement ; avant : export PDF / Excel, Secret Santa)._
 _Développement lancé le 9 novembre 2026. Ajout de souhait et d'idée en popup depuis la v1.1. Code : https://github.com/julien-leroy/HotteList_
 
 ## 1. Décisions prises
