@@ -14,7 +14,7 @@ export async function NotificationBell() {
   return (
     <NotificationMenu
       // « Me notifier par e-mail » : pour un invité (créer son compte) ou un compte sans adresse confirmée
-      emailHref={!mailEnabled() || user.hasEmail ? null : user.guest ? "/creer-mon-compte?pour=notifications" : "/profil#compte"}
+      emailHref={!mailEnabled() || user.hasEmail ? null : "/creer-mon-compte?pour=notifications"}
       items={items.map((n) => ({ id: n.id, text: n.text, link: n.link, unread: !n.readAt, createdAt: n.createdAt.toISOString() }))}
     />
   );

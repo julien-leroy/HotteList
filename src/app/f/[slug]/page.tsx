@@ -14,6 +14,7 @@ import { SantaAside } from "@/components/santa";
 import { mailEnabled } from "@/lib/mail";
 import { ShareButton } from "@/components/share-button";
 import { GuestBanner } from "@/components/guest-banner";
+import { RememberFamily } from "@/components/recent-families";
 import { FamilyNameEdit } from "@/components/family-name-edit";
 import Link from "next/link";
 import { daysUntil, isEventOver, parisDay } from "@/lib/utils";
@@ -43,7 +44,13 @@ export default async function FamilyPage({ params, searchParams }: Props) {
   if (!family) notFound();
 
   const user = await getCurrentUser();
-  if (!user) return <InvitePage family={family} claimable={await claimableMembers(family.id)} />;
+  if (!user)
+    return (
+      <>
+        <RememberFamily slug={family.slug} name={family.name} />
+        <InvitePage family={family} claimable={await claimableMembers(family.id)} />
+      </>
+    );
 
   const me = family.memberships.find((m) => m.userId === user.id);
   if (!me) {
@@ -176,7 +183,7 @@ export default async function FamilyPage({ params, searchParams }: Props) {
                   avatarColor: m.user.avatarColor,
                   role: m.role as "ADMIN" | "MEMBRE",
                   managed: Boolean(m.user.managedById),
-                  guest: m.user.guest,
+                  guest: !m.user.managedById && !canBeAdmin.has(m.user.id),
                   canBeAdmin: canBeAdmin.has(m.user.id),
                   hasLogin: hasLogin.has(m.user.id),
                 }))}
@@ -198,7 +205,8 @@ export default async function FamilyPage({ params, searchParams }: Props) {
         </div>
       </FestiveHeader>
 
-      {user.guest && <GuestBanner next={`/f/${family.slug}`} mail={mailEnabled()} />}
+      <RememberFamily slug={family.slug} name={family.name} />
+      {!user.verified && <GuestBanner next={`/f/${family.slug}`} mail={mailEnabled()} />}
 
       {recap && <EventOver eventName={family.eventName} familyId={family.id} isAdmin={isAdmin} taken={recap.taken} free={recap.free} />}
 

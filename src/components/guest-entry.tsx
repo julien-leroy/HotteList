@@ -6,7 +6,7 @@ import { claimMember, joinAsGuest } from "@/app/actions/guest";
 import { Avatar, type AvatarPerson } from "./avatar";
 import { InfoTip } from "./info-tip";
 
-export type Claimable = AvatarPerson & { id: string; needsPassword: boolean };
+export type Claimable = AvatarPerson & { id: string };
 
 function ErrorLine({ text }: { text: string | null }) {
   if (!text) return null;
@@ -18,12 +18,12 @@ function ErrorLine({ text }: { text: string | null }) {
 }
 
 /**
- * Arrivée par le lien d'une famille, sans être connecté : on choisit son nom parmi les membres
- * sans compte, ou on donne son prénom. Pas d'e-mail ni de mot de passe à cette étape.
+ * Arrivée par le lien d'une famille, sans être connecté (nouvel appareil, cookies effacés…) : on touche son nom
+ * parmi les membres sans compte HotteList, on donne son prénom, ou on se connecte avec son e-mail et son mot de passe.
+ * Pas de mot de passe pour les comptes sans compte HotteList : seuls les membres de la famille ont le lien.
  */
 export function GuestEntry({ familyId, familyName, slug, claimable }: { familyId: string; familyName: string; slug: string; claimable: Claimable[] }) {
   const [picked, setPicked] = useState<Claimable | null>(null);
-  const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +35,7 @@ export function GuestEntry({ familyId, familyName, slug, claimable }: { familyId
     if (!picked) return;
     setError(null);
     start(async () => {
-      const r = await claimMember(familyId, picked.id, password);
+      const r = await claimMember(familyId, picked.id);
       if (r && !r.ok) setError(r.error);
     });
   }
@@ -64,7 +64,6 @@ export function GuestEntry({ familyId, familyName, slug, claimable }: { familyId
                   aria-pressed={on}
                   onClick={() => {
                     setPicked(on ? null : p);
-                    setPassword("");
                     setError(null);
                   }}
                   className="inline-flex cursor-pointer items-center gap-2 rounded-full py-1 pr-3.5 pl-1 text-[15px] font-semibold"
@@ -83,12 +82,6 @@ export function GuestEntry({ familyId, familyName, slug, claimable }: { familyId
           </div>
           {picked && (
             <div className="flex flex-col gap-3">
-              {picked.needsPassword && (
-                <div className="flex flex-col gap-1.5">
-                  <label className="label" htmlFor="claim-pw">Votre mot de passe</label>
-                  <input className="input" id="claim-pw" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required autoFocus />
-                </div>
-              )}
               <ErrorLine text={error} />
               <button className="btn b-primary w-full" disabled={pending} style={{ minHeight: 48, fontSize: 15 }}>
                 {pending ? "Un instant…" : `C'est moi, ${picked.firstName}`}
@@ -126,7 +119,7 @@ export function GuestEntry({ familyId, familyName, slug, claimable }: { familyId
       </form>
 
       <p className="m-0 text-center text-sm text-gris">
-        Vous avez déjà un compte HotteList ? <Link href={`/?next=${encodeURIComponent(next)}`}>Se connecter</Link>
+        Vous avez un compte HotteList ? <Link href={`/?next=${encodeURIComponent(next)}`}>Se connecter avec mon e-mail</Link>
       </p>
     </div>
   );

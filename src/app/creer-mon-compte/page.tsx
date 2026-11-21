@@ -13,7 +13,7 @@ export default async function CreerMonCompte({ searchParams }: { searchParams: P
   const { next, pour } = await searchParams;
   const user = await getCurrentUser();
   if (!user) redirect("/inscription");
-  if (!user.guest) redirect(pour === "notifications" && !user.hasEmail ? "/profil#compte" : (safeNext(next) ?? "/profil"));
+  if (user.verified) redirect(safeNext(next) ?? "/profil");
   const mail = mailEnabled();
   const target = safeNext(next) ?? "/familles";
   const pending = mail

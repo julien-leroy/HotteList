@@ -36,16 +36,12 @@ export default async function Familles() {
       </FestiveHeader>
 
       <main className="mx-auto flex max-w-[1200px] flex-col gap-8 px-6 pt-7 pb-24">
-        {(user.guest || (mailEnabled() && !user.hasEmail)) && (
+        {!user.verified && (
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-[18px] px-5 py-4" style={{ background: "#F8EDD2", border: "1px solid #E5CF96" }}>
             <p className="m-0 flex-[1_1_320px] text-[15px] leading-normal text-[#4A3810]">
-              {user.guest ? (
-                <><strong>Créez votre compte</strong> pour créer votre propre famille, gérer votre profil et recevoir les notifications par e-mail.</>
-              ) : (
-                <><strong>Confirmez votre adresse e-mail</strong> pour créer une famille, être admin, récupérer votre mot de passe tout seul ou vous connecter avec un code.</>
-              )}
+              <><strong>Créez votre compte HotteList</strong> pour créer votre propre famille, gérer votre profil et recevoir les notifications par e-mail.</>
             </p>
-            <Link className="btn b-gold" href={user.guest ? "/creer-mon-compte" : "/profil#compte"}>{user.guest ? "Créer mon compte" : "Ajouter mon e-mail"}</Link>
+            <Link className="btn b-gold" href="/creer-mon-compte">Créer mon compte</Link>
           </div>
         )}
         <div className="grid gap-5" style={{ gridTemplateColumns: "repeat(auto-fill,minmax(min(320px,100%),1fr))" }}>
@@ -96,10 +92,10 @@ export default async function Familles() {
             >
               <h2 className="font-display m-0 text-2xl font-bold text-[#8A1C26]">Créer une famille</h2>
               <p className="m-0 text-[15px] leading-normal text-gris">
-                {user.guest ? "Il faut un compte pour créer une famille et en être l'admin." : "Il faut une adresse e-mail confirmée pour créer une famille et en être l'admin."}
+                Il faut un compte HotteList (e-mail et mot de passe) pour créer une famille et en être l&apos;admin.
               </p>
-              <Link className="btn b-primary self-start" href={user.guest ? "/creer-mon-compte?next=/familles" : "/profil#compte"}>
-                {user.guest ? "Créer mon compte" : "Confirmer mon e-mail"}
+              <Link className="btn b-primary self-start" href="/creer-mon-compte?next=/familles">
+                Créer mon compte
               </Link>
             </div>
           )}

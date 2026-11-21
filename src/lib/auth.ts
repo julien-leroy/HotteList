@@ -12,6 +12,8 @@ const scrypt = promisify(scryptCb) as (pw: string, salt: Buffer, len: number, op
 
 const COOKIE = "hl_session";
 const SESSION_DAYS = 60;
+/** Compte non vérifié (sans mot de passe) : on le garde un an sur l'appareil, pour retrouver sa place sans rien retaper */
+const LONG_SESSION_DAYS = 365;
 const SCRYPT = { N: 16384, r: 8, p: 1, maxmem: 64 * 1024 * 1024 };
 
 // ---------- Mots de passe (scrypt, intégré à Node) ----------
@@ -45,9 +47,9 @@ export function tokenDigest(token: string) {
 
 // ---------- Sessions ----------
 
-export async function createSession(userId: string) {
+export async function createSession(userId: string, opts: { long?: boolean } = {}) {
   const token = randomToken();
-  const expiresAt = new Date(Date.now() + SESSION_DAYS * 86_400_000);
+  const expiresAt = new Date(Date.now() + (opts.long ? LONG_SESSION_DAYS : SESSION_DAYS) * 86_400_000);
   await db.session.create({ data: { id: tokenDigest(token), userId, expiresAt } });
   const jar = await cookies();
   jar.set(COOKIE, token, {
@@ -120,7 +122,7 @@ export async function requireUser(next?: string) {
 /** Page réservée aux comptes complets : un invité est envoyé vers « Créer mon compte ». */
 export async function requireAccount(next: string) {
   const user = await requireUser(next);
-  if (user.guest) redirect(`/creer-mon-compte?next=${encodeURIComponent(next)}`);
+  if (!user.verified) redirect(`/creer-mon-compte?next=${encodeURIComponent(next)}`);
   return user;
 }
 

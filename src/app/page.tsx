@@ -4,6 +4,7 @@ import { getCurrentUser, safeNext } from "@/lib/auth";
 import { AuthLayout, HowItWorks, WelcomeAside } from "@/components/festive";
 import { LoginForm } from "@/components/auth-forms";
 import { mailEnabled } from "@/lib/mail";
+import { RecentFamilies } from "@/components/recent-families";
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ next?: string; email?: string }> }) {
   const { next, email } = await searchParams;
@@ -21,6 +22,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ n
         <h2>Se connecter</h2>
         <p className="lead">Retrouvez les listes de votre famille.</p>
       </div>
+      <RecentFamilies />
       <div className="auth-card">
         <LoginForm mail={mailEnabled()} next={safe} initialLogin={email ?? ""} />
       </div>

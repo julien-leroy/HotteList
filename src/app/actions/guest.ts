@@ -11,7 +11,7 @@ import {
   normalizeLogin,
   requireUser,
   safeNext,
-  verifyPassword,
+  isVerified,
 } from "@/lib/auth";
 import { clientIp, hit } from "@/lib/rate-limit";
 import { randomColor } from "@/lib/utils";
@@ -48,7 +48,7 @@ export async function joinAsGuest(familyId: string, firstName: string, lastName 
         memberships: { create: { familyId: family.id } },
       },
     });
-    await createSession(user.id);
+    await createSession(user.id, { long: true });
     slug = family.slug;
   } catch (e) {
     return fail(e);
@@ -57,26 +57,21 @@ export async function joinAsGuest(familyId: string, firstName: string, lastName 
 }
 
 /**
- * « C'est moi » : reprendre un membre de la famille qui n'a pas encore de compte complet.
- * Un invité se reprend d'un clic ; un ancien compte avec mot de passe demande ce mot de passe.
- * Un compte à l'adresse confirmée n'est jamais repris ainsi : il se connecte normalement.
+ * « C'est moi » : reprendre, sans mot de passe, un membre de la famille qui n'a pas de vrai compte HotteList
+ * (adresse e-mail confirmée). On compte sur le fait que seuls les membres de la famille ont le lien.
+ * Un vrai compte n'est jamais repris ainsi : il se connecte avec son e-mail et son mot de passe.
  */
-export async function claimMember(familyId: string, userId: string, password?: string): Promise<ActionResult> {
+export async function claimMember(familyId: string, userId: string): Promise<ActionResult> {
   let slug = "";
   try {
     const ip = await clientIp();
+    if (!hit(`claim:${ip}`, 30, 15 * 60_000)) throw new Error("Trop de tentatives. Patientez quelques minutes.");
     const m = await db.membership.findUnique({
       where: { userId_familyId: { userId, familyId } },
       include: { user: true, family: { select: { slug: true } } },
     });
-    if (!m || m.user.managedById || m.user.emailVerifiedAt) throw new Error("Ce nom ne peut pas être choisi ici. Connectez-vous.");
-    if (!m.user.guest) {
-      if (!hit(`claim:${ip}`, 20, 15 * 60_000) || !hit(`claim:${ip}:${userId}`, 8, 15 * 60_000)) {
-        throw new Error("Trop de tentatives. Patientez quelques minutes.");
-      }
-      if (!(await verifyPassword(password ?? "", m.user.passwordHash))) throw new Error("Mot de passe incorrect.");
-    }
-    await createSession(userId);
+    if (!m || m.user.managedById || isVerified(m.user)) throw new Error("Ce compte est protégé : connectez-vous avec votre e-mail et votre mot de passe.");
+    await createSession(userId, { long: true });
     slug = m.family.slug;
   } catch (e) {
     return fail(e);
@@ -93,7 +88,7 @@ export async function claimMember(familyId: string, userId: string, password?: s
 export async function startAccount(rawId: string, password: string): Promise<ActionResult> {
   try {
     const user = await requireUser();
-    if (!user.guest) throw new Error("Vous avez déjà un compte.");
+    if (user.verified) throw new Error("Vous avez déjà un compte.");
     if (password.length < 8) throw new Error("Le mot de passe doit faire au moins 8 caractères.");
     if (password.length > 200) throw new Error("Mot de passe trop long.");
 
@@ -128,7 +123,7 @@ export async function startAccount(rawId: string, password: string): Promise<Act
 export async function confirmAccount(code: string): Promise<ActionResult> {
   try {
     const user = await requireUser();
-    if (!user.guest) throw new Error("Vous avez déjà un compte.");
+    if (user.verified) throw new Error("Vous avez déjà un compte.");
     const ip = await clientIp();
     if (!hit(`code:ip:${ip}`, 30, 15 * 60_000)) throw new Error("Trop de tentatives. Patientez quelques minutes.");
     const pending = await db.emailCode.findFirst({
