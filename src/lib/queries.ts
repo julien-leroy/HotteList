@@ -72,3 +72,22 @@ export async function loadGiftForAction(user: CurrentUser, giftId: string) {
   await requireMember(user.id, gift.familyId);
   return gift;
 }
+
+/**
+ * Membres qu'un nouveau venu arrivant par le lien peut choisir (« C'est moi ») :
+ * ni compte géré, ni adresse confirmée. Un invité se reprend d'un clic, un ancien compte demande son mot de passe.
+ */
+export async function claimableMembers(familyId: string) {
+  const rows = await db.membership.findMany({
+    where: { familyId, user: { managedById: null, emailVerifiedAt: null } },
+    include: { user: { select: { id: true, firstName: true, lastName: true, avatarColor: true, guest: true } } },
+    orderBy: { joinedAt: "asc" },
+  });
+  return rows.map((m) => ({
+    id: m.user.id,
+    firstName: m.nickname ?? m.user.firstName,
+    lastName: m.nickname ? null : m.user.lastName,
+    avatarColor: m.user.avatarColor,
+    needsPassword: !m.user.guest,
+  }));
+}

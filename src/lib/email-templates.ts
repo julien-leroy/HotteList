@@ -1,7 +1,7 @@
 // Modèles des e-mails HotteList : HTML compatible messageries + version texte.
 // Module pur (aucun accès serveur) : utilisé par le site et par scripts/rappels.ts.
 
-export type CodePurpose = "VERIFY" | "LOGIN" | "RESET" | "SIGNUP";
+export type CodePurpose = "VERIFY" | "LOGIN" | "RESET" | "SIGNUP" | "ACCOUNT";
 
 const COPY: Record<CodePurpose, { subject: string; title: string; intro: string; outro: string }> = {
   LOGIN: {
@@ -21,6 +21,12 @@ const COPY: Record<CodePurpose, { subject: string; title: string; intro: string;
     title: "Bienvenue sur HotteList !",
     intro: "Il ne reste qu'une étape : saisissez ce code pour valider votre adresse et activer votre compte.",
     outro: "Si vous n'avez pas créé de compte sur HotteList, ignorez simplement cet e-mail : rien ne sera créé.",
+  },
+  ACCOUNT: {
+    subject: "Votre code pour créer votre compte HotteList",
+    title: "Plus qu'une étape !",
+    intro: "Saisissez ce code sur HotteList pour valider votre adresse : vous garderez votre liste et recevrez vos notifications par e-mail.",
+    outro: "Si vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail : rien ne sera changé.",
   },
   RESET: {
     subject: "Réinitialisation de votre mot de passe HotteList",

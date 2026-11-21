@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { requireUser, tokenDigest } from "@/lib/auth";
+import { isVerified, requireUser, tokenDigest } from "@/lib/auth";
+import { mailEnabled } from "@/lib/mail";
 import { requireAdmin, requireMember } from "@/lib/queries";
 import { defaultEventDate, parisDay, randomToken, slugify } from "@/lib/utils";
 import type { FormState } from "./auth";
@@ -28,6 +29,9 @@ function parseEventDate(iso: string) {
 
 export async function createFamily(_: FormState, formData: FormData): Promise<FormState> {
   const user = await requireUser();
+  if (!user.verified) {
+    return { error: mailEnabled() ? "Confirmez d'abord votre adresse e-mail pour créer une famille." : "Créez d'abord votre compte pour créer une famille." };
+  }
   const parsed = nameSchema.safeParse(formData.get("name"));
   if (!parsed.success) return { error: parsed.error.issues[0].message };
   // Événement : Noël le 25 décembre par défaut, ou titre et date choisis
@@ -175,6 +179,9 @@ export async function setMemberRole(familyId: string, userId: string, role: "ADM
     await requireAdmin(user.id, familyId);
     const target = await db.user.findUniqueOrThrow({ where: { id: userId } });
     if (target.managedById) throw new Error("Un compte géré ne peut pas être admin.");
+    if (role === "ADMIN" && !isVerified(target)) {
+      throw new Error(mailEnabled() ? "Pour être admin, il faut un compte avec une adresse e-mail confirmée." : "Pour être admin, il faut un compte avec un mot de passe.");
+    }
     if (role === "MEMBRE") {
       const admins = await db.membership.count({ where: { familyId, role: "ADMIN" } });
       if (admins <= 1) throw new Error("La famille doit garder au moins un admin.");

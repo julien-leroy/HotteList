@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { requireUser } from "@/lib/auth";
+import { requireAccount } from "@/lib/auth";
 import { loadVisibleGifts, personSelect } from "@/lib/queries";
 import { FestiveHeader, HeroTitle } from "@/components/festive";
 import { ProfileBoard, type Column } from "@/components/profile-board";
@@ -10,7 +10,7 @@ import { mailEnabled } from "@/lib/mail";
 export const metadata = { title: "Mon profil" };
 
 export default async function Profil({ searchParams }: { searchParams: Promise<{ pour?: string }> }) {
-  const user = await requireUser("/profil");
+  const user = await requireAccount("/profil");
   const { pour } = await searchParams;
   const personId = pour && user.managedIds.includes(pour) ? pour : user.id;
 

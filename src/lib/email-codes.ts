@@ -21,7 +21,7 @@ function digest(email: string, purpose: CodePurpose, code: string) {
 }
 
 /** Crée un code, invalide les précédents du même usage, et l'envoie. */
-export async function issueCode(user: { id: string; firstName: string }, email: string, purpose: CodePurpose) {
+export async function issueCode(user: { id: string; firstName: string }, email: string, purpose: CodePurpose, passwordHash?: string) {
   const code = String(randomInt(0, 1_000_000)).padStart(6, "0");
   await db.$transaction([
     db.emailCode.updateMany({ where: { userId: user.id, purpose, usedAt: null }, data: { usedAt: new Date() } }),
@@ -31,6 +31,7 @@ export async function issueCode(user: { id: string; firstName: string }, email: 
         email,
         purpose,
         codeHash: digest(email, purpose, code),
+        passwordHash: passwordHash ?? null,
         expiresAt: new Date(Date.now() + CODE_MINUTES * 60_000),
       },
     }),
@@ -38,7 +39,7 @@ export async function issueCode(user: { id: string; firstName: string }, email: 
   await sendCodeEmail(email, purpose, user.firstName, code, CODE_MINUTES);
 }
 
-export type CodeCheck = { ok: true; userId: string; email: string } | { ok: false; error: string };
+export type CodeCheck = { ok: true; userId: string; email: string; passwordHash: string | null } | { ok: false; error: string };
 
 /** Vérifie un code ; le consomme s'il est bon, compte l'essai sinon. */
 export async function consumeCode(email: string, purpose: CodePurpose, code: string, userId?: string): Promise<CodeCheck> {
@@ -61,5 +62,5 @@ export async function consumeCode(email: string, purpose: CodePurpose, code: str
   // Mise à jour conditionnelle : un code ne peut servir qu'une fois, même en double-clic.
   const res = await db.emailCode.updateMany({ where: { id: record.id, usedAt: null }, data: { usedAt: new Date() } });
   if (res.count !== 1) return { ok: false, error: "Ce code a déjà servi." };
-  return { ok: true, userId: record.userId, email: record.email };
+  return { ok: true, userId: record.userId, email: record.email, passwordHash: record.passwordHash };
 }
