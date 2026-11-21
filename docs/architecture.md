@@ -1,6 +1,6 @@
 # HotteList — architecture technique (version simplifiée)
 
-_Document de référence. Dernière mise à jour : 16 novembre 2026 (barre de la famille allégée, plus de défilement horizontal sur téléphone ; cartes avec description, ajout sur téléphone, Secret Santa lancé depuis l'encart ; titres en Damion, favicon, montagnes en entier, ordre des listes, bouton de téléchargement ; avant : export PDF / Excel, Secret Santa)._
+_Document de référence. Dernière mise à jour : 21 novembre 2026 (entrée dans une famille sans compte, comptes invités ; avant : barre de la famille allégée, plus de défilement horizontal sur téléphone ; cartes avec description, ajout sur téléphone, Secret Santa lancé depuis l'encart ; titres en Damion, favicon, montagnes en entier, ordre des listes, bouton de téléchargement ; avant : export PDF / Excel, Secret Santa)._
 _Développement lancé le 9 novembre 2026. Ajout de souhait et d'idée en popup depuis la v1.1. Code : https://github.com/julien-leroy/HotteList_
 
 ## 1. Décisions prises
@@ -9,7 +9,7 @@ _Développement lancé le 9 novembre 2026. Ajout de souhait et d'idée en popup 
 |---|---|
 | Nom | **HotteList** |
 | Public | Amis et familles de Julien (petit volume) |
-| Inscription | **Ouverte** : n'importe qui arrivant sur le site peut créer un compte puis créer ses propres familles |
+| Inscription | **Ouverte** : n'importe qui peut créer un compte (e-mail confirmé) puis créer ses propres familles. **Par le lien d'une famille, pas besoin de compte** : on touche son nom ou on donne son prénom (compte « invité ») |
 | Hébergement | Serveur Debian perso à la maison : x86, 8 Go de RAM, IP fixe. Passage sur VPS possible plus tard |
 | Node.js | **24**, installé avec nvm (`.nvmrc` dans le dépôt) |
 | Adresse | `hottelist.julienfluenceur.online` (DNS hors Cloudflare : un simple enregistrement A suffit) |
@@ -74,7 +74,16 @@ Supprimés : Docker, PostgreSQL, sharp et stockage d'images, Better Auth.
 
 - **Inscription ouverte, validée par code** : prénom, nom facultatif, adresse e-mail et mot de passe de 8 caractères minimum. Un code à 6 chiffres (10 min, 5 essais) est envoyé à l'adresse ; le compte n'existe vraiment (identifiant = e-mail, adresse vérifiée) qu'après saisie du code. Ensuite on se connecte avec e-mail + mot de passe ; le code ne resert que pour « Mot de passe oublié » ou « Recevoir un code par e-mail ». Sans SMTP configuré, on revient à l'ancienne inscription (identifiant e-mail ou pseudo, sans vérification).
 - **Adresse reprise d'un écran à l'autre** : l'adresse tapée dans Connexion ou Inscription est transmise (`?email=`) aux pages Code par e-mail, Mot de passe oublié et Inscription.
-- **Rejoindre une famille** : uniquement via son lien. Un visiteur qui s'inscrit depuis ce lien rejoint la famille directement. S'il se connecte, il confirme d'un clic, en cochant au passage ses comptes gérés à ajouter.
+- **Deux niveaux de compte** (`isVerified`, `src/lib/auth.ts`) :
+  - **compte complet** : adresse e-mail confirmée (ou, sans SMTP, un mot de passe). Seul lui peut **créer une famille**, **être admin**, ouvrir **Mon profil** et créer des comptes gérés ;
+  - **compte invité** (`User.guest`) : juste un prénom (nom facultatif), sans e-mail ni mot de passe. Il voit la famille, ajoute ses souhaits, réserve, participe, commente, comme tout membre.
+- **Rejoindre une famille** : uniquement via son lien. Un visiteur non connecté voit « Qui êtes-vous ? » (`src/components/guest-entry.tsx`) :
+  - **« Vous êtes déjà dans la famille ? Touchez votre nom »** : les membres sans adresse confirmée (ni comptes gérés). Un invité se reprend d'un clic (même personne sur un autre appareil) ; un ancien compte avec mot de passe demande ce mot de passe. Un compte à l'adresse confirmée n'apparaît jamais : il se connecte normalement ;
+  - **« Je suis nouveau »** : prénom, nom facultatif → compte invité, membre de la famille, connecté (cookie de session habituel). Limite : 10 / h par IP ;
+  - **« Vous avez déjà un compte ? Se connecter »**. Connecté mais pas membre : il confirme d'un clic, en cochant au passage ses comptes gérés à ajouter.
+- **Un invité crée son compte** quand il veut (`/creer-mon-compte`) : bandeau masquable sur la page famille, « Créer mon compte » dans le menu de l'avatar, lien **« Me notifier par e-mail »** en bas des notifications, ou en ouvrant Mon profil (redirection). Adresse + mot de passe → code `ACCOUNT` (le mot de passe haché attend dans `EmailCode.passwordHash`) → compte complet, avec ses listes, réservations et familles. Si l'adresse a déjà un compte : « Me connecter à ce compte » (l'invité reste alors dans la famille, à retirer par l'admin s'il fait doublon). Sans SMTP : identifiant + mot de passe, tout de suite.
+- **Déconnexion d'un invité** : confirmation qui rappelle qu'on revient par le lien de la famille en touchant son nom.
+- **Choix assumé** : quiconque a le lien peut entrer « comme » un invité de la famille. C'est le prix de l'entrée sans mot de passe ; créer son compte (e-mail confirmé) le retire de la liste.
 - **Adresse e-mail (facultative)** : ajoutée dans « Mon profil → Mon compte » et enregistrée **seulement une fois confirmée** par un code. Tant qu'elle n'est pas confirmée, elle n'est pas réservée : personne ne peut bloquer l'adresse de quelqu'un d'autre. Une adresse confirmée sert aussi d'identifiant de connexion.
 - **Codes par e-mail** : 6 chiffres, valables 10 minutes, 5 essais, à usage unique (un nouveau code annule le précédent), seule l'empreinte HMAC est stockée. Limites : 3 codes / 15 min par adresse, 10 / h par IP. Pour la connexion par code et le mot de passe oublié, la réponse est toujours la même, que l'adresse ait un compte ou non.
 - **Connexion par code** (`/connexion-code`) : en option, à côté du mot de passe, jamais obligatoire.
@@ -126,7 +135,7 @@ Supprimés : Docker, PostgreSQL, sharp et stockage d'images, Better Auth.
 Les noms dans le code sont en anglais (`prisma/schema.prisma`).
 
 ```
-User           id, firstName, lastName?, login? (unique, vide pour un compte géré), passwordHash?, avatarColor, managedById?, email? (unique), emailVerifiedAt?, emailReminders, emailMentions
+User           id, firstName, lastName?, login? (unique, vide pour un compte géré ou invité), passwordHash?, avatarColor, guest, managedById?, email? (unique), emailVerifiedAt?, emailReminders, emailMentions
 Session        id (empreinte du jeton), userId, expiresAt
 Family         id, name, slug unique avec suffixe aléatoire (ex. famille-leroy-7kq2), createdById, eventName (défaut « Noël »), eventDate, reminderSentFor?, santaMode
 Membership     userId, familyId, role (ADMIN | MEMBRE), nickname?, joinedAt, lastSeenAt?, prevSeenAt?   — unique (userId, familyId)
@@ -136,7 +145,7 @@ Gift           id, familyId, recipientId, createdById, kind (SOUHAIT | IDEE),
 GiftParticipant giftId, userId, createdAt, status (A_ACHETER | ACHETE | EMBALLE — visible par ce participant seul)
 Comment        id, giftId, authorId, text (mentions : @[Libellé](id)), createdAt
 PasswordResetToken id (empreinte), userId, expiresAt, usedAt?
-EmailCode      id, userId, email, purpose (VERIFY | LOGIN | RESET | SIGNUP), codeHash, attempts, expiresAt, usedAt?
+EmailCode      id, userId, email, purpose (VERIFY | LOGIN | RESET | SIGNUP | ACCOUNT), codeHash, passwordHash? (ACCOUNT), attempts, expiresAt, usedAt?
 Notification   id, userId, text, link?, readAt?
 SecretSanta    id, familyId, createdById, budget?, createdAt
 SecretSantaAssignment santaId, giverId, receiverId, revealedAt?     — un seul cercle : personne ne se tire soi-même
@@ -162,7 +171,8 @@ Droits d'écriture vérifiés côté serveur, dans chaque action :
 - Statut d'achat : seulement le participant lui-même, et lui seul le voit.
 - Secret Santa (activer, lancer, refaire, couper) : admin. Chaque participant ne reçoit que son propre tirage.
 - **Pseudo dans la famille** : chaque membre peut changer le nom sous lequel n'importe quel membre apparaît dans cette famille (clic sur le titre de sa liste, ex. « Dominique » → « Maman ») ; vide = retour au prénom. Le pseudo sert partout dans la famille : titres, puces, réservations, commentaires, @mentions, notifications, tirage au sort, archives. Le vrai prénom reste affiché en petit.
-- Nettoyer les listes, changer le titre ou la date de l'événement, renommer la famille (aussi d'un clic sur le nom en haut de la page), régénérer le lien, nommer ou retirer un admin : admin de la famille. Une famille garde toujours au moins un admin.
+- Nettoyer les listes, changer le titre ou la date de l'événement, renommer la famille (aussi d'un clic sur le nom en haut de la page), régénérer le lien, nommer ou retirer un admin : admin de la famille. Une famille garde toujours au moins un admin. **Seul un compte complet peut être nommé admin** (le bouton n'apparaît pas pour les autres ; vérifié côté serveur). Dans « Membres », un invité est marqué « Sans compte » et n'a pas de bouton « Mot de passe oublié ».
+- Créer une famille : compte complet (sinon la carte « Créer une famille » propose de créer son compte ou de confirmer son e-mail).
 
 ## 9. Profil : déplacer ou copier un souhait
 
@@ -178,11 +188,12 @@ Droits d'écriture vérifiés côté serveur, dans chaque action :
 |---|---|
 | `/` | Accueil et connexion |
 | `/inscription` | Création de compte |
+| `/creer-mon-compte` | Un invité crée son compte (`?next=`, `?pour=notifications`) |
 | `/familles` | Mes familles, création d'une famille |
 | `/profil` | Mes listes par famille (colonnes ou onglets), comptes gérés, Mon compte |
 | `/courses` | Ma liste de courses |
 | `/f/[slug]/archives` | Années passées |
-| `/f/[slug]` | Page famille avec tous les souhaits ; c'est aussi le lien d'invitation |
+| `/f/[slug]` | Page famille avec tous les souhaits ; c'est aussi le lien d'invitation (« Qui êtes-vous ? » pour un visiteur) |
 | `/f/[slug]?cadeau=ID` | Popup d'un cadeau |
 | `/f/[slug]/export?format=pdf\|xlsx` | Téléchargement de toutes les listes de la famille (membres uniquement) |
 | `/reinitialiser/[token]` | Choisir un nouveau mot de passe (lien créé par un membre) |
@@ -195,7 +206,7 @@ Droits d'écriture vérifiés côté serveur, dans chaque action :
 1. **Lecture des liens** : délai et taille maximum, blocage du réseau local à la connexion.
 2. **Réservations simultanées** : mise à jour conditionnelle `takeMode = AUCUN` dans une transaction : une seule réservation passe, l'autre reçoit « Quelqu'un vient de s'en occuper ».
 3. **Souhait modifié après réservation** : « Modifié depuis votre réservation » sur la carte et dans la popup.
-4. **Inscription ouverte** : limite d'inscriptions par IP.
+4. **Inscription ouverte** : limite d'inscriptions et d'arrivées d'invités par IP.
 5. **Sauvegardes** : `deploy/backup.sh` (cron quotidien, `sqlite3 .backup`, 30 jours), lancé aussi avant chaque mise à jour.
 
 ## 12. Déploiement

@@ -20,7 +20,7 @@ import { IconClose, IconSettings } from "./icons";
 import { confirmDialog, useAction } from "./toaster";
 import { InfoTip } from "./info-tip";
 
-type Member = AvatarPerson & { id: string; role: "ADMIN" | "MEMBRE"; managed: boolean; nickname: string | null };
+type Member = AvatarPerson & { id: string; role: "ADMIN" | "MEMBRE"; managed: boolean; guest: boolean; canBeAdmin: boolean; hasLogin: boolean; nickname: string | null };
 
 export function FamilySettings({
   family,
@@ -142,14 +142,14 @@ export function FamilySettings({
                       </span>
                       <span className="text-xs text-gris-clair">
                         {m.nickname ? `${m.firstName} ${m.lastName ?? ""}`.trim() + " · " : m.lastName ? `${m.firstName} ${m.lastName} · ` : ""}
-                        {m.managed ? "Compte géré" : m.role === "ADMIN" ? "Admin" : "Membre"}
+                        {m.managed ? "Compte géré" : m.role === "ADMIN" ? "Admin" : m.guest ? "Sans compte" : "Membre"}
                       </span>
                     </span>
                     {m.id !== meId && (
                       <span className="flex flex-wrap gap-1.5">
                         {!m.managed && (
                           <>
-                            {isAdmin && (
+                            {isAdmin && (m.role === "ADMIN" || m.canBeAdmin) && (
                               <button
                                 className="btn b-soft b-sm"
                                 disabled={pending}
@@ -158,7 +158,7 @@ export function FamilySettings({
                                 {m.role === "ADMIN" ? "Retirer admin" : "Nommer admin"}
                               </button>
                             )}
-                            <button
+                            {m.hasLogin && <button
                               className="btn b-gold b-sm"
                               disabled={pending}
                               onClick={() =>
@@ -168,7 +168,7 @@ export function FamilySettings({
                               }
                             >
                               Mot de passe oublié
-                            </button>
+                            </button>}
                           </>
                         )}
                         {isAdmin && <button

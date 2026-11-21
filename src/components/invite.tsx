@@ -1,6 +1,6 @@
 import { AuthLayout, HeroTitle, HowItWorks } from "./festive";
 import { Avatar, type AvatarPerson } from "./avatar";
-import { SignupForm } from "./auth-forms";
+import { GuestEntry, type Claimable } from "./guest-entry";
 import { JoinButton } from "./join-button";
 import { eventDay, plural } from "@/lib/format";
 import type { CurrentUser } from "@/lib/auth";
@@ -40,21 +40,17 @@ function InviteAside({ family, lead }: { family: Fam; lead: string }) {
   );
 }
 
-/** Visiteur non connecté arrivant par le lien de la famille. */
-export function InvitePage({ family, mail }: { family: Fam; mail: boolean }) {
-  const next = `/f/${family.slug}`;
+/** Visiteur non connecté arrivant par le lien de la famille : il choisit son nom ou donne son prénom. */
+export function InvitePage({ family, claimable }: { family: Fam; claimable: Claimable[] }) {
   return (
     <AuthLayout tone="bordeaux" aside={<InviteAside family={family} lead={`${family.createdBy.firstName} vous invite à rejoindre`} />} footer={<HowItWorks onLight />}>
       <div>
         <h2>Rejoindre {family.name}</h2>
-        <p className="lead">Créez votre compte pour voir les listes de chacun, réserver un cadeau ou participer à un cadeau à plusieurs.</p>
+        <p className="lead">Voyez les listes de chacun, réservez un cadeau ou participez à un cadeau à plusieurs.</p>
       </div>
       <div className="auth-card">
-        <SignupForm next={next} joinFamilyId={family.id} submitLabel={`Rejoindre ${family.name}`} mail={mail} />
+        <GuestEntry familyId={family.id} familyName={family.name} slug={family.slug} claimable={claimable} />
       </div>
-      <p className="m-0 text-center text-[13px] leading-normal text-gris-clair">
-        Après l&apos;inscription, vous pourrez aussi créer des comptes pour vos enfants depuis votre profil.
-      </p>
     </AuthLayout>
   );
 }

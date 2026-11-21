@@ -28,6 +28,7 @@ export async function requestEmailVerification(rawEmail: string): Promise<Action
   try {
     ensureMail();
     const user = await requireUser();
+    if (user.guest) throw new Error("Créez votre compte pour ajouter une adresse e-mail.");
     const email = normalizeEmail(rawEmail);
     if (!looksLikeEmail(email)) throw new Error("Cette adresse e-mail ne semble pas valide.");
     const taken = await db.user.findFirst({ where: { email, emailVerifiedAt: { not: null }, NOT: { id: user.id } } });

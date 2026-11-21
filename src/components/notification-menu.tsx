@@ -2,14 +2,18 @@
 
 import * as Dropdown from "@radix-ui/react-dropdown-menu";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { IconBell } from "./icons";
 import { markNotificationsRead } from "@/app/actions/gifts";
 import { relativeDate } from "@/lib/format";
 
 type Item = { id: string; text: string; link: string | null; unread: boolean; createdAt: string };
 
-export function NotificationMenu({ items }: { items: Item[] }) {
+export function NotificationMenu({ items, emailHref }: { items: Item[]; emailHref: string | null }) {
   const unread = items.filter((i) => i.unread).length;
+  const path = usePathname();
+  // Après la création du compte, on revient sur la page où l'on était
+  const href = emailHref?.startsWith("/creer-mon-compte") ? `${emailHref}&next=${encodeURIComponent(path)}` : emailHref;
   return (
     <Dropdown.Root
       onOpenChange={(open) => {
@@ -47,6 +51,14 @@ export function NotificationMenu({ items }: { items: Item[] }) {
               )}
             </Dropdown.Item>
           ))}
+          {emailHref && (
+            <>
+              <Dropdown.Separator style={{ height: 1, background: "#E3D6BA", margin: "4px 6px" }} />
+              <Dropdown.Item asChild className="menu-item no-underline">
+                <Link href={href!} style={{ color: "#8A1C26", fontWeight: 700 }}>Me notifier par e-mail</Link>
+              </Dropdown.Item>
+            </>
+          )}
         </Dropdown.Content>
       </Dropdown.Portal>
     </Dropdown.Root>

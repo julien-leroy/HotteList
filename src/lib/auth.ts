@@ -6,6 +6,7 @@ import { createHmac, randomBytes, scrypt as scryptCb, timingSafeEqual } from "no
 import { promisify } from "node:util";
 import { db } from "./db";
 import { randomToken } from "./utils";
+import { mailEnabled } from "./mail";
 
 const scrypt = promisify(scryptCb) as (pw: string, salt: Buffer, len: number, opts: object) => Promise<Buffer>;
 
@@ -72,7 +73,20 @@ export type CurrentUser = {
   login: string | null;
   avatarColor: string;
   managedIds: string[];
+  /** compte invité : juste un prénom, entré depuis le lien d'une famille */
+  guest: boolean;
+  /** compte complet : adresse e-mail confirmée (ou mot de passe, si le site n'envoie pas d'e-mails).
+   *  Seul un compte complet peut créer une famille, en être admin, et accéder à son profil. */
+  verified: boolean;
+  /** adresse e-mail confirmée : les notifications peuvent partir par e-mail */
+  hasEmail: boolean;
 };
+
+/** Compte complet : voir `CurrentUser.verified`. */
+export function isVerified(u: { guest: boolean; managedById?: string | null; emailVerifiedAt: Date | null; passwordHash: string | null }) {
+  if (u.guest || u.managedById) return false;
+  return mailEnabled() ? Boolean(u.emailVerifiedAt) : Boolean(u.passwordHash);
+}
 
 export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   const jar = await cookies();
@@ -91,12 +105,22 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
     login: u.login,
     avatarColor: u.avatarColor,
     managedIds: u.managed.map((m) => m.id),
+    guest: u.guest,
+    verified: isVerified(u),
+    hasEmail: Boolean(u.emailVerifiedAt),
   };
 });
 
 export async function requireUser(next?: string) {
   const user = await getCurrentUser();
   if (!user) redirect(next ? `/?next=${encodeURIComponent(next)}` : "/");
+  return user;
+}
+
+/** Page réservée aux comptes complets : un invité est envoyé vers « Créer mon compte ». */
+export async function requireAccount(next: string) {
+  const user = await requireUser(next);
+  if (user.guest) redirect(`/creer-mon-compte?next=${encodeURIComponent(next)}`);
   return user;
 }
 
