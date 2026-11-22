@@ -17,6 +17,10 @@ model User {
   login        String?  @unique
   passwordHash String?
   avatarColor  String   @default("#1F4D36")
+  /// personnage choisi (« 07 » → /avatars/07.webp) ; vide = initiales sur avatarColor
+  avatar       String?
+  /// fond du cercle de l'avatar (clé de AVATAR_BACKGROUNDS, src/lib/avatars.ts)
+  avatarBg     String?
   /// adresse e-mail facultative, utilisée seulement une fois confirmée
   email           String?   @unique
   emailVerifiedAt DateTime?

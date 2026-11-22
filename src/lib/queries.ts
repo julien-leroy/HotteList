@@ -5,7 +5,7 @@ import { isVerified } from "./auth";
 import type { CurrentUser } from "./auth";
 import { giftsVisibleTo, type Viewer } from "./visibility";
 
-export const personSelect = { id: true, firstName: true, lastName: true, avatarColor: true } as const;
+export const personSelect = { id: true, firstName: true, lastName: true, avatarColor: true, avatar: true, avatarBg: true } as const;
 
 export const giftInclude = {
   createdBy: { select: personSelect },
@@ -81,7 +81,7 @@ export async function loadGiftForAction(user: CurrentUser, giftId: string) {
 export async function claimableMembers(familyId: string) {
   const rows = await db.membership.findMany({
     where: { familyId, user: { managedById: null } },
-    include: { user: { select: { id: true, firstName: true, lastName: true, avatarColor: true, guest: true, managedById: true, emailVerifiedAt: true, passwordHash: true } } },
+    include: { user: { select: { id: true, firstName: true, lastName: true, avatarColor: true, avatar: true, avatarBg: true, guest: true, managedById: true, emailVerifiedAt: true, passwordHash: true } } },
     orderBy: { joinedAt: "asc" },
   });
   return rows
@@ -91,5 +91,7 @@ export async function claimableMembers(familyId: string) {
       firstName: m.nickname ?? m.user.firstName,
       lastName: m.nickname ? null : m.user.lastName,
       avatarColor: m.user.avatarColor,
+      avatar: m.user.avatar,
+      avatarBg: m.user.avatarBg,
     }));
 }

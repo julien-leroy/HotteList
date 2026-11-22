@@ -74,6 +74,8 @@ export type CurrentUser = {
   lastName: string | null;
   login: string | null;
   avatarColor: string;
+  avatar: string | null;
+  avatarBg: string | null;
   managedIds: string[];
   /** compte invité : juste un prénom, entré depuis le lien d'une famille */
   guest: boolean;
@@ -106,6 +108,8 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
     lastName: u.lastName,
     login: u.login,
     avatarColor: u.avatarColor,
+    avatar: u.avatar,
+    avatarBg: u.avatarBg,
     managedIds: u.managed.map((m) => m.id),
     guest: u.guest,
     verified: isVerified(u),

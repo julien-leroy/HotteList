@@ -211,7 +211,7 @@ export function GiftDialog({
                 <div className="flex flex-col gap-3">
                   {s.comments.map((c) => (
                     <div key={c.id} className="flex items-start gap-3">
-                      <Avatar person={c.author} size={36} />
+                      <Avatar person={c.author} size={36} bare />
                       <div className="flex min-w-0 flex-1 flex-col gap-1 border border-[#EADBB8] bg-papier px-3.5 py-2.5" style={{ borderRadius: "4px 14px 14px 14px" }}>
                         <span className="flex items-center justify-between gap-2 text-[13px]">
                           <span>

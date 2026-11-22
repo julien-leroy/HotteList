@@ -133,7 +133,7 @@ export async function setSantaBudget(familyId: string, budget: string): Promise<
   }
 }
 
-export type SantaReveal = { ok: true; receiver: { id: string; firstName: string; lastName: string | null; avatarColor: string } } | { ok: false; error: string };
+export type SantaReveal = { ok: true; receiver: { id: string; firstName: string; lastName: string | null; avatarColor: string; avatar: string | null; avatarBg: string | null } } | { ok: false; error: string };
 
 /** « Découvrir » : renvoie la personne tirée et retient que je l'ai découverte. */
 export async function revealSecretSanta(familyId: string): Promise<SantaReveal> {
@@ -157,6 +157,8 @@ export async function revealSecretSanta(familyId: string): Promise<SantaReveal> 
         firstName: m?.nickname || a.receiver.firstName,
         lastName: m?.nickname ? null : a.receiver.lastName,
         avatarColor: a.receiver.avatarColor,
+        avatar: a.receiver.avatar,
+        avatarBg: a.receiver.avatarBg,
       },
     };
   } catch (e) {

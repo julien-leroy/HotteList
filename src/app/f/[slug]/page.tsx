@@ -103,7 +103,7 @@ export default async function FamilyPage({ params, searchParams }: Props) {
   const empty = (id: string) => (id !== user.id && id !== santaChild && !hasWishes.has(id) ? 1 : 0);
   const members = family.memberships.slice().sort((a, b) => empty(a.userId) - empty(b.userId) || rank(a.userId) - rank(b.userId));
   const sections: Section[] = members.map((m) => ({
-    person: { id: m.user.id, firstName: shown(m.user), lastName: m.nickname ? null : m.user.lastName, avatarColor: m.user.avatarColor },
+    person: { id: m.user.id, firstName: shown(m.user), lastName: m.nickname ? null : m.user.lastName, avatarColor: m.user.avatarColor, avatar: m.user.avatar, avatarBg: m.user.avatarBg },
     realName: [m.user.firstName, m.user.lastName].filter(Boolean).join(" "),
     nickname: m.nickname,
     isMe: m.userId === user.id,
@@ -121,7 +121,7 @@ export default async function FamilyPage({ params, searchParams }: Props) {
   // Participants possibles au Secret Santa : les membres qui ont leur propre compte
   const santaCandidates = family.memberships
     .filter((m) => !m.user.managedById)
-    .map((m) => ({ id: m.user.id, firstName: shown(m.user), lastName: m.nickname ? null : m.user.lastName, avatarColor: m.user.avatarColor }));
+    .map((m) => ({ id: m.user.id, firstName: shown(m.user), lastName: m.nickname ? null : m.user.lastName, avatarColor: m.user.avatarColor, avatar: m.user.avatar, avatarBg: m.user.avatarBg }));
 
   const drawnOn = santa ? santa.createdAt.toLocaleDateString("fr-FR", { day: "numeric", month: "long", timeZone: "Europe/Paris" }) : null;
 
@@ -181,6 +181,8 @@ export default async function FamilyPage({ params, searchParams }: Props) {
                   lastName: m.user.lastName,
                   nickname: m.nickname,
                   avatarColor: m.user.avatarColor,
+                  avatar: m.user.avatar,
+                  avatarBg: m.user.avatarBg,
                   role: m.role as "ADMIN" | "MEMBRE",
                   managed: Boolean(m.user.managedById),
                   guest: !m.user.managedById && !canBeAdmin.has(m.user.id),
