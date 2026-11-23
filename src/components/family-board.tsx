@@ -124,7 +124,7 @@ export function FamilyBoard({ familyId, familySlug, viewerId, sections, openGift
               )}
               <div className="flex flex-wrap items-center justify-between gap-3.5 pb-3.5" style={{ borderBottom: "2px dotted #D9A93E" }}>
                 <div className="flex items-center gap-3.5">
-                  <Avatar person={s.person} size={56} style={{ border: "3px solid #FFFDF7", boxShadow: "0 0 0 2px #D9A93E", fontSize: 18 }} />
+                  <Avatar person={s.person} size={56} style={{ fontSize: 18 }} />
                   <div className="flex flex-col gap-0.5">
                     {s.isMe ? (
                       <h2 {...listTitleProps("Ma liste", 44, 220)}>Ma liste</h2>

@@ -41,7 +41,7 @@ export function AvatarPicker({ personId, person, label = "Changer d'avatar" }: {
       <Dialog.Trigger asChild>
         <button type="button" className="inline-flex cursor-pointer items-center gap-3 border-0 bg-transparent p-0 text-left" aria-label={label}>
           <span className="relative inline-flex">
-            <Avatar person={person} size={64} style={{ border: "3px solid #FFFDF7", boxShadow: "0 0 0 2px #D9A93E", fontSize: 22 }} />
+            <Avatar person={person} size={64} style={{ fontSize: 22 }} />
             <span className="absolute -right-1 -bottom-1 inline-flex h-7 w-7 items-center justify-center rounded-full" style={{ background: "#CF2B35", color: "#FFF9EE", border: "2px solid #FFFDF7" }}>
               <IconEdit size={13} />
             </span>
@@ -62,7 +62,7 @@ export function AvatarPicker({ personId, person, label = "Changer d'avatar" }: {
             </div>
 
             <div className="flex items-center gap-4">
-              <Avatar person={preview} size={104} style={{ border: "4px solid #FFFDF7", boxShadow: "0 0 0 2px #D9A93E", fontSize: 34 }} />
+              <Avatar person={preview} size={104} style={{ fontSize: 34 }} />
               <div className="flex flex-col gap-1">
                 <strong className="text-lg">{person.firstName}</strong>
                 <span className="text-sm text-gris">{avatar ? "Un personnage, puis un fond." : "Choisissez un personnage."}</span>

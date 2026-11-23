@@ -55,7 +55,7 @@ export function SantaAside({
         <>
           <p className="m-0 text-[15px] text-gris">Vous offrez un cadeau à</p>
           <div className="flex items-center gap-3">
-            <Avatar person={state.receiver} size={46} style={{ border: "3px solid #FFFDF7", boxShadow: "0 0 0 2px #D9A93E" }} />
+            <Avatar person={state.receiver} size={46} />
             <span {...listTitleProps(state.receiver.firstName, 40, 200)}>{state.receiver.firstName}</span>
           </div>
           {budget && (
@@ -215,7 +215,7 @@ function SantaReveal({ familyId, pool, budget, onClose }: { familyId: string; po
               shown && (
                 <div className={receiver ? "santa-slot santa-slot-done" : "santa-slot"}>
                   {receiver && <span className="santa-rays" aria-hidden="true" />}
-                  <Avatar person={shown} size={receiver ? 96 : 76} style={{ border: "4px solid #FFF9EE", fontSize: receiver ? 30 : 24 }} />
+                  <Avatar person={shown} size={receiver ? 96 : 76} style={{ fontSize: receiver ? 30 : 24 }} />
                   <span className="santa-slot-name">{shown.firstName}</span>
                 </div>
               )
