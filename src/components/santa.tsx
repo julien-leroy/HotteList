@@ -266,7 +266,7 @@ export function SantaSettings({
 
   return (
     <div className="flex flex-col gap-3">
-      <h3 className="font-display m-0 text-[22px] font-bold">
+      <h3 className="font-display m-0 text-[19px] font-bold">
         Secret Santa
         <InfoTip align="start">Les membres qui ont leur compte tirent au sort une personne à qui offrir un cadeau. Chacun la découvre avec « Découvrir » et ne voit que la sienne, admin compris.</InfoTip>
       </h3>

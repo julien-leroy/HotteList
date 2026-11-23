@@ -273,7 +273,7 @@ export async function cleanLists(familyId: string): Promise<ActionResult> {
 }
 
 /**
- * L'admin ajoute quelqu'un avec juste son prénom (compte invité, sans e-mail ni mot de passe).
+ * L'admin ajoute quelqu'un avec juste un nom (compte invité, sans e-mail ni mot de passe).
  * La personne le reprend en arrivant par le lien : « Touchez votre nom ».
  */
 export async function addGuestMember(familyId: string, firstName: string, lastName = ""): Promise<ActionResult> {
@@ -286,7 +286,7 @@ export async function addGuestMember(familyId: string, firstName: string, lastNa
       where: { familyId, user: { firstName: first, lastName: last } },
       select: { id: true },
     });
-    if (twin) throw new Error(`${first} est déjà dans la famille. Ajoutez un nom pour les distinguer.`);
+    if (twin) throw new Error(`${first} est déjà dans la famille : choisissez un nom un peu différent (« ${first} B. », « Tata ${first} »…).`);
     await db.user.create({
       data: { firstName: first, lastName: last, guest: true, avatarColor: randomColor(), memberships: { create: { familyId } } },
     });

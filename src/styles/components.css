@@ -432,3 +432,19 @@ textarea.gf-desc { min-height: 96px; }
 .chip-choice:focus-visible { outline: 2px solid var(--color-encre); outline-offset: 2px; }
 .chip-choice[aria-checked="true"] { background: var(--color-sapin-pale); border-color: var(--color-sapin); color: var(--color-sapin-texte); }
 .chip-choice[aria-checked="true"]::before { content: "✓"; margin-right: 7px; font-size: 13px; }
+
+/* Réglages de la famille : membres repliés (une ligne), ajout rapide d'un nom */
+.fs-members-head {
+  display: flex; align-items: center; gap: 12px; width: 100%; padding: 4px 0;
+  border: 0; background: none; color: var(--color-encre); font: inherit; text-align: left; cursor: pointer;
+}
+.fs-members-head:focus-visible { outline: 2px solid var(--color-encre); outline-offset: 3px; border-radius: 8px; }
+.fs-stack { display: inline-flex; flex: 1; min-width: 0; }
+.fs-stack > * { margin-left: -4px; box-shadow: 0 0 0 2px var(--color-papier); }
+.fs-stack > *:first-child { margin-left: 0; }
+.fs-more { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--color-sable-pale); font: 700 11px var(--font-sans); color: var(--color-gris); }
+.fs-toggle { flex: none; padding: 6px 12px; border-radius: 999px; background: var(--color-sable-pale); font: 600 13px var(--font-sans); }
+.fs-members-head:hover .fs-toggle { background: var(--color-sable); }
+.fs-add { display: flex; align-items: center; gap: 6px; max-width: 400px; }
+.fs-add .input { flex: 1; min-width: 0; min-height: 36px; height: 36px; padding: 0 12px; border-radius: 10px; font-size: 14.5px; }
+@media (max-width: 480px) { .fs-stack { display: none; } .fs-members-head { justify-content: space-between; } }
