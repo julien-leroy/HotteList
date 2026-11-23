@@ -91,8 +91,6 @@ function extractUrl(text: string) {
   return text.match(/https?:\/\/[^\s<>"']+/i)?.[0] ?? text.trim();
 }
 
-const KNOWN_SITES = "Amazon, Fnac, Decathlon, Vinted, Leboncoin, Cdiscount, AliExpress, Apple…";
-
 export function GiftForm(props: Props) {
   const prefill = props.mode === "create" ? props.prefill : undefined;
   const initial =
@@ -277,6 +275,7 @@ export function GiftForm(props: Props) {
               }}
               placeholder="https://…"
             />
+            <LookupIcon lookup={lookup} />
             {d.url ? (
               <button
                 type="button"
@@ -300,12 +299,6 @@ export function GiftForm(props: Props) {
               )
             )}
           </div>
-          <LookupNote
-            lookup={lookup}
-            hasUrl={Boolean(d.url.trim())}
-            hasTitle={Boolean(d.title.trim())}
-            titleFromLink={lookup.state === "done" && Boolean(lookup.preview.title) && d.title === lookup.preview.title}
-          />
         </div>
 
         {/* 2. Titre et prix */}
@@ -396,30 +389,22 @@ export function GiftForm(props: Props) {
           </button>
         )}
 
-        {props.mode === "create" && props.kind === "IDEE" && (
-          <div className="flex flex-col gap-1">
-            <span className="flex items-center gap-1">
-              <label className="chk">
-                <input type="checkbox" checked={discreet} onChange={(e) => setDiscreet(e.target.checked)} />
-                Mode discret
-              </label>
-              <InfoTip align="start">
-                Coché : {name} ne la verra jamais, le reste de la famille peut la réserver et la commenter. Décoché : elle s&apos;ajoute à la liste de {name} comme un souhait écrit par {name}, visible de tous.
-              </InfoTip>
-            </span>
-            <p className="m-0 text-sm text-gris">
-              {discreet
-                ? `${name} ne verra pas cette idée.`
-                : `Visible de tous, ${name} compris, comme un souhait de sa part.`}
-            </p>
-          </div>
-        )}
-
         <div className="gf-actions">
           <button className="btn b-primary" type="submit" disabled={pending}>
             {pending ? "Enregistrement…" : props.mode === "edit" ? "Enregistrer" : asWish ? "Ajouter à sa liste" : props.kind === "IDEE" ? "Ajouter l'idée" : "Ajouter à la liste"}
           </button>
           <button className="btn b-quiet" type="button" onClick={props.onDone}>Annuler</button>
+          {props.mode === "create" && props.kind === "IDEE" && (
+            <span className="gf-discreet">
+              <label className="chk">
+                <input type="checkbox" checked={discreet} onChange={(e) => setDiscreet(e.target.checked)} />
+                Mode discret
+              </label>
+              <InfoTip align="end">
+                Coché : {name} ne verra jamais cette idée, le reste de la famille peut la réserver et la commenter. Décoché : elle s&apos;ajoute à la liste de {name} comme un souhait écrit par {name}, visible de tous.
+              </InfoTip>
+            </span>
+          )}
         </div>
       </div>
 
@@ -444,48 +429,30 @@ export function GiftForm(props: Props) {
   );
 }
 
-/** Ce qu'a donné la lecture du lien, en une phrase. */
-function LookupNote({ lookup, hasUrl, hasTitle, titleFromLink }: { lookup: Lookup; hasUrl: boolean; hasTitle: boolean; titleFromLink: boolean }) {
-  if (lookup.state === "idle") {
-    return hasUrl ? null : (
-      <span className="gf-hint">
-        Marche avec {KNOWN_SITES} Pas de lien ? Un titre suffit.
-      </span>
-    );
-  }
+/** État de la lecture du lien, en une icône dans le champ : roue, coche verte ou croix rouge (détail au survol). */
+function LookupIcon({ lookup }: { lookup: Lookup }) {
+  if (lookup.state === "idle") return null;
   if (lookup.state === "looking") {
     return (
-      <span className="gf-note gf-note-wait" role="status">
-        <span className="gf-spin" aria-hidden="true" /> On regarde la page{lookup.site ? ` sur ${lookup.site}` : ""}…
+      <span className="gf-state" role="status" aria-label={`Lecture de la page${lookup.site ? ` sur ${lookup.site}` : ""}…`} title="Lecture de la page…">
+        <span className="gf-spin" aria-hidden="true" />
       </span>
     );
   }
-  if (lookup.state === "error") {
-    return <span className="gf-note gf-note-soft" role="status">Impossible de lire ce lien pour l&apos;instant : remplissez le titre, on s&apos;occupe de l&apos;image.</span>;
-  }
-  const p = lookup.preview;
-  const name = p.siteName ?? p.siteOrigin ?? "ce site";
-  if (p.status === "complete") {
-    return <span className="gf-note gf-note-ok" role="status">✓ Trouvé sur {name} : titre, photo et prix.</span>;
-  }
-  if (p.status === "partial") {
-    const got = [p.title && "titre", p.imageUrl && "photo", p.price && "prix"].filter(Boolean).join(" et ");
-    const missing = !p.price ? " Ajoutez le prix si vous le connaissez." : !p.imageUrl ? " Choisissez une illustration si vous voulez." : "";
-    return <span className="gf-note gf-note-ok" role="status">✓ Trouvé sur {name} : {got}.{missing}</span>;
-  }
-  if (p.status === "blocked") {
-    return (
-      <span className="gf-note gf-note-soft" role="status">
-        {name} ne nous laisse pas lire sa page
-        {titleFromLink
-          ? ". On a repris le nom depuis le lien : vérifiez-le, l'illustration suit."
-          : hasTitle
-            ? " : pas de photo ni de prix, l'illustration suit."
-            : ". Donnez un titre, l'illustration suit."}
-      </span>
-    );
-  }
-  return <span className="gf-note gf-note-soft" role="status">Ce lien n&apos;a rien donné : donnez un titre, l&apos;illustration suit.</span>;
+  const ok = lookup.state === "done" && (lookup.preview.status === "complete" || lookup.preview.status === "partial");
+  const name = lookup.state === "done" ? (lookup.preview.siteName ?? lookup.preview.siteOrigin ?? "Ce site") : "Ce site";
+  const label = ok
+    ? `Trouvé sur ${name}`
+    : lookup.state === "done" && lookup.preview.status === "blocked"
+      ? `${name} ne laisse pas lire sa page : complétez à la main`
+      : "Rien trouvé avec ce lien : complétez à la main";
+  return (
+    <span className={`gf-state ${ok ? "gf-state-ok" : "gf-state-ko"}`} role="status" aria-label={label} title={label}>
+      <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        {ok ? <path d="M2.5 6.3 5 8.6l4.6-5.2" /> : <path d="M3 3l6 6M9 3l-6 6" />}
+      </svg>
+    </span>
+  );
 }
 
 function ImageField(props: {

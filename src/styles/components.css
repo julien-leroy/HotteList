@@ -263,7 +263,8 @@ textarea.input{padding:12px 14px;min-height:84px;resize:vertical;line-height:1.5
 
 /* ---------- Formulaire d'ajout / modification d'un cadeau ---------- */
 .gf-link { padding: 0; border: 0; background: none; font: 600 13px var(--font-sans); color: var(--color-sapin); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
-.gf-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.gf-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.gf-discreet { display: inline-flex; align-items: center; gap: 4px; margin-left: auto; }
 textarea.gf-desc { min-height: 96px; }
 
 /* Champ du lien : icône à gauche, « Coller » ou « effacer » à droite */
@@ -279,6 +280,13 @@ textarea.gf-desc { min-height: 96px; }
 .gf-url-btn:hover { background: var(--color-sable); }
 .gf-url-btn:focus-visible { outline: 2px solid var(--color-encre); outline-offset: 2px; }
 .gf-paste { background: var(--color-sapin-pale); color: var(--color-sapin-texte); }
+/* État de la lecture du lien, à gauche du bouton « effacer » */
+.gf-url .input { padding-right: 84px; }
+.gf-state { position: absolute; right: 48px; top: 50%; transform: translateY(-50%); display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; pointer-events: auto; }
+.gf-state .gf-spin { width: 16px; height: 16px; }
+.gf-state-ok { background: #2E7D4F; color: #fff; animation: gf-pop .25s ease-out; }
+.gf-state-ko { background: var(--color-rouge); color: #fff; animation: gf-pop .25s ease-out; }
+@keyframes gf-pop { from { transform: translateY(-50%) scale(.4); opacity: 0; } to { transform: translateY(-50%) scale(1); opacity: 1; } }
 .gf-paste:hover { background: #D5E6DA; }
 
 /* Prix : « € » discret dans le champ */
@@ -362,6 +370,7 @@ textarea.gf-desc { min-height: 96px; }
     box-shadow: 0 -10px 20px -14px rgba(60, 20, 20, .35);
   }
   .add-modal .gf-actions .btn { flex: 1; }
+  .add-modal .gf-discreet { order: -1; flex-basis: 100%; margin-left: 0; }
 }
 
 /* Proposition d'installation de l'application */

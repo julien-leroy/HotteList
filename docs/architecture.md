@@ -78,7 +78,7 @@ Supprimés : Docker, PostgreSQL, sharp et stockage d'images, Better Auth.
 
 ## 4 bis. Ajouter un souhait
 
-- **Le lien d'abord** : bouton « Coller », lecture dès le collage (ou après une courte pause en tapant), texte autour de l'adresse ignoré. Titre et prix se remplissent sans écraser ce qu'on a tapé ; une phrase dit ce qui a été trouvé (« ✓ Trouvé sur Vinted : titre, photo et prix », ou « Fnac ne nous laisse pas lire sa page… »).
+- **Le lien d'abord** : bouton « Coller », lecture dès le collage (ou après une courte pause en tapant), texte autour de l'adresse ignoré. Titre et prix se remplissent sans écraser ce qu'on a tapé ; dans le champ du lien, une roue pendant la lecture, puis une coche verte (infos récupérées) ou une croix rouge (site qui bloque ou rien trouvé), détail au survol. Aucun texte d'aide sous le champ.
 - **Image** : une vignette avec « Changer », qui ouvre la grille : photo du lien, illustrations (celle devinée d'après le titre en premier, marquée « suggérée »), « Autre image » (adresse à coller).
 - Précisions repliées (« + Ajouter une précision »), bouton « Coup de cœur ». Aperçu de la carte à droite sur ordinateur ; sur téléphone, la vignette en tient lieu et les boutons restent en bas.
 
