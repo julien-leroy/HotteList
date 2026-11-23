@@ -178,7 +178,7 @@ Toutes les lectures passent par `giftsVisibleTo(viewer, gifts)` (`src/lib/visibi
 - **Je suis le destinataire** : je ne vois que mes SOUHAITS, sans participants, sans statut, sans commentaires. Les IDÉES ajoutées pour moi n'existent pas pour moi.
 - **Je suis le gestionnaire du destinataire** : je vois tout, y compris les idées des autres, et je peux créer, modifier, supprimer, déplacer et copier ses SOUHAITS.
 - **Autre membre** : je vois tout ; je peux réserver, participer, commenter et ajouter des idées.
-- **Mode discret** (case dans la popup « Une idée pour … », **cochée par défaut**) : cochée, c'est une IDÉE, cachée au destinataire. Décochée, elle est enregistrée comme un **SOUHAIT** de sa liste : visible de tous, destinataire compris, sans auteur affiché, comme s'il l'avait écrit ; elle se modifie ensuite comme ses souhaits (destinataire ou gestionnaire). `createdById` garde l'auteur réel.
+- **Mode discret** (case dans la popup « Une idée pour … », **cochée par défaut**, à droite des boutons « Ajouter l'idée » / « Annuler », au-dessus d'eux sur téléphone ; explication dans l'info-bulle) : cochée, c'est une IDÉE, cachée au destinataire. Décochée, elle est enregistrée comme un **SOUHAIT** de sa liste : visible de tous, destinataire compris, sans auteur affiché, comme s'il l'avait écrit ; elle se modifie ensuite comme ses souhaits (destinataire ou gestionnaire). `createdById` garde l'auteur réel.
 - **Idées discrètes bien visibles** pour les autres : carte à bordure pointillée bleu nuit sur fond bleuté, badge « Discret · Prénom » avec un œil barré ; en mode liste, liseré bleu nuit et pastille « Discret ».
 
 Droits d'écriture vérifiés côté serveur, dans chaque action :
