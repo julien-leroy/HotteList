@@ -329,8 +329,8 @@ textarea.gf-desc { min-height: 96px; }
 .gf-tile-hint { position: absolute; top: 0; right: 2px; padding: 1px 6px; border-radius: 999px; background: var(--color-or-clair); color: #5A1018; font: 700 9.5px/1.5 var(--font-sans); letter-spacing: .02em; }
 
 /* Précisions repliées, coup de cœur */
-.gf-more { align-self: flex-start; display: inline-flex; align-items: baseline; gap: 6px; padding: 4px 0; border: 0; background: none; font: 600 14px var(--font-sans); color: var(--color-sapin-texte); cursor: pointer; }
-.gf-more > span[aria-hidden] { font-size: 17px; line-height: 1; }
+.gf-more { align-self: flex-start; display: block; text-align: left; padding: 4px 0; border: 0; background: none; font: 600 14px var(--font-sans); color: var(--color-sapin-texte); cursor: pointer; }
+.gf-more > span[aria-hidden] { margin-right: 4px; font-size: 17px; line-height: 1; }
 .gf-more:hover { text-decoration: underline; text-underline-offset: 3px; }
 .gf-fav {
   display: inline-flex; align-items: center; gap: 8px; min-height: 38px; padding: 0 14px;
@@ -421,3 +421,14 @@ textarea.gf-desc { min-height: 96px; }
   .toolbar-people::-webkit-scrollbar { display: none; }
   .toolbar-people .chip { flex: none; }
 }
+
+/* Choix d'une famille ou d'une liste (page « Partager ») */
+.chip-choice {
+  display: inline-flex; align-items: center; min-height: 40px; padding: 0 16px;
+  border: 1.5px solid #D8C9A8; border-radius: 999px; background: var(--color-papier);
+  font: 600 14.5px var(--font-sans); color: var(--color-encre); cursor: pointer; transition: all .15s;
+}
+.chip-choice:hover { border-color: #B9A982; }
+.chip-choice:focus-visible { outline: 2px solid var(--color-encre); outline-offset: 2px; }
+.chip-choice[aria-checked="true"] { background: var(--color-sapin-pale); border-color: var(--color-sapin); color: var(--color-sapin-texte); }
+.chip-choice[aria-checked="true"]::before { content: "✓"; margin-right: 7px; font-size: 13px; }

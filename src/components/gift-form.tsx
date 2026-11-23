@@ -28,6 +28,8 @@ type Props =
       existing?: { title: string; url: string | null }[];
       /** prénom du destinataire (case « Mode discret » des idées) */
       recipientName?: string;
+      /** lien et titre reçus par « Partager » : le lien est lu dès l'ouverture */
+      prefill?: { url: string; title: string };
     }
   | {
       mode: "edit";
@@ -92,7 +94,11 @@ function extractUrl(text: string) {
 const KNOWN_SITES = "Amazon, Fnac, Decathlon, Vinted, Leboncoin, Cdiscount, AliExpress, Apple…";
 
 export function GiftForm(props: Props) {
-  const initial = props.mode === "edit" ? props.initial : { url: "", title: "", price: "", description: "", imageUrl: "", favorite: false };
+  const prefill = props.mode === "create" ? props.prefill : undefined;
+  const initial =
+    props.mode === "edit"
+      ? props.initial
+      : { url: prefill?.url ?? "", title: prefill?.title ?? "", price: "", description: "", imageUrl: "", favorite: false };
   const initialIllu = illustrationOf(initial.imageUrl);
   const initialPhoto = initial.imageUrl && !initialIllu ? initial.imageUrl : "";
 
@@ -106,13 +112,20 @@ export function GiftForm(props: Props) {
   const [showDesc, setShowDesc] = useState(Boolean(initial.description));
   const [lookup, setLookup] = useState<Lookup>({ state: "idle" });
   const [canPaste, setCanPaste] = useState(false);
-  const lastLooked = useRef(initial.url.trim());
-  const autoFilled = useRef({ title: "", price: "" });
+  const lastLooked = useRef(prefill ? "" : initial.url.trim());
+  // un titre partagé peut être remplacé par celui de la page, plus propre
+  const autoFilled = useRef({ title: prefill?.title ?? "", price: "" });
   const { pending, run } = useAction();
   /** idée cachée à la personne (par défaut) ; décochée, elle devient un souhait de sa liste, visible de tous */
   const [discreet, setDiscreet] = useState(true);
   const name = props.mode === "create" ? (props.recipientName ?? "La personne") : "";
   const asWish = props.mode === "create" && props.kind === "IDEE" && !discreet;
+
+  // lien reçu par « Partager » : on le lit tout de suite
+  useEffect(() => {
+    if (prefill?.url) readLink(prefill.url);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     setCanPaste(typeof navigator !== "undefined" && typeof navigator.clipboard?.readText === "function");
@@ -143,9 +156,11 @@ export function GiftForm(props: Props) {
       // On remplace seulement ce qu'on avait rempli nous-mêmes : jamais ce que la personne a tapé
       setD((x) => {
         const next = { ...x };
-        if (p.title && (!x.title.trim() || x.title === autoFilled.current.title)) next.title = p.title;
+        // page bloquée : son titre est deviné depuis l'adresse, on garde celui qu'on a déjà
+        const better = p.status !== "blocked" || !x.title.trim();
+        if (p.title && better && (!x.title.trim() || x.title === autoFilled.current.title)) next.title = p.title;
         if (p.price && (!x.price.trim() || x.price === autoFilled.current.price)) next.price = p.price;
-        autoFilled.current = { title: p.title ?? "", price: p.price ?? "" };
+        autoFilled.current = { title: next.title === p.title ? (p.title ?? "") : autoFilled.current.title, price: p.price ?? "" };
         return next;
       });
       // nouvelle photo : elle remplace l'ancienne, sauf si la personne a choisi autre chose
@@ -244,7 +259,7 @@ export function GiftForm(props: Props) {
               inputMode="url"
               autoComplete="off"
               value={d.url}
-              autoFocus={bare}
+              autoFocus={bare && !prefill}
               onChange={(e) => setD((x) => ({ ...x, url: e.target.value }))}
               onBlur={(e) => readLink(e.target.value)}
               onPaste={(e) => {
@@ -285,7 +300,12 @@ export function GiftForm(props: Props) {
               )
             )}
           </div>
-          <LookupNote lookup={lookup} hasUrl={Boolean(d.url.trim())} hasTitle={Boolean(d.title.trim())} />
+          <LookupNote
+            lookup={lookup}
+            hasUrl={Boolean(d.url.trim())}
+            hasTitle={Boolean(d.title.trim())}
+            titleFromLink={lookup.state === "done" && Boolean(lookup.preview.title) && d.title === lookup.preview.title}
+          />
         </div>
 
         {/* 2. Titre et prix */}
@@ -425,7 +445,7 @@ export function GiftForm(props: Props) {
 }
 
 /** Ce qu'a donné la lecture du lien, en une phrase. */
-function LookupNote({ lookup, hasUrl, hasTitle }: { lookup: Lookup; hasUrl: boolean; hasTitle: boolean }) {
+function LookupNote({ lookup, hasUrl, hasTitle, titleFromLink }: { lookup: Lookup; hasUrl: boolean; hasTitle: boolean; titleFromLink: boolean }) {
   if (lookup.state === "idle") {
     return hasUrl ? null : (
       <span className="gf-hint">
@@ -456,8 +476,12 @@ function LookupNote({ lookup, hasUrl, hasTitle }: { lookup: Lookup; hasUrl: bool
   if (p.status === "blocked") {
     return (
       <span className="gf-note gf-note-soft" role="status">
-        {name} ne nous laisse pas lire sa page.{" "}
-        {p.title ? "On a repris le nom depuis le lien : vérifiez-le" : hasTitle ? "Vérifiez le titre" : "Donnez un titre"}, l&apos;illustration suit.
+        {name} ne nous laisse pas lire sa page
+        {titleFromLink
+          ? ". On a repris le nom depuis le lien : vérifiez-le, l'illustration suit."
+          : hasTitle
+            ? " : pas de photo ni de prix, l'illustration suit."
+            : ". Donnez un titre, l'illustration suit."}
       </span>
     );
   }

@@ -17,6 +17,12 @@ export default function manifest(): MetadataRoute.Manifest {
       { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
       { src: "/icons/maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
+    // « Partager » depuis une autre appli (Android, appli installée) : ouvre /partager avec le lien
+    share_target: {
+      action: "/partager",
+      method: "GET",
+      params: { title: "title", text: "text", url: "url" },
+    },
     shortcuts: [
       { name: "Ma liste de courses", url: "/courses" },
       { name: "Mon profil", url: "/profil" },

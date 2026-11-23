@@ -56,6 +56,12 @@ function merge(sources: [Source, Candidate][]) {
   return { out, trace };
 }
 
+/** Titre envoyé par le navigateur ou l'appli qui partage (« … - Achat & prix | fnac ») : même nettoyage qu'une page. */
+export function cleanSharedTitle(raw: string | null | undefined, url: URL | null) {
+  const adapter = url ? adapterFor(url) : null;
+  return cleanTitle(raw, adapter, adapter?.name ?? null);
+}
+
 /** Ce qu'on peut dire sans la page (lien bloqué ou illisible). */
 export function previewFromUrl(url: URL): LinkPreview & { trace: Trace } {
   const adapter = adapterFor(url);

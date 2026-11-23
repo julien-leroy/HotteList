@@ -82,6 +82,8 @@ Supprimés : Docker, PostgreSQL, sharp et stockage d'images, Better Auth.
 - **Image** : une vignette avec « Changer », qui ouvre la grille : photo du lien, illustrations (celle devinée d'après le titre en premier, marquée « suggérée »), « Autre image » (adresse à coller).
 - Précisions repliées (« + Ajouter une précision »), bouton « Coup de cœur ». Aperçu de la carte à droite sur ordinateur ; sur téléphone, la vignette en tient lieu et les boutons restent en bas.
 
+- **Partager depuis une autre appli** (Android, HotteList installée) : bouton Partager d'Amazon, Fnac, Vinted, du navigateur… → HotteList. Le manifeste (`share_target`, `src/app/manifest.ts`) ouvre `/partager` : formulaire d'ajout déjà rempli (adresse trouvée même au milieu du texte, titre partagé nettoyé comme une page : `src/lib/share.ts`), famille de la dernière visite déjà choisie (pastilles pour changer), et la liste d'un compte géré au choix. Après l'ajout : retour sur la page de la famille. Le partage transmet le vrai titre, pas la photo : pour un site qui bloque (Fnac, Decathlon), titre exact + illustration. Pas disponible sur iPhone (Safari ne le permet pas aux sites).
+
 ## 5. Comptes
 
 - **Inscription ouverte, validée par code** : prénom, nom facultatif, adresse e-mail et mot de passe de 8 caractères minimum. Un code à 6 chiffres (10 min, 5 essais) est envoyé à l'adresse ; le compte n'existe vraiment (identifiant = e-mail, adresse vérifiée) qu'après saisie du code. Ensuite on se connecte avec e-mail + mot de passe ; le code ne resert que pour « Mot de passe oublié » ou « Recevoir un code par e-mail ». Sans SMTP configuré, on revient à l'ancienne inscription (identifiant e-mail ou pseudo, sans vérification).
@@ -215,6 +217,7 @@ Droits d'écriture vérifiés côté serveur, dans chaque action :
 | `/reinitialiser/[token]` | Choisir un nouveau mot de passe (lien créé par un membre) |
 | `/mot-de-passe-oublie` | Mot de passe oublié par code e-mail |
 | `/connexion-code` | Connexion par code e-mail |
+| `/partager` | Arrivée par « Partager » depuis une autre appli (`?title=&text=&url=`) : ajout prérempli à ma liste |
 | `/api/apercu-lien` | Renvoie titre, adresse de l'image, prix, devise, nom du site et statut de lecture d'un lien collé (connecté uniquement) |
 
 ## 11. Points sensibles
