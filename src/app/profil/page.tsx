@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { requireAccount } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 import { loadVisibleGifts, personSelect } from "@/lib/queries";
 import { FestiveHeader, HeroTitle } from "@/components/festive";
 import { ProfileBoard, type Column } from "@/components/profile-board";
@@ -10,7 +10,8 @@ import { mailEnabled } from "@/lib/mail";
 export const metadata = { title: "Mon profil" };
 
 export default async function Profil({ searchParams }: { searchParams: Promise<{ pour?: string }> }) {
-  const user = await requireAccount("/profil");
+  // Ouverte aussi aux comptes sans e-mail : avatar, nom, listes, et de quoi créer leur compte
+  const user = await requireUser("/profil");
   const { pour } = await searchParams;
   const personId = pour && user.managedIds.includes(pour) ? pour : user.id;
 
@@ -37,13 +38,20 @@ export default async function Profil({ searchParams }: { searchParams: Promise<{
     ),
   );
 
-  const [meRow, pending] = await Promise.all([
+  const [meRow, pending, pendingAccount] = await Promise.all([
     db.user.findUniqueOrThrow({ where: { id: user.id }, select: { email: true, emailVerifiedAt: true, emailReminders: true, emailMentions: true } }),
     db.emailCode.findFirst({
       where: { userId: user.id, purpose: "VERIFY", usedAt: null, expiresAt: { gt: new Date() } },
       orderBy: { createdAt: "desc" },
       select: { email: true },
     }),
+    user.verified || !mailEnabled()
+      ? null
+      : db.emailCode.findFirst({
+          where: { userId: user.id, purpose: "ACCOUNT", usedAt: null, expiresAt: { gt: new Date() } },
+          orderBy: { createdAt: "desc" },
+          select: { email: true },
+        }),
   ]);
   const account = {
     id: user.id,
@@ -55,6 +63,8 @@ export default async function Profil({ searchParams }: { searchParams: Promise<{
     pendingEmail: pending?.email ?? null,
     reminders: meRow.emailReminders,
     mentions: meRow.emailMentions,
+    verified: user.verified,
+    pendingAccountEmail: pendingAccount?.email ?? null,
   };
 
   return (
@@ -62,17 +72,19 @@ export default async function Profil({ searchParams }: { searchParams: Promise<{
       <FestiveHeader user={user} current="profil">
         <div className="flex flex-col gap-2.5">
           <HeroTitle>Mon profil</HeroTitle>
-          <p className="m-0 text-base hero-soft">Vos listes dans chaque famille, et les comptes que vous gérez.</p>
+          <p className="m-0 text-base hero-soft">
+            {user.verified ? "Vos listes dans chaque famille, et les comptes que vous gérez." : "Vos listes dans chaque famille, votre avatar, et votre compte HotteList quand vous voulez."}
+          </p>
         </div>
       </FestiveHeader>
       <main className="mx-auto flex max-w-[1200px] flex-col gap-6 px-6 pt-7 pb-24">
-        <ManagedPanel
+        {user.verified && <ManagedPanel
           me={{ id: user.id, firstName: user.firstName, lastName: user.lastName, avatarColor: user.avatarColor, avatar: user.avatar, avatarBg: user.avatarBg }}
           managed={managed}
           currentId={personId}
           families={myFamilies.map((m) => ({ id: m.family.id, name: m.family.name }))}
           managedFamilies={managedFamilies}
-        />
+        />}
         <ProfileBoard key={personId} person={person} isSelf={personId === user.id} columns={columns} />
         {personId === user.id && <AccountPanel {...account} mail={mailEnabled()} />}
       </main>

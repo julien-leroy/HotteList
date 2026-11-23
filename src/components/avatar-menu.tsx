@@ -4,6 +4,7 @@ import { useTransition } from "react";
 import Link from "next/link";
 import * as Dropdown from "@radix-ui/react-dropdown-menu";
 import { logout } from "@/app/actions/auth";
+import { switchProfile } from "@/app/actions/guest";
 import { Avatar, type AvatarPerson } from "./avatar";
 import { confirmDialog } from "./toaster";
 
@@ -34,14 +35,12 @@ export function AvatarMenu({ user }: { user: AvatarPerson & { login: string | nu
           </div>
           {!user.verified && (
             <Dropdown.Item asChild className={item}>
-              <Link href="/creer-mon-compte" style={{ color: "#8A1C26", fontWeight: 700 }}>Créer mon compte</Link>
+              <Link href="/profil#compte" style={{ color: "#8A1C26", fontWeight: 700 }}>Créer mon compte</Link>
             </Dropdown.Item>
           )}
-          {user.verified && (
-            <Dropdown.Item asChild className={item}>
-              <Link href="/profil" style={{ color: "#1F3A2C" }}>Mon profil</Link>
-            </Dropdown.Item>
-          )}
+          <Dropdown.Item asChild className={item}>
+            <Link href="/profil" style={{ color: "#1F3A2C" }}>Mon profil</Link>
+          </Dropdown.Item>
           <Dropdown.Item asChild className={item}>
             <Link href="/familles" style={{ color: "#1F3A2C" }}>Mes familles</Link>
           </Dropdown.Item>
@@ -54,6 +53,19 @@ export function AvatarMenu({ user }: { user: AvatarPerson & { login: string | nu
             </Dropdown.Item>
           )}
           <Dropdown.Separator style={{ height: 1, background: "#E3D6BA", margin: "4px 6px" }} />
+          {!user.verified && (
+            <Dropdown.Item
+              className="menu-item"
+              style={{ color: "#1F3A2C" }}
+              disabled={pending}
+              onSelect={(e) => {
+                e.preventDefault();
+                start(() => switchProfile());
+              }}
+            >
+              Changer de profil
+            </Dropdown.Item>
+          )}
           <Dropdown.Item
             className="menu-item"
             style={{ color: "#8A2730" }}

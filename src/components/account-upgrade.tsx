@@ -19,7 +19,18 @@ function Alert({ text, tone = "error" }: { text: string; tone?: "error" | "info"
 }
 
 /** Un invité crée son compte : adresse e-mail + mot de passe, puis le code reçu. Il garde sa liste et ses familles. */
-export function AccountUpgrade({ mail, next, pendingEmail }: { mail: boolean; next: string; pendingEmail: string | null }) {
+export function AccountUpgrade({
+  mail,
+  next,
+  pendingEmail,
+  autoFocus = true,
+}: {
+  mail: boolean;
+  next: string;
+  pendingEmail: string | null;
+  /** faux dans le profil : la page ne doit pas sauter jusqu'au formulaire */
+  autoFocus?: boolean;
+}) {
   const router = useRouter();
   const [step, setStep] = useState<"form" | "code">(pendingEmail ? "code" : "form");
   const [id, setId] = useState(pendingEmail ?? "");
@@ -112,12 +123,12 @@ export function AccountUpgrade({ mail, next, pendingEmail }: { mail: boolean; ne
               <label htmlFor="acc-id">Adresse e-mail</label>
               <InfoTip align="start">Vous recevrez un code pour la valider. Elle sert ensuite à vous connecter et à recevoir vos notifications. Personne d&apos;autre ne la voit.</InfoTip>
             </span>
-            <input className="input" id="acc-id" type="email" inputMode="email" autoComplete="email" placeholder="vous@exemple.fr" value={id} onChange={(e) => setId(e.target.value)} required autoFocus />
+            <input className="input" id="acc-id" type="email" inputMode="email" autoComplete="email" placeholder="vous@exemple.fr" value={id} onChange={(e) => setId(e.target.value)} required autoFocus={autoFocus} />
           </>
         ) : (
           <>
             <label className="label" htmlFor="acc-id">E-mail ou pseudo</label>
-            <input className="input" id="acc-id" autoComplete="username" placeholder="vous@exemple.fr ou sophie42" value={id} onChange={(e) => setId(e.target.value)} required autoFocus />
+            <input className="input" id="acc-id" autoComplete="username" placeholder="vous@exemple.fr ou sophie42" value={id} onChange={(e) => setId(e.target.value)} required autoFocus={autoFocus} />
           </>
         )}
       </div>

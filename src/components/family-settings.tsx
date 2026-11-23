@@ -11,6 +11,7 @@ import {
   setEvent,
   setManagedInFamily,
   setMemberRole,
+  addGuestMember,
 } from "@/app/actions/family";
 import { Avatar, type AvatarPerson } from "./avatar";
 import { CopyLink } from "./copy-link";
@@ -44,6 +45,8 @@ export function FamilySettings({
   const [date, setDate] = useState(family.eventDate);
   const [eventName, setEventName] = useState(family.eventName);
   const [resetUrl, setResetUrl] = useState<{ who: string; url: string } | null>(null);
+  const [guestFirst, setGuestFirst] = useState("");
+  const [guestLast, setGuestLast] = useState("");
   const { pending, run } = useAction();
 
   const section = "flex flex-col gap-3 border-t-2 border-dotted border-or pt-5";
@@ -185,6 +188,34 @@ export function FamilySettings({
                   </li>
                 ))}
               </ul>
+              {isAdmin && (
+                <form
+                  className="flex flex-col gap-2 rounded-[14px] p-3"
+                  style={{ background: "#F7F1E3", border: "1.5px dashed #D8C9A8" }}
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const who = guestFirst.trim();
+                    run(() => addGuestMember(family.id, guestFirst, guestLast), `${who} ajouté·e à la famille.`, (r) => {
+                      if (r.ok) {
+                        setGuestFirst("");
+                        setGuestLast("");
+                      }
+                    });
+                  }}
+                >
+                  <span className="label flex items-center gap-1">
+                    Ajouter une personne
+                    <InfoTip align="start">
+                      Sans e-mail ni mot de passe. En ouvrant le lien de la famille, elle touche son nom et retrouve sa liste ; elle pourra créer son compte plus tard.
+                    </InfoTip>
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    <input className="input flex-[2_1_140px]" value={guestFirst} onChange={(e) => setGuestFirst(e.target.value)} placeholder="Prénom" aria-label="Prénom" maxLength={40} required />
+                    <input className="input flex-[2_1_140px]" value={guestLast} onChange={(e) => setGuestLast(e.target.value)} placeholder="Nom (facultatif)" aria-label="Nom (facultatif)" maxLength={40} />
+                    <button className="btn b-primary flex-[1_0_auto]" disabled={pending || !guestFirst.trim()}>Ajouter</button>
+                  </div>
+                </form>
+              )}
               {resetUrl && (
                 <div className="flex flex-col gap-2 rounded-2xl p-4" style={{ background: "#F8EDD2", border: "1px solid #E5CF96" }}>
                   <span className="text-sm font-semibold text-[#4A3810]">

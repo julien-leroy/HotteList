@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { changePassword, confirmEmail, removeEmail, requestEmailVerification, setEmailPref, updateMyName } from "@/app/actions/email";
 import { CodeInput } from "./code-flow";
 import { confirmDialog, useAction } from "./toaster";
 import { InfoTip } from "./info-tip";
 import { AvatarPicker } from "./avatar-picker";
 import type { AvatarPerson } from "./avatar";
+import { AccountUpgrade } from "./account-upgrade";
+import { switchProfile } from "@/app/actions/guest";
 
 type Props = {
   id: string;
@@ -19,6 +21,9 @@ type Props = {
   reminders: boolean;
   mentions: boolean;
   mail: boolean;
+  /** compte HotteList (e-mail confirmé + mot de passe) ; sinon invité : on lui propose d'en créer un */
+  verified: boolean;
+  pendingAccountEmail: string | null;
 };
 
 export function AccountPanel(p: Props) {
@@ -38,14 +43,20 @@ export function AccountPanel(p: Props) {
         <div className={section}>
           <NameForm firstName={p.firstName} lastName={p.lastName} />
         </div>
-        {p.mail && (
-          <div className={section}>
-            <EmailForm {...p} />
-          </div>
+        {p.verified ? (
+          <>
+            {p.mail && (
+              <div className={section}>
+                <EmailForm {...p} />
+              </div>
+            )}
+            <div className={section}>
+              <PasswordForm />
+            </div>
+          </>
+        ) : (
+          <GuestAccount mail={p.mail} pendingEmail={p.pendingAccountEmail} firstName={p.firstName} />
         )}
-        <div className={section}>
-          <PasswordForm />
-        </div>
       </div>
     </section>
   );
@@ -209,5 +220,39 @@ function PasswordForm() {
       </div>
       <button className="btn b-go self-start" disabled={pending}>Changer le mot de passe</button>
     </form>
+  );
+}
+
+/**
+ * Profil d'un invité (entré par le lien, sans e-mail) : créer son compte HotteList sur place,
+ * ou changer de profil (ce n'est pas moi / je suis quelqu'un d'autre de la famille).
+ */
+function GuestAccount({ mail, pendingEmail, firstName }: { mail: boolean; pendingEmail: string | null; firstName: string }) {
+  const [pending, start] = useTransition();
+  return (
+    <div className="flex min-w-0 flex-[2_1_420px] flex-col gap-3.5">
+      <div className="flex flex-col gap-3.5 rounded-[18px] p-5" style={{ background: "#FFF6DC", border: "1px solid #E5CF96" }}>
+        <div className="flex flex-col gap-1">
+          <h3 className="font-display m-0 text-[20px] font-bold">Créer mon compte HotteList</h3>
+          <p className="m-0 text-sm text-gris">
+            {mail
+              ? "Ajoutez votre e-mail et un mot de passe : vous vous connecterez de partout, recevrez les notifications, et pourrez créer vos familles. Vos listes et réservations restent les mêmes."
+              : "Choisissez un identifiant et un mot de passe : vous vous connecterez de partout et pourrez créer vos familles. Vos listes et réservations restent les mêmes."}
+          </p>
+        </div>
+        <AccountUpgrade mail={mail} next="/profil" pendingEmail={pendingEmail} autoFocus={false} />
+      </div>
+      <p className="m-0 flex flex-wrap items-center gap-2 text-sm text-gris">
+        Pas {firstName} ?
+        <button
+          type="button"
+          className="btn b-soft b-sm"
+          disabled={pending}
+          onClick={() => start(() => switchProfile())}
+        >
+          Changer de profil
+        </button>
+      </p>
+    </div>
   );
 }

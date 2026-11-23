@@ -14,9 +14,7 @@ export async function setAvatar(personId: string, avatar: string | null, bg: str
   try {
     const user = await requireUser();
     const mine = personId === user.id;
-    if (mine ? !user.verified : !user.managedIds.includes(personId)) {
-      throw new Error(mine ? "Créez votre compte HotteList pour choisir un avatar." : "Vous ne gérez pas ce compte.");
-    }
+    if (!mine && !user.managedIds.includes(personId)) throw new Error("Vous ne gérez pas ce compte.");
     if (avatar !== null && !isAvatarId(avatar)) throw new Error("Avatar inconnu.");
     if (bg !== null && !isAvatarBg(bg)) throw new Error("Fond inconnu.");
     await db.user.update({

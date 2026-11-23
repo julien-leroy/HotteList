@@ -7,7 +7,7 @@ import { db } from "@/lib/db";
 import { isVerified, requireUser, tokenDigest } from "@/lib/auth";
 import { mailEnabled } from "@/lib/mail";
 import { requireAdmin, requireMember } from "@/lib/queries";
-import { defaultEventDate, parisDay, randomToken, slugify } from "@/lib/utils";
+import { defaultEventDate, parisDay, randomColor, randomToken, slugify } from "@/lib/utils";
 import type { FormState } from "./auth";
 
 export type ActionResult = { ok: true; url?: string; message?: string } | { ok: false; error: string };
@@ -267,6 +267,31 @@ export async function cleanLists(familyId: string): Promise<ActionResult> {
     });
     revalidatePath("/", "layout");
     return { ok: true, message: `${res.count} cadeau${res.count > 1 ? "x" : ""} archivé${res.count > 1 ? "s" : ""}.` };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/**
+ * L'admin ajoute quelqu'un avec juste son prénom (compte invité, sans e-mail ni mot de passe).
+ * La personne le reprend en arrivant par le lien : « Touchez votre nom ».
+ */
+export async function addGuestMember(familyId: string, firstName: string, lastName = ""): Promise<ActionResult> {
+  try {
+    const user = await requireUser();
+    await requireAdmin(user.id, familyId);
+    const first = z.string().trim().min(1, "Indiquez son prénom.").max(40).parse(firstName);
+    const last = z.string().trim().max(40).parse(lastName) || null;
+    const twin = await db.membership.findFirst({
+      where: { familyId, user: { firstName: first, lastName: last } },
+      select: { id: true },
+    });
+    if (twin) throw new Error(`${first} est déjà dans la famille. Ajoutez un nom pour les distinguer.`);
+    await db.user.create({
+      data: { firstName: first, lastName: last, guest: true, avatarColor: randomColor(), memberships: { create: { familyId } } },
+    });
+    revalidatePath("/", "layout");
+    return { ok: true };
   } catch (e) {
     return fail(e);
   }

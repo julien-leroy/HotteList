@@ -178,3 +178,19 @@ export async function switchToLogin(email: string, next?: string) {
   if (email) q.set("email", email);
   redirect(`/?${q.toString()}`);
 }
+
+/**
+ * « Changer de profil » (compte sans e-mail) : on quitte ce profil et on revient sur « Qui êtes-vous ? »
+ * de la dernière famille ouverte, pour toucher un autre nom ou en créer un.
+ */
+export async function switchProfile() {
+  const user = await requireUser();
+  if (user.verified) throw new Error("Un compte HotteList se déconnecte avec « Se déconnecter ».");
+  const last = await db.membership.findFirst({
+    where: { userId: user.id },
+    orderBy: [{ lastSeenAt: { sort: "desc", nulls: "last" } }, { joinedAt: "desc" }],
+    select: { family: { select: { slug: true } } },
+  });
+  await destroySession();
+  redirect(last ? `/f/${last.family.slug}` : "/");
+}
