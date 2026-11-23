@@ -25,6 +25,7 @@ function slim(html: string) {
     // clés d'API publiées par le site dans sa page (Mapbox, Google…) : GitHub refuse de les héberger
     .replace(/\b(sk|pk|tk)\.eyJ[A-Za-z0-9._-]+/g, "$1.CLE-RETIREE")
     .replace(/\bAIza[0-9A-Za-z_-]{30,}/g, "AIza-CLE-RETIREE")
+    .replace(/eyJ[A-Za-z0-9_-]{8,}\.eyJ[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]+)?/g, "JETON-RETIRE")
     .replace(/\s{2,}/g, " ");
 }
 
