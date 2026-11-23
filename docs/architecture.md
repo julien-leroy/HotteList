@@ -1,6 +1,6 @@
 # HotteList — architecture technique (version simplifiée)
 
-_Document de référence. Dernière mise à jour : 23 novembre 2026 (avatars illustrés, mode discret des idées ; 21 novembre : entrée dans une famille sans compte ni mot de passe, comptes non vérifiés gardés un an sur l'appareil ; avant : barre de la famille allégée, plus de défilement horizontal sur téléphone ; cartes avec description, ajout sur téléphone, Secret Santa lancé depuis l'encart ; titres en Damion, favicon, montagnes en entier, ordre des listes, bouton de téléchargement ; avant : export PDF / Excel, Secret Santa)._
+_Document de référence. Dernière mise à jour : 23 novembre 2026 (lecture des liens site par site, illustrations par catégorie, nouveau formulaire d'ajout ; avatars illustrés, mode discret des idées ; 21 novembre : entrée dans une famille sans compte ni mot de passe, comptes non vérifiés gardés un an sur l'appareil ; avant : barre de la famille allégée, plus de défilement horizontal sur téléphone ; cartes avec description, ajout sur téléphone, Secret Santa lancé depuis l'encart ; titres en Damion, favicon, montagnes en entier, ordre des listes, bouton de téléchargement ; avant : export PDF / Excel, Secret Santa)._
 _Développement lancé le 9 novembre 2026. Ajout de souhait et d'idée en popup depuis la v1.1. Code : https://github.com/julien-leroy/HotteList_
 
 ## 1. Décisions prises
@@ -18,7 +18,7 @@ _Développement lancé le 9 novembre 2026. Ajout de souhait et d'idée en popup 
 | Simplicité | **Pas de Docker**, **SQLite** |
 | E-mails | **Facultatifs**, par le SMTP d'Amen (`noreply@julienfluenceur.online`) : connexion par code, mot de passe oublié, confirmation d'adresse, mention dans un commentaire, rappel J-7, tirage du Secret Santa. Jamais envoyés depuis le serveur maison |
 | Mentions | Dans un commentaire, `@Prénom` prévient la personne (notification + e-mail avec le cadeau et le commentaire mis en avant). Le destinataire du cadeau n'est **jamais** mentionnable |
-| Images | **Aucune image stockée sur le serveur** : on enregistre seulement l'adresse de l'image trouvée dans le lien, et le navigateur l'affiche directement depuis le site d'origine |
+| Images | **Aucune image stockée sur le serveur** : on enregistre l'adresse de l'image trouvée dans le lien (affichée directement depuis le site d'origine), ou une **illustration** du site (`illu:<clé>`, 26 catégories : jeu vidéo, plante, voiture…) |
 | Listes | Une liste par famille. Sur le profil, ma liste pour chaque famille ; glisser-déposer pour **déplacer** ou **copier** un souhait vers une autre famille, et pour changer l'ordre |
 | Cadeau à plusieurs | On indique seulement qu'on participe (pas de montant). Les détails se règlent en commentaire |
 | Comptes gérés | Un adulte crée et administre des comptes « en procuration » (ex. ses enfants) et voit tout sur leurs listes |
@@ -57,19 +57,30 @@ Tout le site tient dans un dossier, `/opt/hottelist`. Pour sauvegarder, il suffi
 | Glisser-déposer | dnd-kit | Souris, tactile (appui long), clavier |
 | Polices | @fontsource-variable (Fraunces, Inter, Merienda), @fontsource/damion | Auto-hébergées : aucune requête vers Google. Toutes sous licence libre (OFL) |
 | Export | pdfkit (PDF) et exceljs (Excel) | Hors bundle (`serverExternalPackages`) |
-| Lecture des liens | cheerio + requête HTTP maison | Lit seulement la page HTML (Open Graph, JSON-LD, balises Amazon) |
+| Lecture des liens | cheerio + requête HTTP maison, un adaptateur par site | `src/lib/link-preview/` : JSON-LD, Open Graph, microdonnées, plus un adaptateur pour Amazon, AliExpress, Fnac, Apple, Vinted, Decathlon, Cdiscount, Leboncoin |
+| Illustrations | lucide-react (licence ISC) | Dessins des catégories de cadeaux |
 | Lancement | **systemd** (service Debian, Node via nvm) | Redémarre tout seul |
-| Tests | Vitest | Règles de visibilité, blocage réseau local, lecture des pages produit |
+| Tests | Vitest | Règles de visibilité, blocage réseau local, lecture des pages produit (pages de référence par site), illustrations |
 
 Supprimés : Docker, PostgreSQL, sharp et stockage d'images, Better Auth.
 
-## 4. Images des cadeaux
+## 4. Images des cadeaux et lecture des liens
 
-- Quand on colle un lien, le serveur lit **uniquement la page HTML** de l'article (balises `og:image`, `og:title`, prix si présent, données JSON-LD `Product`) et renvoie l'**adresse** de l'image. Rien n'est téléchargé ni gardé à part cette adresse.
-- La carte affiche l'image directement depuis le site d'origine (`<img referrerpolicy="no-referrer" loading="lazy">`).
-- Si aucune image n'est trouvée, si Amazon bloque la lecture, ou si l'image ne charge plus un jour, la carte affiche une **illustration par défaut** dans la DA.
-- Secours manuel : bouton « Choisir l'image moi-même », qui ouvre un champ « Adresse de l'image ».
-- Sécurité de la lecture des liens : délai de 7 s, 2 Mo maximum, 4 redirections, ports 80/443 seulement, et **blocage des adresses du réseau local vérifié au moment même de la connexion** (y compris après redirection ou résolution DNS piégée). Limite de 30 lectures par 10 min et par utilisateur.
+- Quand on colle un lien, le serveur lit **uniquement la page HTML** et renvoie le titre, l'**adresse** de l'image, le prix et la devise. Rien n'est téléchargé ni gardé à part cette adresse.
+- **Chaîne de lecture** (`src/lib/link-preview/`) : `index.ts` (mémoire, journal) → `fetcher.ts` (requête sécurisée) → `parse.ts` (fusion champ par champ : adaptateur du site, puis JSON-LD, Open Graph, microdonnées, `<title>`, et enfin l'adresse elle-même).
+- **Un adaptateur par site** (`sites/<site>.ts`, 30 à 90 lignes) : domaine reconnu, adresse nettoyée (Amazon → `/dp/ASIN`, paramètres de suivi retirés), en-têtes (AliExpress en euros), sélecteurs propres au site, nettoyage du titre (« … | Vinted »), image à taille raisonnable (Amazon 1000 px, Apple 1200 px), page anti-robot reconnue, titre deviné depuis l'adresse. Sites reconnus : **Amazon, AliExpress, Fnac, Apple, Vinted, Decathlon, Cdiscount, Leboncoin** ; les autres passent par les extracteurs génériques. **Ajouter un site** : copier `sites/fnac.ts`, l'inscrire dans `sites/index.ts`, enregistrer une page de référence.
+- **Sites qui bloquent les robots** (Datadome, Cloudflare… : Fnac, Decathlon et Leboncoin le plus souvent, parfois Amazon) : la page anti-robot est reconnue et ignorée (plus de titre ni d'image de captcha) ; on garde le nom deviné depuis l'adresse quand elle le contient, et le formulaire le dit. AliExpress charge son prix après coup : titre et photo seulement.
+- Réponse : `status` = `complete` (titre, photo, prix), `partial`, `blocked` ou `empty`, plus `siteName`. Résultats gardés en mémoire 24 h (échecs : 1 h), 500 liens au plus. Une ligne `[apercu-lien]` par lecture dans le journal : site, code HTTP, source de chaque champ, durée.
+- **Pages de référence** : `tests/fixtures/sites/<nom>.html` + `<nom>.json` (adresse et résultat attendu), vérifiées par `tests/link-preview-sites.test.ts`. Outil : `npm run lien -- <adresse>` montre ce qui est trouvé et d'où ; `--save <nom>` enregistre la page (allégée) comme référence ; `npm run lien -- --check` relit toutes les adresses de référence et signale les sites qui ne donnent plus titre, photo ou prix (cron hebdomadaire possible).
+- **Illustrations** (`src/lib/gift-illustrations.ts`, dessins dans `src/components/gift-illustration.tsx`) : 26 catégories, enregistrées comme `illu:<clé>` dans `Gift.imageUrl` (validé côté serveur). Sans photo, le formulaire en propose une d'après le titre (« Manette PS5 » → jeu vidéo, « Casque vélo » → vélo).
+- La carte affiche la photo directement depuis le site d'origine (`<img referrerpolicy="no-referrer" loading="lazy">`) ; si elle ne charge plus, le cadeau dessiné par défaut. Les e-mails n'affichent que les vraies photos.
+- Sécurité de la lecture des liens : délai de 7 s, 2 Mo maximum, 5 redirections, ports 80/443 seulement, et **blocage des adresses du réseau local vérifié au moment même de la connexion** (y compris après redirection ou résolution DNS piégée). Limite de 30 lectures par 10 min et par utilisateur.
+
+## 4 bis. Ajouter un souhait
+
+- **Le lien d'abord** : bouton « Coller », lecture dès le collage (ou après une courte pause en tapant), texte autour de l'adresse ignoré. Titre et prix se remplissent sans écraser ce qu'on a tapé ; une phrase dit ce qui a été trouvé (« ✓ Trouvé sur Vinted : titre, photo et prix », ou « Fnac ne nous laisse pas lire sa page… »).
+- **Image** : une vignette avec « Changer », qui ouvre la grille : photo du lien, illustrations (celle devinée d'après le titre en premier, marquée « suggérée »), « Autre image » (adresse à coller).
+- Précisions repliées (« + Ajouter une précision »), bouton « Coup de cœur ». Aperçu de la carte à droite sur ordinateur ; sur téléphone, la vignette en tient lieu et les boutons restent en bas.
 
 ## 5. Comptes
 
@@ -143,7 +154,7 @@ Session        id (empreinte du jeton), userId, expiresAt
 Family         id, name, slug unique avec suffixe aléatoire (ex. famille-leroy-7kq2), createdById, eventName (défaut « Noël »), eventDate, reminderSentFor?, santaMode
 Membership     userId, familyId, role (ADMIN | MEMBRE), nickname?, joinedAt, lastSeenAt?, prevSeenAt?   — unique (userId, familyId)
 Gift           id, familyId, recipientId, createdById, kind (SOUHAIT | IDEE),
-               title, description?, url?, price?, imageUrl?, siteOrigin?, favorite, position,
+               title, description?, url?, price?, imageUrl? (adresse https ou « illu:<clé> »), siteOrigin?, favorite, position,
                takeMode (AUCUN | SEUL | A_PLUSIEURS), contentUpdatedAt, archivedAt?, archiveYear?, archiveEvent?, deletedAt?
 GiftParticipant giftId, userId, createdAt, status (A_ACHETER | ACHETE | EMBALLE — visible par ce participant seul)
 Comment        id, giftId, authorId, text (mentions : @[Libellé](id)), createdAt
@@ -204,11 +215,11 @@ Droits d'écriture vérifiés côté serveur, dans chaque action :
 | `/reinitialiser/[token]` | Choisir un nouveau mot de passe (lien créé par un membre) |
 | `/mot-de-passe-oublie` | Mot de passe oublié par code e-mail |
 | `/connexion-code` | Connexion par code e-mail |
-| `/api/apercu-lien` | Renvoie le titre, l'adresse de l'image et le prix d'un lien collé (connecté uniquement) |
+| `/api/apercu-lien` | Renvoie titre, adresse de l'image, prix, devise, nom du site et statut de lecture d'un lien collé (connecté uniquement) |
 
 ## 11. Points sensibles
 
-1. **Lecture des liens** : délai et taille maximum, blocage du réseau local à la connexion.
+1. **Lecture des liens** : délai et taille maximum, blocage du réseau local à la connexion ; les sites changent leurs pages : `npm run lien -- --check` pour le repérer.
 2. **Réservations simultanées** : mise à jour conditionnelle `takeMode = AUCUN` dans une transaction : une seule réservation passe, l'autre reçoit « Quelqu'un vient de s'en occuper ».
 3. **Souhait modifié après réservation** : « Modifié depuis votre réservation » sur la carte et dans la popup.
 4. **Inscription ouverte** : limite d'inscriptions et d'arrivées d'invités par IP.

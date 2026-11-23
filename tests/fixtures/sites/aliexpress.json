@@ -1,0 +1,2 @@
+{ "url": "https://fr.aliexpress.com/item/1005006123456789.html",
+  "expected": { "title": "Mini projecteur portable 4K WiFi Bluetooth", "imageUrl": "https://ae01.alicdn.com/kf/S1234abcd.jpg", "price": "42,17", "currency": "EUR", "status": "complete" } }

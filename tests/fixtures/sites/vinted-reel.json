@@ -1,0 +1,10 @@
+{
+  "url": "https://www.vinted.fr/items/10793420257-pull-hm",
+  "status": 200,
+  "expected": {
+    "title": "Pull H&M",
+    "imageUrl": "https://images1.vinted.net/t/05_00e9c_ZGPn2gASpSQNgrcgHpe7NZXV/f800/bc9e848f.webp?s=3615cf1fc140f1d9dd82ee2fee2f0e417805ddd7",
+    "price": "4",
+    "status": "complete"
+  }
+}

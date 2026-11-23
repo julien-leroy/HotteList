@@ -1,0 +1,10 @@
+{
+  "url": "https://www.amazon.fr/dp/B09Y2MYL5C",
+  "status": 503,
+  "expected": {
+    "title": null,
+    "imageUrl": null,
+    "price": null,
+    "status": "blocked"
+  }
+}

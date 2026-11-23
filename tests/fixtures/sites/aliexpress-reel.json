@@ -1,0 +1,10 @@
+{
+  "url": "https://fr.aliexpress.com/item/1005006338930024.html",
+  "status": 200,
+  "expected": {
+    "title": "PUAIA-Pantalon de dehors Imprimé pour Homme, Jogging, Fitness, Aadt Fit, Vêtements Solides, Tenue de Document, Streetwear, Automne, Hiver, Nouveau",
+    "imageUrl": "https://ae-pic-a1.aliexpress-media.com/kf/S7807a7a3732b4b23b9ad44b60ba72df2G.png",
+    "price": null,
+    "status": "partial"
+  }
+}

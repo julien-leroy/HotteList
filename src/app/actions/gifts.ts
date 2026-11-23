@@ -7,6 +7,7 @@ import { requireUser, type CurrentUser } from "@/lib/auth";
 import { getMembership, loadGiftForAction, requireMember, viewerOf } from "@/lib/queries";
 import { canAddIdeaFor, canAddWishFor, canEditGift, canInteract } from "@/lib/visibility";
 import { hostnameOf } from "@/lib/utils";
+import { isIllustrationUrl } from "@/lib/gift-illustrations";
 import { displayName } from "@/lib/format";
 import { encodeMentions, mentionIds, mentionLabels, toPlain } from "@/lib/mentions";
 import { mailEnabled, sendMentionEmail } from "@/lib/mail";
@@ -34,7 +35,14 @@ const giftSchema = z.object({
   description: z.string().trim().max(2000).optional().nullable(),
   url: httpUrl.optional().nullable().or(z.literal("")),
   price: z.string().trim().max(30).optional().nullable(),
-  imageUrl: httpUrl.optional().nullable().or(z.literal("")),
+  // adresse d'une image, ou illustration du site (« illu:manette »)
+  imageUrl: z
+    .string()
+    .trim()
+    .max(2000)
+    .refine((v) => v === "" || /^https?:\/\//i.test(v) || isIllustrationUrl(v), "L'adresse de l'image doit commencer par http:// ou https://")
+    .optional()
+    .nullable(),
   favorite: z.boolean().optional(),
 });
 

@@ -1,0 +1,10 @@
+{
+  "url": "https://www.decathlon.fr/p/tente-de-camping-mh100-2-places/_/R-p-301521",
+  "status": 403,
+  "expected": {
+    "title": "Tente de camping mh100 2 places",
+    "imageUrl": null,
+    "price": null,
+    "status": "blocked"
+  }
+}

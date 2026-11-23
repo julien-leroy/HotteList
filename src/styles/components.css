@@ -265,8 +265,91 @@ textarea.input{padding:12px 14px;min-height:84px;resize:vertical;line-height:1.5
 .gf-link { padding: 0; border: 0; background: none; font: 600 13px var(--font-sans); color: var(--color-sapin); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .gf-actions { display: flex; flex-wrap: wrap; gap: 10px; }
 textarea.gf-desc { min-height: 96px; }
+
+/* Champ du lien : icône à gauche, « Coller » ou « effacer » à droite */
+.gf-url { position: relative; }
+.gf-url .input { padding-left: 40px; padding-right: 84px; }
+.gf-url-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--color-gris-clair); pointer-events: none; }
+.gf-url-btn {
+  position: absolute; right: 7px; top: 50%; transform: translateY(-50%);
+  display: inline-grid; place-items: center; min-width: 34px; height: 34px; padding: 0 10px;
+  border: 0; border-radius: 999px; background: var(--color-sable-pale); color: var(--color-encre);
+  font: 600 13px var(--font-sans); cursor: pointer;
+}
+.gf-url-btn:hover { background: var(--color-sable); }
+.gf-url-btn:focus-visible { outline: 2px solid var(--color-encre); outline-offset: 2px; }
+.gf-paste { background: var(--color-sapin-pale); color: var(--color-sapin-texte); }
+.gf-paste:hover { background: #D5E6DA; }
+
+/* Prix : « € » discret dans le champ */
+.gf-price { position: relative; }
+.gf-price .input { padding-right: 30px; }
+.gf-price-unit { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font: 600 15px var(--font-sans); color: var(--color-gris-clair); pointer-events: none; }
+
+/* Ce qu'a donné la lecture du lien */
+.gf-hint { font-size: 12.5px; line-height: 1.45; color: var(--color-gris-clair); }
+.gf-note { display: inline-flex; align-items: center; gap: 8px; align-self: flex-start; padding: 6px 11px; border-radius: 10px; font: 600 12.5px/1.4 var(--font-sans); }
+.gf-note-ok { background: var(--color-sapin-pale); color: var(--color-sapin-texte); }
+.gf-note-wait { background: var(--color-ivoire); color: var(--color-gris); }
+.gf-note-soft { background: #F8EDD2; color: #6E500F; }
+.gf-note-warn { background: #F8EDD2; border: 1px solid #E5CF96; color: #6E500F; font-size: 14px; padding: 10px 14px; border-radius: 12px; }
+.gf-spin { width: 13px; height: 13px; flex: none; border-radius: 50%; border: 2px solid var(--color-sable); border-top-color: var(--color-rouge); animation: santa-spin .8s linear infinite; }
+
+/* Champs qui attendent la lecture du lien */
+.gf-shimmer { background-image: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, .7) 50%, transparent 70%) !important; background-size: 220% 100% !important; animation: gf-shimmer 1.1s linear infinite; }
+@keyframes gf-shimmer { from { background-position: 120% 0; } to { background-position: -120% 0; } }
+
+/* Image : la vignette choisie, puis la grille des choix */
+.gf-image {
+  display: flex; align-items: center; gap: 12px; width: 100%; padding: 8px 12px 8px 8px;
+  border: 1.5px solid #D8C9A8; border-radius: 14px; background: var(--color-papier); color: var(--color-encre);
+  font: inherit; cursor: pointer; transition: border-color .15s, background-color .15s;
+}
+.gf-image:hover { border-color: #B9A982; background: var(--color-ivoire); }
+.gf-image:focus-visible { outline: 2px solid var(--color-rouge); outline-offset: 1px; }
+.gf-image[aria-expanded="true"] { border-color: var(--color-encre); }
+.gf-thumb.ph { width: 56px; height: 56px; aspect-ratio: 1; flex: none; border-radius: 10px; }
+.gf-change { flex: none; padding: 7px 13px; border-radius: 999px; background: var(--color-sable-pale); font: 600 13px var(--font-sans); }
+.gf-pick {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 8px;
+  max-height: 272px; overflow-y: auto; padding: 10px; border-radius: 14px;
+  background: var(--color-ivoire); border: 1px solid var(--color-sable);
+  overscroll-behavior: contain; animation: tip-in .15s ease-out;
+}
+.gf-tile {
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 5px 4px 6px;
+  border: 0; border-radius: 12px; background: transparent; color: var(--color-encre); cursor: pointer; font: inherit;
+}
+.gf-tile:hover { background: var(--color-sable-pale); }
+.gf-tile:focus-visible { outline: 2px solid var(--color-encre); outline-offset: 1px; }
+.gf-tile-ph.ph { width: 56px; height: 56px; aspect-ratio: 1; border-radius: 12px; transition: transform .15s; }
+.gf-tile:hover .gf-tile-ph { transform: translateY(-1px) scale(1.04); }
+.gf-tile[aria-pressed="true"] .gf-tile-ph { box-shadow: 0 0 0 2.5px var(--color-papier), 0 0 0 5px var(--color-rouge); }
+.gf-tile-label { max-width: 100%; font: 600 11.5px/1.2 var(--font-sans); text-align: center; overflow-wrap: normal; hyphens: manual; }
+.gf-tile-hint { position: absolute; top: 0; right: 2px; padding: 1px 6px; border-radius: 999px; background: var(--color-or-clair); color: #5A1018; font: 700 9.5px/1.5 var(--font-sans); letter-spacing: .02em; }
+
+/* Précisions repliées, coup de cœur */
+.gf-more { align-self: flex-start; display: inline-flex; align-items: baseline; gap: 6px; padding: 4px 0; border: 0; background: none; font: 600 14px var(--font-sans); color: var(--color-sapin-texte); cursor: pointer; }
+.gf-more > span[aria-hidden] { font-size: 17px; line-height: 1; }
+.gf-more:hover { text-decoration: underline; text-underline-offset: 3px; }
+.gf-fav {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 38px; padding: 0 14px;
+  border: 1.5px solid var(--color-sable-fonce); border-radius: 999px; background: transparent;
+  font: 600 14px var(--font-sans); color: var(--color-gris); cursor: pointer; transition: all .15s;
+}
+.gf-fav svg { color: var(--color-sable-fonce); transition: transform .2s; }
+.gf-fav:hover { border-color: var(--color-or); }
+.gf-fav[aria-pressed="true"] { background: #FFF6D6; border-color: var(--color-or); color: #6E500F; }
+.gf-fav[aria-pressed="true"] svg { color: var(--color-or); transform: scale(1.15) rotate(-8deg); }
+
+@media (prefers-reduced-motion: reduce) {
+  .gf-shimmer, .gf-spin { animation: none; }
+}
+
 @media (max-width: 640px) {
   textarea.gf-desc { min-height: 64px; }
+  .gf-pick { grid-template-columns: repeat(4, 1fr); max-height: 236px; }
+  .gf-hint { display: none; }
   /* Sur téléphone, les boutons restent collés en bas de la popup : pas besoin de faire défiler */
   .add-modal .gf-actions {
     position: sticky;

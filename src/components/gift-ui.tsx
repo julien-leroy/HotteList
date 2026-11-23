@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import type { VisibleGift } from "@/lib/visibility";
+import { illustrationOf } from "@/lib/gift-illustrations";
 import { IconGift, IconLink } from "./icons";
+import { GiftIllustration } from "./gift-illustration";
 
 const TINTS = [
   { bg: "#F6E7C1", ink: "#7A5410" },
@@ -32,7 +34,10 @@ export function statusOf(g: VisibleGift): Status {
   return { kind: "GROUP", mine: s.iParticipate, people: s.participants.map((p) => p.firstName).join(", ") };
 }
 
-/** Image externe affichée directement depuis le site d'origine, avec illustration de secours. */
+/**
+ * Image du cadeau : photo affichée directement depuis le site d'origine, illustration choisie
+ * (« illu:… »), ou cadeau dessiné par défaut si rien ou si la photo ne charge plus.
+ */
 export function GiftVisual({
   gift,
   iconSize = 88,
@@ -49,6 +54,15 @@ export function GiftVisual({
   children?: React.ReactNode;
 }) {
   const [broken, setBroken] = useState(false);
+  const illu = illustrationOf(gift.imageUrl);
+  if (illu) {
+    return (
+      <span className={`${className} dots`} style={{ ...style, background: illu.tint.bg }}>
+        <GiftIllustration name={illu.key} size={iconSize} color={illu.tint.ink} className="ill" />
+        {children}
+      </span>
+    );
+  }
   const tint = tintFor(gift.id);
   const showImg = gift.imageUrl && !broken;
   return (

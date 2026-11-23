@@ -1,0 +1,10 @@
+{
+  "url": "https://www.apple.com/fr/shop/buy-iphone/iphone-16",
+  "status": 200,
+  "expected": {
+    "title": "iPhone 16",
+    "imageUrl": "https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/iphone-16-finish-select-202409-6-1inch_GEO_EMEA?wid=1200&hei=675&fmt=jpeg&qlt=90&.v=1724710494350",
+    "price": "1019,00",
+    "status": "complete"
+  }
+}

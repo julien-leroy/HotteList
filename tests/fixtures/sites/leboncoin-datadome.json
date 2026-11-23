@@ -1,0 +1,10 @@
+{
+  "url": "https://www.leboncoin.fr/ad/velos/2750123456",
+  "status": 403,
+  "expected": {
+    "title": null,
+    "imageUrl": null,
+    "price": null,
+    "status": "blocked"
+  }
+}

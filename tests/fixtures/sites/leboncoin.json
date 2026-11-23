@@ -1,0 +1,2 @@
+{ "url": "https://www.leboncoin.fr/ad/velos/2750123456",
+  "expected": { "title": "Vélo enfant 16 pouces", "imageUrl": "https://img.leboncoin.fr/api/v1/lbcpb1/images/ab/cd/ef/abcdef.jpg?rule=ad-large", "price": "45", "currency": "EUR", "status": "complete" } }

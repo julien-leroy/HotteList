@@ -1,0 +1,10 @@
+{
+  "url": "https://www.fnac.com/a17220436/Sony-WH-1000XM5",
+  "status": 403,
+  "expected": {
+    "title": "Sony WH 1000XM5",
+    "imageUrl": null,
+    "price": null,
+    "status": "blocked"
+  }
+}
