@@ -1,6 +1,6 @@
 # HotteList — architecture technique (version simplifiée)
 
-_Document de référence. Dernière mise à jour : 16 novembre 2026 (barre de la famille allégée, plus de défilement horizontal sur téléphone ; cartes avec description, ajout sur téléphone, Secret Santa lancé depuis l'encart ; titres en Damion, favicon, montagnes en entier, ordre des listes, bouton de téléchargement ; avant : export PDF / Excel, Secret Santa)._
+_Document de référence. Dernière mise à jour : 23 novembre 2026 (avatars illustrés, mode discret des idées ; 21 novembre : entrée dans une famille sans compte ni mot de passe, comptes non vérifiés gardés un an sur l'appareil ; avant : barre de la famille allégée, plus de défilement horizontal sur téléphone ; cartes avec description, ajout sur téléphone, Secret Santa lancé depuis l'encart ; titres en Damion, favicon, montagnes en entier, ordre des listes, bouton de téléchargement ; avant : export PDF / Excel, Secret Santa)._
 _Développement lancé le 9 novembre 2026. Ajout de souhait et d'idée en popup depuis la v1.1. Code : https://github.com/julien-leroy/HotteList_
 
 ## 1. Décisions prises
@@ -9,7 +9,7 @@ _Développement lancé le 9 novembre 2026. Ajout de souhait et d'idée en popup 
 |---|---|
 | Nom | **HotteList** |
 | Public | Amis et familles de Julien (petit volume) |
-| Inscription | **Ouverte** : n'importe qui arrivant sur le site peut créer un compte puis créer ses propres familles |
+| Inscription | **Ouverte** : n'importe qui peut créer un compte (e-mail confirmé) puis créer ses propres familles. **Par le lien d'une famille, ni compte ni mot de passe** : on touche son nom ou on donne son prénom (compte non vérifié, retrouvé automatiquement sur l'appareil) |
 | Hébergement | Serveur Debian perso à la maison : x86, 8 Go de RAM, IP fixe. Passage sur VPS possible plus tard |
 | Node.js | **24**, installé avec nvm (`.nvmrc` dans le dépôt) |
 | Adresse | `hottelist.julienfluenceur.online` (DNS hors Cloudflare : un simple enregistrement A suffit) |
@@ -27,6 +27,7 @@ _Développement lancé le 9 novembre 2026. Ajout de souhait et d'idée en popup 
 | DA | Validée le 12 novembre 2026 (détail : document « da-hottelist » du projet). En-têtes pointillés avec guirlande et montagnes, sur deux fonds : **vert sapin** par défaut (accueil, connexion, mes familles, profil, courses) et **bordeaux** en second pour l'univers d'une famille (page famille, années passées, invitation), via `tone` de `FestiveHeader` et `AuthLayout`. Sac `#CF2B35`, or `#FFCB2E`, encre `#1F3A2C`, crème `#F7F1E3`. **Damion** (manuscrite, licence libre OFL, depuis le 14 novembre à la place de Santa Natale dont la version gratuite remplaçait chiffres et ponctuation par un tampon) pour « Hotte » et les titres courts qui tiennent sur une ligne (`HeroTitle` et `listTitleProps` de `src/lib/script-metrics.ts` décident ; sinon Merienda), **Merienda** gras (manuscrite lisible) pour les autres titres, **Fraunces** italique seulement pour le « List » du logo, **Inter** pour le reste |
 | Ma liste de courses | Page `/courses` : tout ce que j'offre, regroupé par destinataire, avec ma part estimée (cadeau à plusieurs divisé), le reste à acheter et un **statut privé** « à acheter / acheté / emballé ». Imprimable |
 | Secret Santa | **Option de famille** (`Family.santaMode`) : case « Activer le Secret Santa » à la création, ou dans les Réglages (admin). L'activer ne tire rien : elle fait apparaître l'encart à droite de la page famille (absent sinon), d'où un admin **lance le tirage** entre tous les membres qui ont leur compte (3 minimum). Chacun reçoit une notification et un **e-mail** (sans le nom, si adresse confirmée et rappels activés), puis clique sur **« Découvrir »** : animation où les prénoms défilent puis s'arrêtent sur la personne tirée (`revealedAt`). Encart sur le côté de la page famille (en haut sur téléphone) : « Vous offrez un cadeau à … », budget, « Revoir le tirage ». La liste de la personne tirée passe **en premier**, sur fond doré. Réglages admin : budget, **Relancer le tirage** (tout le monde redécouvre), compteur « X sur Y l'ont découvert ». Chacun ne voit que son tirage, admin compris ; le nom ne quitte le serveur qu'au clic sur « Découvrir ». Couper le mode annule le tirage |
+| Avatars | **64 personnages de Noël** (`public/avatars/01.webp` … `64.webp`, fond transparent, 244 px) posés sur un **fond de cercle** : 8 couleurs du site, 6 couleurs fantaisie, 7 dégradés (`src/lib/avatars.ts`). Choisis dans **Mon profil → Mon compte → Mon avatar** (popup `src/components/avatar-picker.tsx`), et pour un compte géré dans sa fiche. Sans avatar : initiales sur la couleur du compte, comme avant. Affichés partout via `Avatar` ; dans les **commentaires**, le personnage seul, sans fond (`bare`) |
 | Logo et favicon | La hotte : sac de toile rouge, cadeau doré avec ombre floue, lien vert noué d'or. Dessin source : `src/components/brand.tsx` (`HotteMark`, `Wordmark`, `Logo`). Sur crème et sapin, la hotte classique ; sur bordeaux, couleurs inversées (`HotteMark inverse` : sac sapin `#2A6B4B`, lien rouge vif `#FF4A55`). Favicon `src/app/icon.svg` + `src/app/favicon.ico` (16/32/48) : le cadeau du logo au trait doré épais, penché, sur carré bordeaux ; icônes d'application : le cadeau sur un carré bordeaux, logos de `public/brand/` (texte en tracés), image de partage `src/app/opengraph-image.png`, logo des e-mails `public/brand/hottelist-logo-blanc.png` |
 
 ## 2. Vue d'ensemble
@@ -74,7 +75,18 @@ Supprimés : Docker, PostgreSQL, sharp et stockage d'images, Better Auth.
 
 - **Inscription ouverte, validée par code** : prénom, nom facultatif, adresse e-mail et mot de passe de 8 caractères minimum. Un code à 6 chiffres (10 min, 5 essais) est envoyé à l'adresse ; le compte n'existe vraiment (identifiant = e-mail, adresse vérifiée) qu'après saisie du code. Ensuite on se connecte avec e-mail + mot de passe ; le code ne resert que pour « Mot de passe oublié » ou « Recevoir un code par e-mail ». Sans SMTP configuré, on revient à l'ancienne inscription (identifiant e-mail ou pseudo, sans vérification).
 - **Adresse reprise d'un écran à l'autre** : l'adresse tapée dans Connexion ou Inscription est transmise (`?email=`) aux pages Code par e-mail, Mot de passe oublié et Inscription.
-- **Rejoindre une famille** : uniquement via son lien. Un visiteur qui s'inscrit depuis ce lien rejoint la famille directement. S'il se connecte, il confirme d'un clic, en cochant au passage ses comptes gérés à ajouter.
+- **Deux niveaux de compte** (`isVerified`, `src/lib/auth.ts`) :
+  - **compte HotteList** : adresse e-mail confirmée + mot de passe (sans SMTP : un mot de passe). Seul lui peut **créer une famille**, **être admin**, ouvrir **Mon profil** et créer des comptes gérés ;
+  - **compte non vérifié** : tous les autres (comptes invités `User.guest` créés avec un prénom, anciens comptes sans e-mail confirmé). **Aucun mot de passe** : on compte sur le fait que seuls les membres de la famille ont le lien. Il voit la famille, ajoute ses souhaits, réserve, participe, commente, comme tout membre.
+- **Rester connecté** : un compte non vérifié garde sa session **un an** sur l'appareil (cookie httpOnly) ; en revenant sur le site, on retrouve directement son compte. L'appareil retient aussi les familles ouvertes (localStorage `hl-familles`, `src/components/recent-families.tsx`).
+- **Rejoindre une famille ou y revenir** : uniquement via son lien. Un visiteur non connecté (nouvel appareil, cookies effacés, déconnexion) voit « Qui êtes-vous ? » (`src/components/guest-entry.tsx`) :
+  - **« Touchez votre nom »** : tous les membres sans compte HotteList (sauf comptes gérés), repris **d'un clic, sans mot de passe**. Un compte HotteList n'apparaît jamais : il se connecte avec son e-mail ;
+  - **« Je suis nouveau »** : prénom, nom facultatif → compte invité, membre de la famille, connecté. Limite : 10 / h par IP ;
+  - **« Se connecter avec mon e-mail »**. Connecté mais pas membre : il confirme d'un clic, en cochant au passage ses comptes gérés à ajouter.
+- **Page de connexion** : si l'appareil a déjà ouvert des familles, un encart « Pas de compte HotteList ? Touchez votre nom dans votre famille » mène à leur page « Qui êtes-vous ? ».
+- **Créer son compte HotteList** quand on veut (`/creer-mon-compte`) : bandeau masquable sur la page famille, « Créer mon compte » dans le menu de l'avatar, lien **« Me notifier par e-mail »** en bas des notifications, carte « Créer une famille », ou en ouvrant Mon profil (redirection). Adresse + mot de passe → code `ACCOUNT` (le mot de passe haché attend dans `EmailCode.passwordHash`) → compte HotteList, avec ses listes, réservations et familles ; il disparaît de « Touchez votre nom ». Si l'adresse a déjà un compte : « Me connecter à ce compte » (le compte non vérifié reste dans la famille, à retirer par l'admin s'il fait doublon). Sans SMTP : identifiant + mot de passe, tout de suite.
+- **Déconnexion sans compte HotteList** : confirmation qui rappelle qu'on revient par le lien de la famille en touchant son nom.
+- **Choix assumé** : quiconque a le lien peut entrer « comme » un membre sans compte HotteList. Créer son compte le protège.
 - **Adresse e-mail (facultative)** : ajoutée dans « Mon profil → Mon compte » et enregistrée **seulement une fois confirmée** par un code. Tant qu'elle n'est pas confirmée, elle n'est pas réservée : personne ne peut bloquer l'adresse de quelqu'un d'autre. Une adresse confirmée sert aussi d'identifiant de connexion.
 - **Codes par e-mail** : 6 chiffres, valables 10 minutes, 5 essais, à usage unique (un nouveau code annule le précédent), seule l'empreinte HMAC est stockée. Limites : 3 codes / 15 min par adresse, 10 / h par IP. Pour la connexion par code et le mot de passe oublié, la réponse est toujours la même, que l'adresse ait un compte ou non.
 - **Connexion par code** (`/connexion-code`) : en option, à côté du mot de passe, jamais obligatoire.
@@ -126,7 +138,7 @@ Supprimés : Docker, PostgreSQL, sharp et stockage d'images, Better Auth.
 Les noms dans le code sont en anglais (`prisma/schema.prisma`).
 
 ```
-User           id, firstName, lastName?, login? (unique, vide pour un compte géré), passwordHash?, avatarColor, managedById?, email? (unique), emailVerifiedAt?, emailReminders, emailMentions
+User           id, firstName, lastName?, login? (unique, vide pour un compte géré ou invité), passwordHash?, avatarColor, avatar? (« 07 »), avatarBg? (clé du fond), guest, managedById?, email? (unique), emailVerifiedAt?, emailReminders, emailMentions
 Session        id (empreinte du jeton), userId, expiresAt
 Family         id, name, slug unique avec suffixe aléatoire (ex. famille-leroy-7kq2), createdById, eventName (défaut « Noël »), eventDate, reminderSentFor?, santaMode
 Membership     userId, familyId, role (ADMIN | MEMBRE), nickname?, joinedAt, lastSeenAt?, prevSeenAt?   — unique (userId, familyId)
@@ -136,7 +148,7 @@ Gift           id, familyId, recipientId, createdById, kind (SOUHAIT | IDEE),
 GiftParticipant giftId, userId, createdAt, status (A_ACHETER | ACHETE | EMBALLE — visible par ce participant seul)
 Comment        id, giftId, authorId, text (mentions : @[Libellé](id)), createdAt
 PasswordResetToken id (empreinte), userId, expiresAt, usedAt?
-EmailCode      id, userId, email, purpose (VERIFY | LOGIN | RESET | SIGNUP), codeHash, attempts, expiresAt, usedAt?
+EmailCode      id, userId, email, purpose (VERIFY | LOGIN | RESET | SIGNUP | ACCOUNT), codeHash, passwordHash? (ACCOUNT), attempts, expiresAt, usedAt?
 Notification   id, userId, text, link?, readAt?
 SecretSanta    id, familyId, createdById, budget?, createdAt
 SecretSantaAssignment santaId, giverId, receiverId, revealedAt?     — un seul cercle : personne ne se tire soi-même
@@ -151,6 +163,8 @@ Toutes les lectures passent par `giftsVisibleTo(viewer, gifts)` (`src/lib/visibi
 - **Je suis le destinataire** : je ne vois que mes SOUHAITS, sans participants, sans statut, sans commentaires. Les IDÉES ajoutées pour moi n'existent pas pour moi.
 - **Je suis le gestionnaire du destinataire** : je vois tout, y compris les idées des autres, et je peux créer, modifier, supprimer, déplacer et copier ses SOUHAITS.
 - **Autre membre** : je vois tout ; je peux réserver, participer, commenter et ajouter des idées.
+- **Mode discret** (case dans la popup « Une idée pour … », **cochée par défaut**) : cochée, c'est une IDÉE, cachée au destinataire. Décochée, elle est enregistrée comme un **SOUHAIT** de sa liste : visible de tous, destinataire compris, sans auteur affiché, comme s'il l'avait écrit ; elle se modifie ensuite comme ses souhaits (destinataire ou gestionnaire). `createdById` garde l'auteur réel.
+- **Idées discrètes bien visibles** pour les autres : carte à bordure pointillée bleu nuit sur fond bleuté, badge « Discret · Prénom » avec un œil barré ; en mode liste, liseré bleu nuit et pastille « Discret ».
 
 Droits d'écriture vérifiés côté serveur, dans chaque action :
 - Réserver, participer, commenter : interdit sur un cadeau dont je suis le destinataire.
@@ -162,7 +176,8 @@ Droits d'écriture vérifiés côté serveur, dans chaque action :
 - Statut d'achat : seulement le participant lui-même, et lui seul le voit.
 - Secret Santa (activer, lancer, refaire, couper) : admin. Chaque participant ne reçoit que son propre tirage.
 - **Pseudo dans la famille** : chaque membre peut changer le nom sous lequel n'importe quel membre apparaît dans cette famille (clic sur le titre de sa liste, ex. « Dominique » → « Maman ») ; vide = retour au prénom. Le pseudo sert partout dans la famille : titres, puces, réservations, commentaires, @mentions, notifications, tirage au sort, archives. Le vrai prénom reste affiché en petit.
-- Nettoyer les listes, changer le titre ou la date de l'événement, renommer la famille (aussi d'un clic sur le nom en haut de la page), régénérer le lien, nommer ou retirer un admin : admin de la famille. Une famille garde toujours au moins un admin.
+- Nettoyer les listes, changer le titre ou la date de l'événement, renommer la famille (aussi d'un clic sur le nom en haut de la page), régénérer le lien, nommer ou retirer un admin : admin de la famille. Une famille garde toujours au moins un admin. **Seul un compte complet peut être nommé admin** (le bouton n'apparaît pas pour les autres ; vérifié côté serveur). Dans « Membres », un membre sans compte HotteList est marqué « Sans compte » et n'a pas de bouton « Mot de passe oublié ».
+- Créer une famille : compte complet (sinon la carte « Créer une famille » propose de créer son compte ou de confirmer son e-mail).
 
 ## 9. Profil : déplacer ou copier un souhait
 
@@ -178,11 +193,12 @@ Droits d'écriture vérifiés côté serveur, dans chaque action :
 |---|---|
 | `/` | Accueil et connexion |
 | `/inscription` | Création de compte |
+| `/creer-mon-compte` | Un invité crée son compte (`?next=`, `?pour=notifications`) |
 | `/familles` | Mes familles, création d'une famille |
 | `/profil` | Mes listes par famille (colonnes ou onglets), comptes gérés, Mon compte |
 | `/courses` | Ma liste de courses |
 | `/f/[slug]/archives` | Années passées |
-| `/f/[slug]` | Page famille avec tous les souhaits ; c'est aussi le lien d'invitation |
+| `/f/[slug]` | Page famille avec tous les souhaits ; c'est aussi le lien d'invitation (« Qui êtes-vous ? » pour un visiteur) |
 | `/f/[slug]?cadeau=ID` | Popup d'un cadeau |
 | `/f/[slug]/export?format=pdf\|xlsx` | Téléchargement de toutes les listes de la famille (membres uniquement) |
 | `/reinitialiser/[token]` | Choisir un nouveau mot de passe (lien créé par un membre) |
@@ -195,7 +211,7 @@ Droits d'écriture vérifiés côté serveur, dans chaque action :
 1. **Lecture des liens** : délai et taille maximum, blocage du réseau local à la connexion.
 2. **Réservations simultanées** : mise à jour conditionnelle `takeMode = AUCUN` dans une transaction : une seule réservation passe, l'autre reçoit « Quelqu'un vient de s'en occuper ».
 3. **Souhait modifié après réservation** : « Modifié depuis votre réservation » sur la carte et dans la popup.
-4. **Inscription ouverte** : limite d'inscriptions par IP.
+4. **Inscription ouverte** : limite d'inscriptions et d'arrivées d'invités par IP.
 5. **Sauvegardes** : `deploy/backup.sh` (cron quotidien, `sqlite3 .backup`, 30 jours), lancé aussi avant chaque mise à jour.
 
 ## 12. Déploiement

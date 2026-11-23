@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { requireUser } from "@/lib/auth";
+import { requireAccount } from "@/lib/auth";
 import { loadVisibleGifts, personSelect } from "@/lib/queries";
 import { FestiveHeader, HeroTitle } from "@/components/festive";
 import { ProfileBoard, type Column } from "@/components/profile-board";
@@ -10,7 +10,7 @@ import { mailEnabled } from "@/lib/mail";
 export const metadata = { title: "Mon profil" };
 
 export default async function Profil({ searchParams }: { searchParams: Promise<{ pour?: string }> }) {
-  const user = await requireUser("/profil");
+  const user = await requireAccount("/profil");
   const { pour } = await searchParams;
   const personId = pour && user.managedIds.includes(pour) ? pour : user.id;
 
@@ -30,7 +30,7 @@ export default async function Profil({ searchParams }: { searchParams: Promise<{
     })),
   );
 
-  const person = personId === user.id ? { id: user.id, firstName: user.firstName, lastName: user.lastName, avatarColor: user.avatarColor } : managed.find((m) => m.id === personId)!;
+  const person = personId === user.id ? { id: user.id, firstName: user.firstName, lastName: user.lastName, avatarColor: user.avatarColor, avatar: user.avatar, avatarBg: user.avatarBg } : managed.find((m) => m.id === personId)!;
   const managedFamilies = Object.fromEntries(
     await Promise.all(
       managed.map(async (m) => [m.id, (await db.membership.findMany({ where: { userId: m.id }, select: { familyId: true } })).map((x) => x.familyId)] as const),
@@ -46,6 +46,8 @@ export default async function Profil({ searchParams }: { searchParams: Promise<{
     }),
   ]);
   const account = {
+    id: user.id,
+    person: { firstName: user.firstName, lastName: user.lastName, avatarColor: user.avatarColor, avatar: user.avatar, avatarBg: user.avatarBg },
     firstName: user.firstName,
     lastName: user.lastName,
     login: user.login,
@@ -65,7 +67,7 @@ export default async function Profil({ searchParams }: { searchParams: Promise<{
       </FestiveHeader>
       <main className="mx-auto flex max-w-[1200px] flex-col gap-6 px-6 pt-7 pb-24">
         <ManagedPanel
-          me={{ id: user.id, firstName: user.firstName, lastName: user.lastName, avatarColor: user.avatarColor }}
+          me={{ id: user.id, firstName: user.firstName, lastName: user.lastName, avatarColor: user.avatarColor, avatar: user.avatar, avatarBg: user.avatarBg }}
           managed={managed}
           currentId={personId}
           families={myFamilies.map((m) => ({ id: m.family.id, name: m.family.name }))}

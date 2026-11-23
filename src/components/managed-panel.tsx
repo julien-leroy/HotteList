@@ -7,6 +7,7 @@ import { AVATAR_COLORS } from "@/lib/colors";
 import { createManaged, deleteManaged, giveAccess, updateManaged } from "@/app/actions/managed";
 import { setManagedInFamily } from "@/app/actions/family";
 import { Avatar } from "./avatar";
+import { AvatarPicker } from "./avatar-picker";
 import { IconPlus } from "./icons";
 import { confirmDialog, useAction } from "./toaster";
 import { InfoTip } from "./info-tip";
@@ -143,11 +144,12 @@ function EditManaged({ person, families, inFamilies, onDeleted }: { person: Pers
   return (
     <div className="flex flex-wrap gap-6 rounded-2xl bg-papier p-5">
       <div className="flex min-w-0 flex-[1_1_300px] flex-col gap-3.5">
+        <AvatarPicker personId={person.id} person={person} label={`Avatar de ${person.firstName}`} />
         <div className="flex flex-col gap-1.5">
           <label className="label" htmlFor="em-name">Prénom</label>
           <input className="input" id="em-name" value={name} onChange={(e) => setName(e.target.value)} maxLength={40} />
         </div>
-        <Swatches value={color} onChange={setColor} />
+        {!person.avatar && <Swatches value={color} onChange={setColor} />}
         <div className="flex flex-wrap gap-2.5">
           <button className="btn b-go" type="button" disabled={pending} onClick={() => run(() => updateManaged(person.id, name, color), "Profil enregistré.")}>
             Enregistrer

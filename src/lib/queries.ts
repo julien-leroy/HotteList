@@ -1,10 +1,11 @@
 import "server-only";
 import { notFound } from "next/navigation";
 import { db } from "./db";
+import { isVerified } from "./auth";
 import type { CurrentUser } from "./auth";
 import { giftsVisibleTo, type Viewer } from "./visibility";
 
-export const personSelect = { id: true, firstName: true, lastName: true, avatarColor: true } as const;
+export const personSelect = { id: true, firstName: true, lastName: true, avatarColor: true, avatar: true, avatarBg: true } as const;
 
 export const giftInclude = {
   createdBy: { select: personSelect },
@@ -71,4 +72,26 @@ export async function loadGiftForAction(user: CurrentUser, giftId: string) {
   if (!gift || gift.archivedAt || gift.deletedAt) throw new Error("Ce cadeau n'existe plus.");
   await requireMember(user.id, gift.familyId);
   return gift;
+}
+
+/**
+ * Membres qu'un visiteur arrivant par le lien peut reprendre d'un clic (« C'est moi ») :
+ * tous ceux qui n'ont pas de vrai compte HotteList (adresse confirmée), sauf les comptes gérés.
+ */
+export async function claimableMembers(familyId: string) {
+  const rows = await db.membership.findMany({
+    where: { familyId, user: { managedById: null } },
+    include: { user: { select: { id: true, firstName: true, lastName: true, avatarColor: true, avatar: true, avatarBg: true, guest: true, managedById: true, emailVerifiedAt: true, passwordHash: true } } },
+    orderBy: { joinedAt: "asc" },
+  });
+  return rows
+    .filter((m) => !isVerified(m.user))
+    .map((m) => ({
+      id: m.user.id,
+      firstName: m.nickname ?? m.user.firstName,
+      lastName: m.nickname ? null : m.user.lastName,
+      avatarColor: m.user.avatarColor,
+      avatar: m.user.avatar,
+      avatarBg: m.user.avatarBg,
+    }));
 }

@@ -19,6 +19,8 @@ textarea.input{padding:12px 14px;min-height:84px;resize:vertical;line-height:1.5
 .opt{font-weight:400;color:var(--color-gris-clair)}
 
 .av{display:inline-flex;align-items:center;justify-content:center;flex:none;border-radius:50%;font:700 14px var(--font-sans);color:var(--color-ivoire);box-sizing:border-box}
+.av-img{overflow:hidden;align-items:flex-end}
+.av-img img{display:block;width:100%;height:100%;object-fit:contain;user-select:none}
 .chip{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 14px 0 6px;border-radius:999px;background:var(--color-ivoire);border:1px solid var(--color-sable);color:var(--color-encre);text-decoration:none;font:600 14px var(--font-sans);white-space:nowrap}
 .chip:hover{border-color:var(--color-rouge);color:var(--color-encre)}
 .seg{display:inline-flex;padding:3px;border-radius:999px;border:1.5px solid var(--color-sable-fonce);gap:2px}
@@ -37,6 +39,11 @@ textarea.input{padding:12px 14px;min-height:84px;resize:vertical;line-height:1.5
 .ph img.photo{width:100%;height:100%;object-fit:contain;background:#fff}
 .src{position:absolute;left:10px;top:10px;z-index:1;display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:999px;background:rgba(255,253,247,.92);font:600 12px var(--font-sans);color:#4A4A3A}
 .idea{position:absolute;right:10px;top:10px;z-index:1;display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:999px;background:var(--color-encre);color:var(--color-ivoire);font:600 12px var(--font-sans)}
+/* Idées discrètes (cachées au destinataire) : bordure pointillée bleu nuit + badge « Discret » */
+.idea-discret{background:#233656;color:#F2F5FF}
+.pill.idea-discret{display:inline-flex;align-items:center;border-radius:999px;font-weight:700}
+.card.discret{border:2px dashed #5B6E9A;background:#F6F7FC}
+.row.discret{box-shadow:inset 4px 0 0 #5B6E9A;background:#F6F7FC}
 .band{position:absolute;left:0;right:0;bottom:0;z-index:1;padding:8px 12px;font:700 13px var(--font-sans);border-top:2px solid var(--color-or)}
 .tag{display:inline-flex;align-items:center;gap:6px;padding:3px 10px 3px 8px;border-radius:6px 999px 999px 6px;background:var(--color-or-pale);color:#5C4214;font:700 13px var(--font-sans);white-space:nowrap}
 .tag::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--color-papier);box-shadow:0 0 0 1.5px #C9A04A}

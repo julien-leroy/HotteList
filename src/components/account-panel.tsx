@@ -5,8 +5,12 @@ import { changePassword, confirmEmail, removeEmail, requestEmailVerification, se
 import { CodeInput } from "./code-flow";
 import { confirmDialog, useAction } from "./toaster";
 import { InfoTip } from "./info-tip";
+import { AvatarPicker } from "./avatar-picker";
+import type { AvatarPerson } from "./avatar";
 
 type Props = {
+  id: string;
+  person: AvatarPerson;
   firstName: string;
   lastName: string | null;
   login: string | null;
@@ -26,6 +30,11 @@ export function AccountPanel(p: Props) {
         {p.login && <p className="m-0 text-sm text-gris">Identifiant de connexion : <strong>{p.login}</strong></p>}
       </div>
       <div className="flex flex-wrap gap-8">
+        <div className={section}>
+          <h3 className="label m-0 text-[15px]">Mon avatar</h3>
+          <AvatarPicker personId={p.id} person={p.person} />
+          <p className="m-0 text-sm text-gris">Il s&apos;affiche à côté de votre nom dans les familles.</p>
+        </div>
         <div className={section}>
           <NameForm firstName={p.firstName} lastName={p.lastName} />
         </div>

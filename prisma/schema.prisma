@@ -17,6 +17,10 @@ model User {
   login        String?  @unique
   passwordHash String?
   avatarColor  String   @default("#1F4D36")
+  /// personnage choisi (« 07 » → /avatars/07.webp) ; vide = initiales sur avatarColor
+  avatar       String?
+  /// fond du cercle de l'avatar (clé de AVATAR_BACKGROUNDS, src/lib/avatars.ts)
+  avatarBg     String?
   /// adresse e-mail facultative, utilisée seulement une fois confirmée
   email           String?   @unique
   emailVerifiedAt DateTime?
@@ -24,6 +28,9 @@ model User {
   emailReminders  Boolean   @default(true)
   /// e-mail quand quelqu'un me mentionne (@Prénom) dans un commentaire
   emailMentions   Boolean   @default(true)
+  /// compte « invité » : créé depuis le lien d'une famille avec juste un prénom, sans e-mail ni mot de passe.
+  /// Quiconque a le lien peut le reprendre (« C'est moi ») ; il devient un vrai compte une fois l'e-mail confirmé.
+  guest        Boolean  @default(false)
   /// compte administré « en procuration » par un autre utilisateur
   managedById  String?
   managedBy    User?    @relation("Managed", fields: [managedById], references: [id], onDelete: Cascade)
@@ -186,7 +193,10 @@ model EmailCode {
   /// adresse à laquelle le code a été envoyé
   email     String
   /// VERIFY (confirmer l'adresse) | LOGIN (connexion par code) | RESET (mot de passe oublié)
+  /// | SIGNUP (inscription) | ACCOUNT (un invité crée son compte)
   purpose   String
+  /// ACCOUNT : mot de passe choisi (haché), appliqué seulement une fois le code saisi
+  passwordHash String?
   codeHash  String
   attempts  Int       @default(0)
   expiresAt DateTime

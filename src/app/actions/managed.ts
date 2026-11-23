@@ -17,6 +17,7 @@ function fail(e: unknown): ActionResult {
 export async function createManaged(firstName: string, color: string, familyIds: string[]): Promise<ActionResult> {
   try {
     const user = await requireUser();
+    if (!user.verified) throw new Error("Créez d'abord votre compte pour gérer celui de quelqu'un d'autre.");
     const name = z.string().trim().min(1, "Indiquez un prénom.").max(40).parse(firstName);
     const avatarColor = colorSchema.parse(color);
     const mine = await db.membership.findMany({ where: { userId: user.id, familyId: { in: familyIds } } });

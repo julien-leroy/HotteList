@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { db } from "@/lib/db";
-import { getCurrentUser } from "@/lib/auth";
-import { loadVisibleGifts, personSelect } from "@/lib/queries";
+import { getCurrentUser, isVerified } from "@/lib/auth";
+import { claimableMembers, loadVisibleGifts, personSelect } from "@/lib/queries";
 import { FestiveHeader, HeroTitle } from "@/components/festive";
 import { IconStar } from "@/components/icons";
 import { CopyLink } from "@/components/copy-link";
@@ -13,6 +13,8 @@ import { InvitePage, JoinPage } from "@/components/invite";
 import { SantaAside } from "@/components/santa";
 import { mailEnabled } from "@/lib/mail";
 import { ShareButton } from "@/components/share-button";
+import { GuestBanner } from "@/components/guest-banner";
+import { RememberFamily } from "@/components/recent-families";
 import { FamilyNameEdit } from "@/components/family-name-edit";
 import Link from "next/link";
 import { daysUntil, isEventOver, parisDay } from "@/lib/utils";
@@ -33,13 +35,22 @@ export default async function FamilyPage({ params, searchParams }: Props) {
     where: { slug },
     include: {
       createdBy: { select: personSelect },
-      memberships: { include: { user: { select: { ...personSelect, managedById: true, login: true } } }, orderBy: { joinedAt: "asc" } },
+      memberships: {
+        include: { user: { select: { ...personSelect, managedById: true, guest: true } } },
+        orderBy: { joinedAt: "asc" },
+      },
     },
   });
   if (!family) notFound();
 
   const user = await getCurrentUser();
-  if (!user) return <InvitePage family={family} mail={mailEnabled()} />;
+  if (!user)
+    return (
+      <>
+        <RememberFamily slug={family.slug} name={family.name} />
+        <InvitePage family={family} claimable={await claimableMembers(family.id)} />
+      </>
+    );
 
   const me = family.memberships.find((m) => m.userId === user.id);
   if (!me) {
@@ -48,6 +59,13 @@ export default async function FamilyPage({ params, searchParams }: Props) {
   }
 
   const isAdmin = me.role === "ADMIN";
+  // Qui peut être nommé admin (compte complet) ou recevoir un lien « mot de passe oublié » (a un identifiant)
+  const accounts = await db.user.findMany({
+    where: { id: { in: family.memberships.map((m) => m.userId) } },
+    select: { id: true, guest: true, managedById: true, emailVerifiedAt: true, passwordHash: true, login: true },
+  });
+  const canBeAdmin = new Set(accounts.filter((a) => isVerified(a)).map((a) => a.id));
+  const hasLogin = new Set(accounts.filter((a) => a.login).map((a) => a.id));
 
   // Badge « Nouveau » : comparé à la visite précédente. Une « visite » se renouvelle après 1 h d'absence,
   // pour que les badges ne disparaissent pas au premier clic.
@@ -85,7 +103,7 @@ export default async function FamilyPage({ params, searchParams }: Props) {
   const empty = (id: string) => (id !== user.id && id !== santaChild && !hasWishes.has(id) ? 1 : 0);
   const members = family.memberships.slice().sort((a, b) => empty(a.userId) - empty(b.userId) || rank(a.userId) - rank(b.userId));
   const sections: Section[] = members.map((m) => ({
-    person: { id: m.user.id, firstName: shown(m.user), lastName: m.nickname ? null : m.user.lastName, avatarColor: m.user.avatarColor },
+    person: { id: m.user.id, firstName: shown(m.user), lastName: m.nickname ? null : m.user.lastName, avatarColor: m.user.avatarColor, avatar: m.user.avatar, avatarBg: m.user.avatarBg },
     realName: [m.user.firstName, m.user.lastName].filter(Boolean).join(" "),
     nickname: m.nickname,
     isMe: m.userId === user.id,
@@ -103,7 +121,7 @@ export default async function FamilyPage({ params, searchParams }: Props) {
   // Participants possibles au Secret Santa : les membres qui ont leur propre compte
   const santaCandidates = family.memberships
     .filter((m) => !m.user.managedById)
-    .map((m) => ({ id: m.user.id, firstName: shown(m.user), lastName: m.nickname ? null : m.user.lastName, avatarColor: m.user.avatarColor }));
+    .map((m) => ({ id: m.user.id, firstName: shown(m.user), lastName: m.nickname ? null : m.user.lastName, avatarColor: m.user.avatarColor, avatar: m.user.avatar, avatarBg: m.user.avatarBg }));
 
   const drawnOn = santa ? santa.createdAt.toLocaleDateString("fr-FR", { day: "numeric", month: "long", timeZone: "Europe/Paris" }) : null;
 
@@ -163,8 +181,13 @@ export default async function FamilyPage({ params, searchParams }: Props) {
                   lastName: m.user.lastName,
                   nickname: m.nickname,
                   avatarColor: m.user.avatarColor,
+                  avatar: m.user.avatar,
+                  avatarBg: m.user.avatarBg,
                   role: m.role as "ADMIN" | "MEMBRE",
                   managed: Boolean(m.user.managedById),
+                  guest: !m.user.managedById && !canBeAdmin.has(m.user.id),
+                  canBeAdmin: canBeAdmin.has(m.user.id),
+                  hasLogin: hasLogin.has(m.user.id),
                 }))}
                 myManaged={myManaged.map((p) => ({ ...p, inFamily: family.memberships.some((m) => m.userId === p.id) }))}
                 santa={
@@ -183,6 +206,9 @@ export default async function FamilyPage({ params, searchParams }: Props) {
           </div>
         </div>
       </FestiveHeader>
+
+      <RememberFamily slug={family.slug} name={family.name} />
+      {!user.verified && <GuestBanner next={`/f/${family.slug}`} mail={mailEnabled()} />}
 
       {recap && <EventOver eventName={family.eventName} familyId={family.id} isAdmin={isAdmin} taken={recap.taken} free={recap.free} />}
 

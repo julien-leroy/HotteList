@@ -36,12 +36,12 @@ export default async function Familles() {
       </FestiveHeader>
 
       <main className="mx-auto flex max-w-[1200px] flex-col gap-8 px-6 pt-7 pb-24">
-        {mailEnabled() && !(await db.user.findUnique({ where: { id: user.id }, select: { emailVerifiedAt: true } }))?.emailVerifiedAt && (
+        {!user.verified && (
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-[18px] px-5 py-4" style={{ background: "#F8EDD2", border: "1px solid #E5CF96" }}>
             <p className="m-0 flex-[1_1_320px] text-[15px] leading-normal text-[#4A3810]">
-              <strong>Ajoutez votre adresse e-mail</strong> pour pouvoir récupérer votre mot de passe tout seul, ou vous connecter avec un code.
+              <><strong>Créez votre compte HotteList</strong> pour créer votre propre famille, gérer votre profil et recevoir les notifications par e-mail.</>
             </p>
-            <Link className="btn b-gold" href="/profil#compte">Ajouter mon e-mail</Link>
+            <Link className="btn b-gold" href="/creer-mon-compte">Créer mon compte</Link>
           </div>
         )}
         <div className="grid gap-5" style={{ gridTemplateColumns: "repeat(auto-fill,minmax(min(320px,100%),1fr))" }}>
@@ -83,7 +83,22 @@ export default async function Familles() {
               </Link>
             );
           })}
-          <CreateFamilyForm first={memberships.length === 0} christmas={parisDay(defaultEventDate())} today={parisDay(new Date())} />
+          {user.verified ? (
+            <CreateFamilyForm first={memberships.length === 0} christmas={parisDay(defaultEventDate())} today={parisDay(new Date())} />
+          ) : (
+            <div
+              className="flex flex-col justify-center gap-3 rounded-[18px] p-6"
+              style={{ border: "2px dashed #D9A93E", background: "repeating-linear-gradient(45deg,#FFF9EE 0 14px,#FBF1DC 14px 28px)", minHeight: 230 }}
+            >
+              <h2 className="font-display m-0 text-2xl font-bold text-[#8A1C26]">Créer une famille</h2>
+              <p className="m-0 text-[15px] leading-normal text-gris">
+                Il faut un compte HotteList (e-mail et mot de passe) pour créer une famille et en être l&apos;admin.
+              </p>
+              <Link className="btn b-primary self-start" href="/creer-mon-compte?next=/familles">
+                Créer mon compte
+              </Link>
+            </div>
+          )}
         </div>
         {memberships.length === 0 && (
           <p className="m-0 max-w-[640px] text-[15px] leading-relaxed text-gris">

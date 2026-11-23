@@ -5,7 +5,7 @@
 
 export type Viewer = { id: string; managedIds: string[] };
 
-export type PersonLite = { id: string; firstName: string; lastName: string | null; avatarColor: string };
+export type PersonLite = { id: string; firstName: string; lastName: string | null; avatarColor: string; avatar?: string | null; avatarBg?: string | null };
 
 export type RawGift = {
   id: string;
