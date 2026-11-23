@@ -64,6 +64,8 @@ export async function createGift(
   recipientId: string,
   kind: "SOUHAIT" | "IDEE",
   input: GiftInput,
+  /** idée pour quelqu'un d'autre : discrète (cachée à la personne, par défaut) ou non (devient un souhait de sa liste) */
+  discreet = true,
 ): Promise<ActionResult> {
   try {
     const user = await requireUser();
@@ -73,12 +75,16 @@ export async function createGift(
     if (kind === "SOUHAIT" && !canAddWishFor(viewer, recipientId)) throw new Error("Vous ne pouvez pas écrire ses souhaits.");
     if (kind === "IDEE" && !canAddIdeaFor(viewer, recipientId)) throw new Error("Vous ne pouvez pas vous proposer une idée.");
     const data = clean(giftSchema.parse(input));
+    // Mode discret désactivé : l'idée s'ajoute à sa liste comme un souhait qu'il ou elle aurait écrit,
+    // visible de tous (la personne comprise), sans auteur affiché. Elle se gère ensuite comme ses souhaits.
+    const finalKind = kind === "IDEE" && !discreet ? "SOUHAIT" : kind;
+    if (finalKind === "SOUHAIT") data.favorite = kind === "SOUHAIT" ? data.favorite : false;
     const last = await db.gift.aggregate({
       where: { familyId, recipientId, archivedAt: null, deletedAt: null },
       _max: { position: true },
     });
     await db.gift.create({
-      data: { ...data, familyId, recipientId, kind, createdById: user.id, position: (last._max.position ?? -1) + 1 },
+      data: { ...data, familyId, recipientId, kind: finalKind, createdById: user.id, position: (last._max.position ?? -1) + 1 },
     });
     return done();
   } catch (e) {

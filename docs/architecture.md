@@ -1,6 +1,6 @@
 # HotteList — architecture technique (version simplifiée)
 
-_Document de référence. Dernière mise à jour : 23 novembre 2026 (avatars illustrés ; 21 novembre : entrée dans une famille sans compte ni mot de passe, comptes non vérifiés gardés un an sur l'appareil ; avant : barre de la famille allégée, plus de défilement horizontal sur téléphone ; cartes avec description, ajout sur téléphone, Secret Santa lancé depuis l'encart ; titres en Damion, favicon, montagnes en entier, ordre des listes, bouton de téléchargement ; avant : export PDF / Excel, Secret Santa)._
+_Document de référence. Dernière mise à jour : 23 novembre 2026 (avatars illustrés, mode discret des idées ; 21 novembre : entrée dans une famille sans compte ni mot de passe, comptes non vérifiés gardés un an sur l'appareil ; avant : barre de la famille allégée, plus de défilement horizontal sur téléphone ; cartes avec description, ajout sur téléphone, Secret Santa lancé depuis l'encart ; titres en Damion, favicon, montagnes en entier, ordre des listes, bouton de téléchargement ; avant : export PDF / Excel, Secret Santa)._
 _Développement lancé le 9 novembre 2026. Ajout de souhait et d'idée en popup depuis la v1.1. Code : https://github.com/julien-leroy/HotteList_
 
 ## 1. Décisions prises
@@ -163,6 +163,8 @@ Toutes les lectures passent par `giftsVisibleTo(viewer, gifts)` (`src/lib/visibi
 - **Je suis le destinataire** : je ne vois que mes SOUHAITS, sans participants, sans statut, sans commentaires. Les IDÉES ajoutées pour moi n'existent pas pour moi.
 - **Je suis le gestionnaire du destinataire** : je vois tout, y compris les idées des autres, et je peux créer, modifier, supprimer, déplacer et copier ses SOUHAITS.
 - **Autre membre** : je vois tout ; je peux réserver, participer, commenter et ajouter des idées.
+- **Mode discret** (case dans la popup « Une idée pour … », **cochée par défaut**) : cochée, c'est une IDÉE, cachée au destinataire. Décochée, elle est enregistrée comme un **SOUHAIT** de sa liste : visible de tous, destinataire compris, sans auteur affiché, comme s'il l'avait écrit ; elle se modifie ensuite comme ses souhaits (destinataire ou gestionnaire). `createdById` garde l'auteur réel.
+- **Idées discrètes bien visibles** pour les autres : carte à bordure pointillée bleu nuit sur fond bleuté, badge « Discret · Prénom » avec un œil barré ; en mode liste, liseré bleu nuit et pastille « Discret ».
 
 Droits d'écriture vérifiés côté serveur, dans chaque action :
 - Réserver, participer, commenter : interdit sur un cadeau dont je suis le destinataire.

@@ -7,6 +7,7 @@ import { createGift, updateGift } from "@/app/actions/gifts";
 import { formatPrice } from "@/lib/format";
 import { GiftVisual, SourceBadge } from "./gift-ui";
 import { useAction } from "./toaster";
+import { InfoTip } from "./info-tip";
 
 type Draft = { url: string; title: string; price: string; description: string; imageUrl: string; favorite: boolean };
 
@@ -23,6 +24,8 @@ type Props =
       bare?: boolean;
       /** cadeaux déjà visibles dans cette liste, pour prévenir les doublons */
       existing?: { title: string; url: string | null }[];
+      /** prénom du destinataire (case « Mode discret » des idées) */
+      recipientName?: string;
     }
   | {
       mode: "edit";
@@ -57,6 +60,10 @@ export function GiftForm(props: Props) {
     props.mode === "edit" ? props.initial : { url: "", title: "", price: "", description: "", imageUrl: "", favorite: false },
   );
   const [looking, setLooking] = useState(false);
+  /** idée cachée à la personne (par défaut) ; décochée, elle devient un souhait de sa liste, visible de tous */
+  const [discreet, setDiscreet] = useState(true);
+  const name = props.mode === "create" ? (props.recipientName ?? "La personne") : "";
+  const asWish = props.mode === "create" && props.kind === "IDEE" && !discreet;
   const [lookupNote, setLookupNote] = useState<string | null>(null);
   const [showImageField, setShowImageField] = useState(props.mode === "edit" && Boolean(props.initial.imageUrl));
   const lastLooked = useRef("");
@@ -107,8 +114,8 @@ export function GiftForm(props: Props) {
     };
     if (props.mode === "create") {
       run(
-        () => createGift(props.familyId, props.recipientId, props.kind, input),
-        props.kind === "IDEE" ? "Idée ajoutée, bien cachée." : "Souhait ajouté !",
+        () => createGift(props.familyId, props.recipientId, props.kind, input, discreet),
+        props.kind === "SOUHAIT" ? "Souhait ajouté !" : discreet ? "Idée ajoutée, bien cachée." : `Ajouté à la liste de ${name}.`,
         (r) => r.ok && props.onDone(),
       );
     } else {
@@ -196,9 +203,27 @@ export function GiftForm(props: Props) {
             Coup de cœur
           </label>
         )}
+        {props.mode === "create" && props.kind === "IDEE" && (
+          <div className="flex flex-col gap-1">
+            <span className="flex items-center gap-1">
+              <label className="chk">
+                <input type="checkbox" checked={discreet} onChange={(e) => setDiscreet(e.target.checked)} />
+                Mode discret
+              </label>
+              <InfoTip align="start">
+                Coché : {name} ne la verra jamais, le reste de la famille peut la réserver et la commenter. Décoché : elle s&apos;ajoute à la liste de {name} comme un souhait écrit par {name}, visible de tous.
+              </InfoTip>
+            </span>
+            <p className="m-0 text-sm text-gris">
+              {discreet
+                ? `${name} ne verra pas cette idée.`
+                : `Visible de tous, ${name} compris, comme un souhait de sa part.`}
+            </p>
+          </div>
+        )}
         <div className="gf-actions">
           <button className="btn b-primary" type="submit" disabled={pending || looking}>
-            {pending ? "Enregistrement…" : props.mode === "edit" ? "Enregistrer" : props.kind === "IDEE" ? "Ajouter l'idée" : "Ajouter à la liste"}
+            {pending ? "Enregistrement…" : props.mode === "edit" ? "Enregistrer" : asWish ? `Ajouter à sa liste` : props.kind === "IDEE" ? "Ajouter l'idée" : "Ajouter à la liste"}
           </button>
           <button className="btn b-quiet" type="button" onClick={props.onDone}>Annuler</button>
         </div>
@@ -231,6 +256,7 @@ export function AddGiftDialog(props: {
   title: string;
   hint: string;
   existing?: { title: string; url: string | null }[];
+  recipientName?: string;
 }) {
   return (
     <Dialog.Root open={props.open} onOpenChange={(o) => !o && props.onClose()}>
@@ -262,6 +288,7 @@ export function AddGiftDialog(props: {
                 title={props.title}
                 hint={props.hint}
                 existing={props.existing}
+                recipientName={props.recipientName}
                 onDone={props.onClose}
               />
             )}

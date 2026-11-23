@@ -11,7 +11,7 @@ import { Avatar } from "./avatar";
 import { GiftVisual, SourceBadge, statusOf, tintFor, type Status } from "./gift-ui";
 import { AddGiftDialog } from "./gift-form";
 import { GiftDialog } from "./gift-dialog";
-import { IconBookmark, IconComment, IconGift, IconGrid, IconGroup, IconList, IconPlus } from "./icons";
+import { IconBookmark, IconComment, IconGift, IconGrid, IconGroup, IconList, IconPlus, IconHidden } from "./icons";
 import { useAction } from "./toaster";
 import { mentionLabels } from "@/lib/mentions";
 import type { MentionPerson } from "./comment-box";
@@ -180,8 +180,9 @@ export function FamilyBoard({ familyId, familySlug, viewerId, sections, openGift
                 recipientId={s.person.id}
                 kind={canWish ? "SOUHAIT" : "IDEE"}
                 existing={s.gifts.map((g) => ({ title: g.title, url: g.url }))}
+                recipientName={s.person.firstName}
                 title={canWish ? (s.isMe ? "Nouveau souhait" : `Nouveau souhait pour ${s.person.firstName}`) : `Une idée pour ${s.person.firstName}`}
-                hint={canWish ? (s.isMe ? "Collez un lien : le titre, l'image et le prix se remplissent tout seuls. Toute la famille le verra." : `Collez un lien : le titre, l'image et le prix se remplissent tout seuls.`) : `${s.person.firstName} ne verra jamais cette idée. Le reste de la famille pourra la réserver et la commenter.`}
+                hint={canWish && s.isMe ? "Collez un lien : le titre, l'image et le prix se remplissent tout seuls. Toute la famille le verra." : `Collez un lien : le titre, l'image et le prix se remplissent tout seuls.`}
               />
 
 
@@ -305,11 +306,15 @@ function GiftCard({ gift, onOpen }: { gift: VisibleGift; onOpen: () => void }) {
   const taken = st.kind === "OTHER" || st.kind === "MINE";
   const nb = gift.secret?.comments.length ?? 0;
   return (
-    <article className={`card gift-card${taken ? " taken" : ""}`}>
+    <article className={`card gift-card${taken ? " taken" : ""}${gift.kind === "IDEE" ? " discret" : ""}`}>
       <button className="open" type="button" onClick={onOpen} aria-label={`Ouvrir : ${gift.title}`}>
         <GiftVisual gift={gift} taken={taken}>
           <SourceBadge site={gift.siteOrigin} />
-          {gift.kind === "IDEE" && gift.ideaBy && <span className="idea">Idée de {gift.ideaBy.firstName}</span>}
+          {gift.kind === "IDEE" && (
+            <span className="idea idea-discret" title={`Idée discrète : invisible pour la personne`}>
+              <IconHidden size={13} /> Discret{gift.ideaBy ? ` · ${gift.ideaBy.firstName}` : ""}
+            </span>
+          )}
           {st.kind === "OTHER" && <span className="band" style={{ background: "#8A1C26", color: "#FFF9EE" }}>Réservé par {st.by}</span>}
           {st.kind === "MINE" && <span className="band" style={{ background: "#1E6B47", color: "#FFF9EE" }}>Réservé par vous · {STATUS_LABEL[gift.secret!.myStatus ?? "A_ACHETER"]}</span>}
           {st.kind === "GROUP" && <span className="band" style={{ background: "#FFCB2E", color: "#4A1209" }}>À plusieurs · {st.people}{st.mine ? ` · ${STATUS_LABEL[gift.secret!.myStatus ?? "A_ACHETER"]}` : ""}</span>}
@@ -359,12 +364,17 @@ function GiftRow({ gift, onOpen }: { gift: VisibleGift; onOpen: () => void }) {
     .join(" · ");
   const tint = tintFor(gift.id);
   return (
-    <div className="row">
+    <div className={`row${gift.kind === "IDEE" ? " discret" : ""}`}>
       <button className="rowopen" type="button" onClick={onOpen}>
         <GiftVisual gift={gift} iconSize={32} className="ph" style={{ width: 56, height: 56, aspectRatio: "1", borderRadius: 12, flex: "none", background: gift.imageUrl ? "#fff" : tint.bg }} />
         <span className="flex min-w-0 flex-1 flex-col gap-[3px]">
           <span className="flex flex-wrap items-center gap-2">
             <span className="rt text-base font-semibold">{gift.title}</span>
+            {gift.kind === "IDEE" && (
+              <span className="pill idea-discret" style={{ minHeight: 22, fontSize: 11, padding: "0 8px", gap: 4 }} title="Idée discrète : invisible pour la personne">
+                <IconHidden size={11} /> Discret
+              </span>
+            )}
             {gift.isNew && <span className="pill" style={{ background: "#CF2B35", color: "#FFF9EE", minHeight: 22, fontSize: 11, padding: "0 8px" }}>Nouveau</span>}
             {nb > 0 && (
               <span className="cm">
