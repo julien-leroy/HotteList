@@ -13,6 +13,7 @@ import { InvitePage, JoinPage } from "@/components/invite";
 import { SantaAside } from "@/components/santa";
 import { mailEnabled } from "@/lib/mail";
 import { ShareButton } from "@/components/share-button";
+import { InviteCard } from "@/components/invite-card";
 import { GuestBanner } from "@/components/guest-banner";
 import { RememberFamily } from "@/components/recent-families";
 import { FamilyNameEdit } from "@/components/family-name-edit";
@@ -140,6 +141,8 @@ export default async function FamilyPage({ params, searchParams }: Props) {
 
   const appUrl = (process.env.APP_URL ?? "").replace(/\/$/, "");
   const inviteUrl = `${appUrl}/f/${family.slug}`;
+  // Personne d'autre que son créateur (et ses comptes gérés) : on met l'invitation en avant
+  const isNew = family.memberships.filter((m) => !m.user.managedById).length <= 1;
   const myManaged = await db.user.findMany({ where: { id: { in: user.managedIds } }, select: personSelect });
 
   // Réglages de la famille : le bouton « Réglages » et, pour l'admin, « Modifier les membres » dans la barre
@@ -193,10 +196,15 @@ export default async function FamilyPage({ params, searchParams }: Props) {
             </HeroTitle>
           </div>
           <div className="flex min-w-0 flex-[0_1_440px] flex-col gap-2">
-            <span className="text-sm font-medium hero-soft">Lien de la famille, à envoyer à tout le monde</span>
-            <CopyLink url={inviteUrl} />
+            {/* Famille toute neuve : le lien est dans l'encart « Invitez votre famille », pas en double ici */}
+            {!isNew && (
+              <>
+                <span className="text-sm font-medium hero-soft">Lien de la famille, à envoyer à tout le monde</span>
+                <CopyLink url={inviteUrl} />
+              </>
+            )}
             <div className="flex flex-wrap justify-end gap-2">
-              <ShareButton url={inviteUrl} familyName={family.name} />
+              {!isNew && <ShareButton url={inviteUrl} familyName={family.name} />}
               {archivedCount > 0 && (
                 <Link className="btn b-light" href={`/f/${family.slug}/archives`} style={{ minHeight: 40 }}>
                   Années passées
@@ -210,6 +218,13 @@ export default async function FamilyPage({ params, searchParams }: Props) {
 
       <RememberFamily slug={family.slug} name={family.name} />
       {!user.verified && <GuestBanner next={`/f/${family.slug}`} mail={mailEnabled()} />}
+
+      {/* Famille toute neuve (personne d'autre que son créateur et ses comptes gérés) : l'invitation en grand */}
+      {isNew && (
+        <div className="mx-auto w-full max-w-[1240px] px-4 pt-5 sm:px-6">
+          <InviteCard url={inviteUrl} familyName={family.name} eventName={family.eventName} />
+        </div>
+      )}
 
       {recap && <EventOver eventName={family.eventName} familyId={family.id} isAdmin={isAdmin} taken={recap.taken} free={recap.free} />}
 

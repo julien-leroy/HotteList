@@ -493,3 +493,29 @@ textarea.gf-desc { min-height: 96px; }
 /* Souhait coup de cœur : petite étoile dorée */
 .fav-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px 2px 6px; border-radius: 999px; background: #FFF3CC; color: #7A5410; font: 700 12px/1.6 var(--font-sans); white-space: nowrap; }
 .fav-badge svg { color: #E0A800; }
+
+/* Lien à copier : domaine discret (raccourci en premier), fin du lien en gras ; clic = lien entier */
+.copy-link { display: flex; align-items: center; gap: 8px; padding: 6px 6px 6px 14px; border-radius: 16px; background: #FBF4E4; border: 1px solid #EADBB8; }
+.copy-link-light { background: rgba(0, 0, 0, .18); border-color: rgba(242, 199, 92, .55); }
+.copy-link-text {
+  display: flex; align-items: baseline; flex: 1; min-width: 0; padding: 4px 0; border: 0; background: none;
+  color: inherit; text-align: left; cursor: pointer; font: 600 15.5px/1.35 var(--font-sans); letter-spacing: -.005em;
+}
+.copy-link-text:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; border-radius: 6px; }
+.copy-link-host { flex: 0 1 auto; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; direction: rtl; font-size: 12.5px; font-weight: 500; opacity: .6; }
+.copy-link-path { flex: 0 0 auto; max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.copy-link-full { align-items: flex-start; }
+.copy-link-all { display: block; overflow-wrap: anywhere; user-select: all; -webkit-user-select: all; }
+.copy-link-btn { flex: none; min-height: 40px; }
+
+/* Encart « Invitez votre famille » (famille toute neuve) */
+.invite-card {
+  display: flex; flex-direction: column; gap: 14px; padding: 20px; border-radius: 20px;
+  background: var(--color-papier); border: 2px solid var(--color-or);
+  box-shadow: 0 14px 34px -24px rgba(90, 20, 25, .55);
+}
+.invite-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+@media (max-width: 640px) {
+  .invite-actions .btn { flex: 1 1 calc(50% - 8px); }
+  .invite-actions .b-primary { flex-basis: 100%; }
+}

@@ -264,3 +264,8 @@ Une ligne courte dans la console du serveur à chaque événement marquant, à l
 ```
 
 Seulement : souhait ou idée créés, famille créée, arrivée dans une famille (par le lien avec ou sans compte, à l'inscription, ou ajout par l'admin). Titres coupés à 50 caractères. Les lectures de liens gardent leur propre ligne `[apercu-lien]`.
+
+## 17. Lien d'invitation
+
+- **Affichage du lien** (`CopyLink`) : le domaine en petit et grisé, raccourci en premier si la place manque ; la fin (`f/famille-leroy-7kq2`) en gras, toujours lisible. Un clic sur le lien l'affiche en entier (coupé après les « / » et « . »), sélectionné d'un coup ; « Copier » à côté.
+- **Famille toute neuve** (personne d'autre que son créateur et ses comptes gérés) : encart **« Invitez votre famille »** en haut de la page (`InviteCard`) avec le lien et « Partager l'invitation » (partage du téléphone, sinon message copié), WhatsApp, SMS, E-mail. Le lien et le bouton de partage de l'en-tête sont alors masqués (pas de doublon) ; ils reviennent dès que quelqu'un a rejoint.
