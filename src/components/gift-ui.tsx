@@ -57,7 +57,7 @@ export function GiftVisual({
   const illu = illustrationOf(gift.imageUrl);
   if (illu) {
     return (
-      <span className={`${className} dots`} style={{ ...style, background: illu.tint.bg }}>
+      <span className={className} style={{ ...style, background: illu.tint.bg }}>
         <GiftIllustration name={illu.key} size={iconSize} color={illu.tint.ink} className="ill" />
         {children}
       </span>
@@ -66,7 +66,7 @@ export function GiftVisual({
   const tint = tintFor(gift.id);
   const showImg = gift.imageUrl && !broken;
   return (
-    <span className={`${className}${showImg ? "" : " dots"}`} style={{ background: showImg ? "#fff" : tint.bg, ...style }}>
+    <span className={className} style={{ background: showImg ? "#fff" : tint.bg, ...style }}>
       {showImg ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img

@@ -31,6 +31,7 @@ export function FamilySettings({
   myManaged,
   santa,
   today,
+  variant = "full",
 }: {
   family: { id: string; slug: string; name: string; eventName: string; eventDate: string };
   today: string;
@@ -39,7 +40,10 @@ export function FamilySettings({
   members: Member[];
   myManaged: (AvatarPerson & { id: string; inFamily: boolean })[];
   santa: { mode: boolean; memberCount: number; current: { budget: string | null; total: number; revealed: number; drawnOn: string } | null } | null;
+  /** full : tous les réglages ; members : seulement les membres (bouton « Modifier les membres » de la barre) */
+  variant?: "full" | "members";
 }) {
+  const full = variant === "full";
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(family.name);
   const [date, setDate] = useState(family.eventDate);
@@ -47,7 +51,7 @@ export function FamilySettings({
   const [resetUrl, setResetUrl] = useState<{ who: string; url: string } | null>(null);
   const [guestName, setGuestName] = useState("");
   // Liste des membres repliée pour l'admin (réglages d'abord), dépliée pour les autres (c'est tout ce qu'ils voient)
-  const [showMembers, setShowMembers] = useState(!isAdmin);
+  const [showMembers, setShowMembers] = useState(!isAdmin || !full);
   const { pending, run } = useAction();
 
   const section = "flex flex-col gap-3 border-t-2 border-dotted border-or pt-4";
@@ -56,15 +60,21 @@ export function FamilySettings({
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger asChild>
-        <button className="btn b-light" style={{ minHeight: 40 }}>
-          <IconSettings /> {isAdmin ? "Réglages de la famille" : "Membres"}
-        </button>
+        {full ? (
+          <button className="btn b-light" style={{ minHeight: 40 }}>
+            <IconSettings /> {isAdmin ? "Réglages de la famille" : "Membres"}
+          </button>
+        ) : (
+          <button type="button" className="toolbar-edit" title="Modifier les membres">
+            <IconSettings size={15} /> <span className="toolbar-edit-label">Modifier les membres</span>
+          </button>
+        )}
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="veil">
           <Dialog.Content className="modal flex max-w-[640px] flex-col gap-4 p-5 sm:p-7" aria-describedby={undefined}>
             <div className="flex items-center justify-between gap-3">
-              <Dialog.Title className="font-display m-0 text-[24px] font-bold sm:text-[28px]">{family.name}</Dialog.Title>
+              <Dialog.Title className="font-display m-0 text-[24px] font-bold sm:text-[28px]">{full ? family.name : `Membres · ${family.name}`}</Dialog.Title>
               <Dialog.Close asChild>
                 <button className="btn b-soft b-icon" aria-label="Fermer" style={{ borderRadius: "50%" }}>
                   <IconClose size={18} />
@@ -72,7 +82,7 @@ export function FamilySettings({
               </Dialog.Close>
             </div>
 
-            {isAdmin && (
+            {full && isAdmin && (
               <div className="flex flex-col gap-3.5">
                 <div className="flex flex-wrap items-end gap-2.5">
                   <div className="flex flex-[1_1_240px] flex-col gap-1.5">
@@ -87,7 +97,7 @@ export function FamilySettings({
                   <div className="flex flex-wrap items-end gap-2.5">
                     <div className="flex flex-[2_1_200px] flex-col gap-1.5">
                       <label className="label" htmlFor="fs-event">Événement</label>
-                      <input className="input" id="fs-event" value={eventName} onChange={(e) => setEventName(e.target.value)} maxLength={60} placeholder="Noël, Anniversaire de Léa…" />
+                      <input className="input" id="fs-event" value={eventName} onChange={(e) => setEventName(e.target.value)} maxLength={60} />
                     </div>
                     <div className="flex flex-[1_1_150px] flex-col gap-1.5">
                       <label className="label" htmlFor="fs-date">Date</label>
@@ -120,23 +130,25 @@ export function FamilySettings({
               </div>
             )}
 
-            {santa && (
+            {full && santa && (
               <div className={section}>
                 <SantaSettings familyId={family.id} mode={santa.mode} memberCount={santa.memberCount} current={santa.current} />
               </div>
             )}
 
-            <div className={`${section} flex-row flex-wrap items-center justify-between`}>
-              <h3 className={`${h3} flex items-center gap-1`}>
-                Télécharger les listes
-                <InfoTip align="start">En PDF ou en Excel. Vous n&apos;y trouvez que ce que vous voyez sur le site.</InfoTip>
-              </h3>
-              <DownloadMenu familySlug={family.slug} align="end" />
-            </div>
+            {full && (
+              <div className={`${section} flex-row flex-wrap items-center justify-between`}>
+                <h3 className={`${h3} flex items-center gap-1`}>
+                  Télécharger les listes
+                  <InfoTip align="start">En PDF ou en Excel. Vous n&apos;y trouvez que ce que vous voyez sur le site.</InfoTip>
+                </h3>
+                <DownloadMenu familySlug={family.slug} align="end" />
+              </div>
+            )}
 
             {/* Membres : une ligne repliée (avatars + ajout rapide), la liste complète en un clic */}
-            <div className={section}>
-              <button
+            <div className={full ? section : "flex flex-col gap-3"}>
+              {full && <button
                 type="button"
                 className="fs-members-head"
                 aria-expanded={showMembers}
@@ -151,7 +163,7 @@ export function FamilySettings({
                   {members.length > 7 && <span className="fs-more">+{members.length - 7}</span>}
                 </span>
                 <span className="fs-toggle">{showMembers ? "Replier" : "Voir la liste"}</span>
-              </button>
+              </button>}
 
               {isAdmin && (
                 <form
@@ -248,7 +260,7 @@ export function FamilySettings({
               )}
             </div>
 
-            {myManaged.length > 0 && (
+            {full && myManaged.length > 0 && (
               <div className={section}>
                 <h3 className={h3}>Mes comptes gérés dans cette famille</h3>
                 {myManaged.map((p) => (
@@ -265,7 +277,7 @@ export function FamilySettings({
               </div>
             )}
 
-            <div className={section}>
+            {full && <div className={section}>
               <button
                 className="btn b-quiet self-start"
                 disabled={pending}
@@ -275,7 +287,7 @@ export function FamilySettings({
               >
                 Quitter la famille
               </button>
-            </div>
+            </div>}
           </Dialog.Content>
         </Dialog.Overlay>
       </Dialog.Portal>

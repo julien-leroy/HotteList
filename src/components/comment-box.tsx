@@ -70,7 +70,7 @@ export function CommentBox({
         value={value}
         disabled={disabled}
         maxLength={1000}
-        placeholder="Je peux mettre 20 €, qui commande ? Tapez @ pour mentionner quelqu'un."
+       
         role="combobox"
         aria-expanded={open}
         aria-controls="mention-list"

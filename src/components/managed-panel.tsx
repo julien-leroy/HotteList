@@ -113,7 +113,7 @@ function CreateManaged({ families, onDone }: { families: Fam[]; onDone: (id?: st
         </div>
         <div className="flex flex-col gap-1.5">
           <label className="label" htmlFor="np">Prénom</label>
-          <input className="input" id="np" value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex. Hugo" maxLength={40} />
+          <input className="input" id="np" value={name} onChange={(e) => setName(e.target.value)} maxLength={40} />
         </div>
         <Swatches value={color} onChange={setColor} />
       </div>

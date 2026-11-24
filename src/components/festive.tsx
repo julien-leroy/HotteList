@@ -51,7 +51,7 @@ export function Treeline({ fill = "#F7F1E3", height = 80 }: { fill?: string; hei
         style={{ fill: "var(--hero-ridge, #1F4D36)" }}
         d="M0 80 L0 60 L30 30 L60 60 L80 40 L110 12 L140 46 L160 30 L190 58 L210 44 L240 20 L270 52 L300 60 L320 36 L350 8 L380 44 L400 34 L430 60 L460 40 L480 26 L510 54 L540 60 L560 30 L590 4 L620 40 L640 30 L670 58 L700 46 L720 22 L750 54 L780 60 L800 34 L830 10 L860 46 L880 36 L910 60 L940 42 L960 24 L990 52 L1020 60 L1040 32 L1070 6 L1100 42 L1120 32 L1150 58 L1180 40 L1200 26 L1200 80 Z"
       />
-      <path fill={fill} d="M0 80 L0 72 Q 300 62 600 72 T 1200 72 L1200 80 Z" />
+      <path className="treeline-wave" fill={fill} d="M0 80 L0 72 Q 300 62 600 72 T 1200 72 L1200 80 Z" />
     </svg>
   );
 }

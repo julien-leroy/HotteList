@@ -293,7 +293,7 @@ export function SantaSettings({
           <div className="flex flex-wrap items-end gap-2.5">
             <div className="flex max-w-[220px] flex-col gap-1.5">
               <label className="label" htmlFor="santa-budget">Budget conseillé <span className="opt">(facultatif)</span></label>
-              <input className="input" id="santa-budget" value={budget} onChange={(e) => setBudget(e.target.value)} placeholder="Ex. 30 €" maxLength={40} />
+              <input className="input" id="santa-budget" value={budget} onChange={(e) => setBudget(e.target.value)} maxLength={40} />
             </div>
             <button className="btn b-soft" disabled={pending || budget === (current.budget ?? "")} onClick={() => run(() => setSantaBudget(familyId, budget), "Budget enregistré.")}>
               Enregistrer
@@ -316,7 +316,7 @@ export function SantaSettings({
         <>
           <div className="flex max-w-[220px] flex-col gap-1.5">
             <label className="label" htmlFor="santa-budget">Budget conseillé <span className="opt">(facultatif)</span></label>
-            <input className="input" id="santa-budget" value={budget} onChange={(e) => setBudget(e.target.value)} placeholder="Ex. 30 €" maxLength={40} />
+            <input className="input" id="santa-budget" value={budget} onChange={(e) => setBudget(e.target.value)} maxLength={40} />
           </div>
           <button className="btn b-red self-start" disabled={pending || memberCount < 3} onClick={() => run(() => drawSecretSanta(familyId, budget), undefined, withMessage)}>
             Lancer le tirage ({memberCount} personne{memberCount > 1 ? "s" : ""})

@@ -3,7 +3,7 @@
 import { useActionState, useRef, useState } from "react";
 import { createFamily } from "@/app/actions/family";
 import { eventDay } from "@/lib/format";
-import { IconStar } from "./icons";
+import { Cake, CalendarDays, TreePine } from "lucide-react";
 import { InfoTip } from "./info-tip";
 
 type Preset = "noel" | "anniversaire" | "autre";
@@ -55,23 +55,25 @@ export function CreateFamilyForm({ first, christmas, today }: { first: boolean; 
       </div>
       <div className="flex flex-col gap-1.5">
         <label className="label" htmlFor="fam-name">Nom de la famille</label>
-        <input className="input" id="fam-name" name="name" placeholder="Ex. Famille Leroy" required minLength={2} maxLength={60} />
+        <input className="input" id="fam-name" name="name" required minLength={2} maxLength={60} />
       </div>
 
       <input type="hidden" name="eventName" value={eventName.trim()} />
       <input type="hidden" name="eventDate" value={eventDate} />
 
       {!editing ? (
-        <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-papier px-3.5 py-2.5" style={{ border: "1px solid #E3D6BA" }}>
-          <span className="flex items-center gap-2 text-[15px]">
-            <IconStar size={15} style={{ color: "#D9A93E" }} />
-            <span>
-              Pour <strong>{eventName}</strong>, le {eventDay(`${eventDate}T12:00:00Z`)}
+        <div className="flex flex-col gap-1.5">
+          <span className="label">Date de l&apos;événement</span>
+          <div className="flex items-center gap-2.5 rounded-xl bg-papier py-1.5 pr-1.5 pl-3" style={{ border: "1px solid #E3D6BA" }}>
+            <EventIcon preset={preset} />
+            <span className="min-w-0 flex-1 truncate text-[15px]">
+              Pour <strong>{eventName}</strong>
+              {preset !== "noel" && <span className="text-gris"> · {eventDay(`${eventDate}T12:00:00Z`)}</span>}
             </span>
-          </span>
-          <button type="button" className="btn b-soft b-sm" onClick={() => setEditing(true)}>
-            Changer
-          </button>
+            <button type="button" className="btn b-soft b-sm flex-none" onClick={() => setEditing(true)}>
+              Modifier
+            </button>
+          </div>
         </div>
       ) : (
         <fieldset className="m-0 flex flex-col gap-3 rounded-xl bg-papier p-3.5" style={{ border: "1px solid #E3D6BA" }}>
@@ -90,7 +92,6 @@ export function CreateFamilyForm({ first, christmas, today }: { first: boolean; 
                 id="fam-event"
                 value={eventName}
                 onChange={(e) => setEventName(e.target.value)}
-                placeholder={preset === "anniversaire" ? "Anniversaire de Léa" : "Ex. Fête des mères, Pâques…"}
                 required
                 minLength={2}
                 maxLength={60}
@@ -118,4 +119,11 @@ export function CreateFamilyForm({ first, christmas, today }: { first: boolean; 
       </button>
     </form>
   );
+}
+
+/** Sapin pour Noël, gâteau pour un anniversaire, calendrier pour le reste. */
+function EventIcon({ preset }: { preset: Preset }) {
+  const Icon = preset === "noel" ? TreePine : preset === "anniversaire" ? Cake : CalendarDays;
+  const color = preset === "noel" ? "#2A6B4B" : preset === "anniversaire" ? "#CF2B35" : "#7A5410";
+  return <Icon size={19} color={color} strokeWidth={1.8} aria-hidden="true" className="flex-none" />;
 }

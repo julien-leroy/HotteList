@@ -25,7 +25,6 @@ function ErrorLine({ text }: { text: string | null }) {
 export function GuestEntry({ familyId, familyName, slug, claimable }: { familyId: string; familyName: string; slug: string; claimable: Claimable[] }) {
   const [picked, setPicked] = useState<Claimable | null>(null);
   const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const next = `/f/${slug}`;
@@ -44,7 +43,7 @@ export function GuestEntry({ familyId, familyName, slug, claimable }: { familyId
     e.preventDefault();
     setError(null);
     start(async () => {
-      const r = await joinAsGuest(familyId, firstName, lastName);
+      const r = await joinAsGuest(familyId, firstName, "");
       if (r && !r.ok) setError(r.error);
     });
   }
@@ -98,19 +97,12 @@ export function GuestEntry({ familyId, familyName, slug, claimable }: { familyId
       )}
 
       <form onSubmit={join} className="flex flex-col gap-[18px]">
-        <span className="label">
-          {claimable.length > 0 ? "Je suis nouveau" : "Comment vous appelez-vous ?"}
-          <InfoTip align="start">Pas besoin d&apos;e-mail ni de mot de passe pour l&apos;instant. Vous pourrez créer votre compte plus tard, pour gérer votre profil ou recevoir les notifications par e-mail.</InfoTip>
-        </span>
-        <div className="flex flex-wrap gap-4">
-          <div className="flex flex-[1_1_180px] flex-col gap-1.5">
-            <label className="label" htmlFor="g-first">Prénom</label>
-            <input className="input" id="g-first" placeholder="Ex. Sophie" autoComplete="given-name" value={firstName} onChange={(e) => setFirstName(e.target.value)} maxLength={40} required />
-          </div>
-          <div className="flex flex-[1_1_180px] flex-col gap-1.5">
-            <label className="label" htmlFor="g-last">Nom <span className="opt">(facultatif)</span></label>
-            <input className="input" id="g-last" autoComplete="family-name" value={lastName} onChange={(e) => setLastName(e.target.value)} maxLength={40} />
-          </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="label flex items-center gap-1" htmlFor="g-name">
+            {claimable.length > 0 ? "Je suis nouveau : ton nom" : "Ton nom"}
+            <InfoTip align="start">Pas besoin d&apos;e-mail ni de mot de passe. Tu pourras créer ton compte plus tard, depuis ton profil.</InfoTip>
+          </label>
+          <input className="input" id="g-name" autoComplete="name" value={firstName} onChange={(e) => setFirstName(e.target.value)} maxLength={40} required />
         </div>
         {!picked && <ErrorLine text={error} />}
         <button className="btn b-primary w-full" disabled={pending} style={{ minHeight: 48, fontSize: 15 }}>
@@ -119,7 +111,7 @@ export function GuestEntry({ familyId, familyName, slug, claimable }: { familyId
       </form>
 
       <p className="m-0 text-center text-sm text-gris">
-        Vous avez un compte HotteList ? <Link href={`/?next=${encodeURIComponent(next)}`}>Se connecter avec mon e-mail</Link>
+        <Link href={`/?next=${encodeURIComponent(next)}`}>Se connecter à HotteList</Link>
       </p>
     </div>
   );

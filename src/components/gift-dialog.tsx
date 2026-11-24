@@ -53,8 +53,7 @@ export function GiftDialog({
               <GiftVisual
                 gift={gift}
                 iconSize={160}
-                className="ph"
-                style={{ flex: "1 1 320px", minHeight: 340, aspectRatio: "auto", minWidth: 0 }}
+                className="ph gd-photo"
               >
                 <span style={{ position: "absolute", left: 16, top: 16 }}>
                   <SourceBadge site={gift.siteOrigin} />

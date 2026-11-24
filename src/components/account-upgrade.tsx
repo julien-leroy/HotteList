@@ -123,12 +123,12 @@ export function AccountUpgrade({
               <label htmlFor="acc-id">Adresse e-mail</label>
               <InfoTip align="start">Vous recevrez un code pour la valider. Elle sert ensuite à vous connecter et à recevoir vos notifications. Personne d&apos;autre ne la voit.</InfoTip>
             </span>
-            <input className="input" id="acc-id" type="email" inputMode="email" autoComplete="email" placeholder="vous@exemple.fr" value={id} onChange={(e) => setId(e.target.value)} required autoFocus={autoFocus} />
+            <input className="input" id="acc-id" type="email" inputMode="email" autoComplete="email" value={id} onChange={(e) => setId(e.target.value)} required autoFocus={autoFocus} />
           </>
         ) : (
           <>
             <label className="label" htmlFor="acc-id">E-mail ou pseudo</label>
-            <input className="input" id="acc-id" autoComplete="username" placeholder="vous@exemple.fr ou sophie42" value={id} onChange={(e) => setId(e.target.value)} required autoFocus={autoFocus} />
+            <input className="input" id="acc-id" autoComplete="username" value={id} onChange={(e) => setId(e.target.value)} required autoFocus={autoFocus} />
           </>
         )}
       </div>

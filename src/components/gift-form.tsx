@@ -273,7 +273,6 @@ export function GiftForm(props: Props) {
                   readLink(e.currentTarget.value);
                 }
               }}
-              placeholder="https://…"
             />
             <LookupIcon lookup={lookup} />
             {d.url ? (
@@ -312,7 +311,7 @@ export function GiftForm(props: Props) {
               onChange={set("title")}
               required
               maxLength={200}
-              placeholder={looking ? "Lecture du lien…" : "Ex. : Casque audio sans fil"}
+              placeholder={looking ? "Lecture du lien…" : undefined}
             />
           </div>
           <div className="flex flex-[1_1_110px] flex-col gap-1.5">
@@ -324,7 +323,6 @@ export function GiftForm(props: Props) {
                 value={d.price}
                 onChange={set("price")}
                 maxLength={30}
-                placeholder="0"
                 inputMode="decimal"
               />
               {/^\s*\d+([.,]\d{1,2})?\s*$/.test(d.price) || !d.price ? <span className="gf-price-unit">€</span> : null}
@@ -362,7 +360,6 @@ export function GiftForm(props: Props) {
               onChange={set("description")}
               maxLength={2000}
               autoFocus={!initial.description}
-              placeholder="Taille, couleur, modèle, pourquoi ça lui plairait…"
             />
           </div>
         ) : (
@@ -536,7 +533,7 @@ function ImageField(props: {
               selected={selected({ kind: "illu", key: i.key }) || (choice.kind === "auto" && !usesPhoto && illu?.key === i.key)}
               onClick={() => props.onChoose({ kind: "illu", key: i.key })}
             >
-              <span className="ph gf-tile-ph dots" style={{ background: i.tint.bg }}>
+              <span className="ph gf-tile-ph" style={{ background: i.tint.bg }}>
                 <GiftIllustration name={i.key} size={28} color={i.tint.ink} strokeWidth={1.5} />
               </span>
             </Tile>
@@ -558,7 +555,7 @@ function ImageField(props: {
           value={props.customUrl}
           onChange={(e) => props.setCustomUrl(e.target.value)}
           autoFocus
-          placeholder="Adresse de l'image : https://…/image.jpg"
+          placeholder="Adresse de l'image"
         />
       )}
     </div>

@@ -141,7 +141,7 @@ function EmailForm({ email, pendingEmail, login, reminders, mentions }: Props) {
         >
           <div className="flex flex-col gap-1.5">
             <label className="label" htmlFor="acc-mail">Adresse e-mail</label>
-            <input className="input" id="acc-mail" type="email" autoComplete="email" value={value} onChange={(e) => setValue(e.target.value)} placeholder="vous@exemple.fr" required />
+            <input className="input" id="acc-mail" type="email" autoComplete="email" value={value} onChange={(e) => setValue(e.target.value)} required />
           </div>
           <div className="flex flex-wrap gap-2">
             <button className="btn b-go" disabled={pending}>{pending ? "Envoi…" : "Recevoir un code de confirmation"}</button>

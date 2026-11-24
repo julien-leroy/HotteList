@@ -113,7 +113,9 @@
 @media (min-width: 960px) {
   .auth { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); }
   .auth-aside { min-height: 100vh; position: sticky; top: 0; --hero-room: 40vw; }
-  .auth-aside-inner { flex: 1; justify-content: center; gap: 30px; padding: 72px clamp(40px, 6vw, 96px) 150px; }
+  /* bloc logo / famille dans le haut du panneau ; la forêt tout en bas, sans la vague crème (panneau de côté) */
+  .auth-aside-inner { flex: 1; justify-content: flex-start; gap: 30px; padding: clamp(96px, 16vh, 180px) clamp(40px, 6vw, 96px) 150px; }
+  .auth-aside .treeline-wave { display: none; }
   .auth-main { justify-content: center; padding: 48px clamp(32px, 5vw, 72px); }
   .auth-panel { max-width: 460px; }
   .auth-panel h2 { font-size: 34px; }

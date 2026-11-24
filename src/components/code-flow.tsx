@@ -28,7 +28,6 @@ export function CodeInput({ value, onChange, id = "code" }: { value: string; onC
       maxLength={7}
       value={value}
       onChange={(e) => onChange(e.target.value.replace(/[^\d ]/g, ""))}
-      placeholder="123 456"
       style={{ fontSize: 26, letterSpacing: 6, fontFamily: "ui-monospace,SFMono-Regular,Menlo,monospace", fontWeight: 700 }}
       required
     />
@@ -73,7 +72,7 @@ export function CodeFlow({ mode, next, initialEmail = "" }: { mode: "LOGIN" | "R
       <form onSubmit={send} className="flex flex-col gap-[18px]">
         <div className="flex flex-col gap-1.5">
           <label className="label" htmlFor="cf-email">Votre adresse e-mail</label>
-          <input className="input" id="cf-email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="vous@exemple.fr" required autoFocus={!initialEmail} />
+          <input className="input" id="cf-email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoFocus={!initialEmail} />
           <span className="text-xs text-gris-clair">L&apos;adresse de votre compte.</span>
         </div>
         {error && <Alert text={error} />}

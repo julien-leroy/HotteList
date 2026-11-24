@@ -142,6 +142,38 @@ export default async function FamilyPage({ params, searchParams }: Props) {
   const inviteUrl = `${appUrl}/f/${family.slug}`;
   const myManaged = await db.user.findMany({ where: { id: { in: user.managedIds } }, select: personSelect });
 
+  // Réglages de la famille : le bouton « Réglages » et, pour l'admin, « Modifier les membres » dans la barre
+  const settingsProps = {
+    family: { id: family.id, slug: family.slug, name: family.name, eventName: family.eventName, eventDate: parisDay(family.eventDate) },
+    today: parisDay(new Date()),
+    isAdmin: isAdmin,
+    meId: user.id,
+    members: family.memberships.map((m) => ({
+                  id: m.user.id,
+                  firstName: m.user.firstName,
+                  lastName: m.user.lastName,
+                  nickname: m.nickname,
+                  avatarColor: m.user.avatarColor,
+                  avatar: m.user.avatar,
+                  avatarBg: m.user.avatarBg,
+                  role: m.role as "ADMIN" | "MEMBRE",
+                  managed: Boolean(m.user.managedById),
+                  guest: !m.user.managedById && !canBeAdmin.has(m.user.id),
+                  canBeAdmin: canBeAdmin.has(m.user.id),
+                  hasLogin: hasLogin.has(m.user.id),
+                })),
+    myManaged: myManaged.map((p) => ({ ...p, inFamily: family.memberships.some((m) => m.userId === p.id) })),
+    santa: isAdmin
+                    ? {
+                        mode: family.santaMode,
+                        memberCount: santaCandidates.length,
+                        current: santa
+                          ? { budget: santa.budget, total: santa.assignments.length, revealed: santa.assignments.filter((a) => a.revealedAt).length, drawnOn: drawnOn! }
+                          : null,
+                      }
+                    : null,
+  };
+
   return (
     <div className="min-h-screen bg-creme">
       <FestiveHeader user={user} tone="bordeaux">
@@ -170,38 +202,7 @@ export default async function FamilyPage({ params, searchParams }: Props) {
                   Années passées
                 </Link>
               )}
-              <FamilySettings
-                family={{ id: family.id, slug: family.slug, name: family.name, eventName: family.eventName, eventDate: parisDay(family.eventDate) }}
-                today={parisDay(new Date())}
-                isAdmin={isAdmin}
-                meId={user.id}
-                members={family.memberships.map((m) => ({
-                  id: m.user.id,
-                  firstName: m.user.firstName,
-                  lastName: m.user.lastName,
-                  nickname: m.nickname,
-                  avatarColor: m.user.avatarColor,
-                  avatar: m.user.avatar,
-                  avatarBg: m.user.avatarBg,
-                  role: m.role as "ADMIN" | "MEMBRE",
-                  managed: Boolean(m.user.managedById),
-                  guest: !m.user.managedById && !canBeAdmin.has(m.user.id),
-                  canBeAdmin: canBeAdmin.has(m.user.id),
-                  hasLogin: hasLogin.has(m.user.id),
-                }))}
-                myManaged={myManaged.map((p) => ({ ...p, inFamily: family.memberships.some((m) => m.userId === p.id) }))}
-                santa={
-                  isAdmin
-                    ? {
-                        mode: family.santaMode,
-                        memberCount: santaCandidates.length,
-                        current: santa
-                          ? { budget: santa.budget, total: santa.assignments.length, revealed: santa.assignments.filter((a) => a.revealedAt).length, drawnOn: drawnOn! }
-                          : null,
-                      }
-                    : null
-                }
-              />
+              <FamilySettings {...settingsProps} />
             </div>
           </div>
         </div>
@@ -218,6 +219,7 @@ export default async function FamilyPage({ params, searchParams }: Props) {
         viewerId={user.id}
         sections={sections}
         openGiftId={cadeau ?? null}
+        membersEditor={isAdmin ? <FamilySettings key="membres" {...settingsProps} variant="members" /> : null}
         aside={
           // Encart Secret Santa : seulement si l'option est activée (à la création ou dans les Réglages)
           family.santaMode ? (

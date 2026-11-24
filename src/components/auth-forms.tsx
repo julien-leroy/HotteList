@@ -45,7 +45,7 @@ export function LoginForm({
           <label htmlFor="login">{mail ? "Adresse e-mail" : "E-mail ou pseudo"}</label>
           {mail && <InfoTip align="start">Compte créé avant les e-mails ? Votre ancien identifiant fonctionne toujours.</InfoTip>}
         </span>
-        <input className="input" id="login" name="login" autoComplete="username" inputMode="email" value={id} onChange={(e) => setId(e.target.value)} placeholder={mail ? "vous@exemple.fr" : undefined} required />
+        <input className="input" id="login" name="login" autoComplete="username" inputMode="email" value={id} onChange={(e) => setId(e.target.value)} required />
       </div>
       <div className="flex flex-col gap-1.5">
         <label className="label" htmlFor="password">Mot de passe</label>
@@ -100,7 +100,7 @@ export function SignupForm({
       <div className="flex flex-wrap gap-4">
         <div className="flex flex-[1_1_180px] flex-col gap-1.5">
           <label className="label" htmlFor="firstName">Prénom</label>
-          <input className="input" id="firstName" name="firstName" placeholder="Ex. Sophie" autoComplete="given-name" value={f.firstName} onChange={set("firstName")} required />
+          <input className="input" id="firstName" name="firstName" autoComplete="given-name" value={f.firstName} onChange={set("firstName")} required />
         </div>
         <div className="flex flex-[1_1_180px] flex-col gap-1.5">
           <label className="label" htmlFor="lastName">Nom <span className="opt">(facultatif)</span></label>
@@ -113,12 +113,12 @@ export function SignupForm({
             <label htmlFor="email">Adresse e-mail</label>
             <InfoTip align="start">Vous recevrez un code pour la valider. Elle sert ensuite à vous connecter.</InfoTip>
           </span>
-          <input className="input" id="email" name="email" type="email" inputMode="email" placeholder="vous@exemple.fr" autoComplete="email" value={f.email} onChange={set("email")} required />
+          <input className="input" id="email" name="email" type="email" inputMode="email" autoComplete="email" value={f.email} onChange={set("email")} required />
         </div>
       ) : (
         <div className="flex flex-col gap-1.5">
           <label className="label" htmlFor="login">E-mail ou pseudo</label>
-          <input className="input" id="login" name="login" placeholder="vous@exemple.fr ou sophie42" autoComplete="username" value={f.login} onChange={set("login")} required />
+          <input className="input" id="login" name="login" autoComplete="username" value={f.login} onChange={set("login")} required />
           <span className="text-xs text-gris-clair">Sert seulement à vous connecter.</span>
         </div>
       )}

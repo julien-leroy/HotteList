@@ -417,13 +417,25 @@ textarea.gf-desc { min-height: 96px; }
 @media (max-width: 380px) { .seg button { padding: 0 10px; gap: 6px; } }
 
 /* Barre d'outils de la famille : une seule ligne compacte */
-.toolbar { display: flex; align-items: center; gap: 10px; padding: 8px; }
+.toolbar-row { display: flex; align-items: center; gap: 10px; }
+.toolbar { display: flex; align-items: center; gap: 10px; padding: 8px; flex: 1 1 auto; min-width: 0; }
+/* « Modifier les membres » (admin), au bout de la barre */
+.toolbar-edit {
+  flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px;
+  border: 1.5px dashed #D8C9A8; border-radius: 999px; background: transparent;
+  font: 600 13.5px var(--font-sans); color: var(--color-gris); cursor: pointer;
+}
+.toolbar-edit:hover { border-color: var(--color-sapin); color: var(--color-sapin-texte); background: var(--color-sapin-pale); }
+.toolbar-edit:focus-visible { outline: 2px solid var(--color-encre); outline-offset: 2px; }
 .toolbar-people { display: flex; flex-wrap: wrap; gap: 6px; flex: 1 1 auto; min-width: 0; }
 .chip.chip-sm { min-height: 36px; padding: 0 12px 0 5px; gap: 7px; font-size: 13.5px; }
 .seg.seg-sm { flex: none; margin-left: auto; }
+.toolbar-row > .seg.seg-sm { background: var(--color-papier); border: 1px solid var(--color-sable); }
 .seg.seg-sm button { min-height: 32px; padding: 0 12px; gap: 6px; font-size: 13.5px; }
 @media (max-width: 640px) {
   .seg.seg-sm .seg-label { display: none; }
+  .toolbar-edit { padding: 0 10px; }
+  .toolbar-edit-label { display: none; }
   .seg.seg-sm button { padding: 0 9px; }
   /* Une seule ligne : les membres défilent sur le côté dans la barre */
   .toolbar-people { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
@@ -457,3 +469,7 @@ textarea.gf-desc { min-height: 96px; }
 .fs-add { display: flex; align-items: center; gap: 6px; max-width: 400px; }
 .fs-add .input { flex: 1; min-width: 0; min-height: 36px; height: 36px; padding: 0 12px; border-radius: 10px; font-size: 14.5px; }
 @media (max-width: 480px) { .fs-stack { display: none; } .fs-members-head { justify-content: space-between; } }
+
+/* Photo d'un souhait (popup) : taille contenue, la photo entière reste visible */
+.ph.gd-photo { flex: 1 1 280px; min-width: 0; max-width: 380px; aspect-ratio: auto; height: 340px; align-self: flex-start; }
+@media (max-width: 700px) { .ph.gd-photo { flex-basis: 100%; max-width: none; height: 220px; } }

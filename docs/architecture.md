@@ -94,7 +94,7 @@ Supprimés : Docker, PostgreSQL, sharp et stockage d'images, Better Auth.
 - **Rester connecté** : un compte non vérifié garde sa session **un an** sur l'appareil (cookie httpOnly) ; en revenant sur le site, on retrouve directement son compte. L'appareil retient aussi les familles ouvertes (localStorage `hl-familles`, `src/components/recent-families.tsx`).
 - **Rejoindre une famille ou y revenir** : uniquement via son lien. Un visiteur non connecté (nouvel appareil, cookies effacés, déconnexion) voit « Qui êtes-vous ? » (`src/components/guest-entry.tsx`) :
   - **« Touchez votre nom »** : tous les membres sans compte HotteList (sauf comptes gérés), repris **d'un clic, sans mot de passe**. Un compte HotteList n'apparaît jamais : il se connecte avec son e-mail ;
-  - **« Je suis nouveau »** : prénom, nom facultatif → compte invité, membre de la famille, connecté. Limite : 10 / h par IP ;
+  - **« Je suis nouveau »** : un seul champ « Ton nom » → compte invité, membre de la famille, connecté. En bas, « Se connecter à HotteList » pour ceux qui ont un compte. Limite : 10 / h par IP ;
   - **« Se connecter avec mon e-mail »**. Connecté mais pas membre : il confirme d'un clic, en cochant au passage ses comptes gérés à ajouter.
 - **L'admin ajoute une personne** avec juste un nom (Réglages de la famille → Membres : champ « Ajouter quelqu'un » + Ajouter, toujours visible) : compte non vérifié, sans e-mail ni mot de passe, membre de la famille. Elle le reprend en ouvrant le lien (« Touchez votre nom »).
 - **Changer de profil** (compte non vérifié, menu de l'avatar ou Mon profil) : quitte ce profil et ramène sur « Qui êtes-vous ? » de la dernière famille ouverte, pour toucher un autre nom ou en créer un (`switchProfile`, `src/app/actions/guest.ts`).
@@ -122,7 +122,7 @@ Supprimés : Docker, PostgreSQL, sharp et stockage d'images, Better Auth.
 - **Cartes des cadeaux** : hauteur fixe ; la photo prend la place qui reste et rétrécit quand il y a une description, dont les 3 premières lignes s'affichent (le texte entier dans la popup). Commentaires signalés par une petite bulle au trait rouge et leur nombre.
 - **Sur téléphone** : l'ajout d'un article n'affiche pas l'aperçu et garde les boutons collés en bas de la popup ; la barre de la famille tient sur une ligne (membres qui défilent sur le côté, bascule Cartes / Liste en icônes).
 - **Ordre des listes** sur la page famille : la personne tirée au Secret Santa, moi, mes comptes gérés, les autres ; ceux qui n'ont encore **aucun souhait** passent à la fin (même ordre dans l'export).
-- **Barre de la page famille** : uniquement les membres (raccourcis vers leur liste) et la bascule Cartes / Liste, sur une seule ligne. Tri, budget et « seulement les disponibles » ont été retirés le 16/11 pour alléger.
+- **Barre de la page famille** : les membres (raccourcis vers leur liste) et, pour l'admin, **« Modifier les membres »** au bout (ouvre la fenêtre des membres : ajout rapide d'un nom, admins, mots de passe, retrait) ; la bascule Cartes / Liste à côté, hors du cadre des membres. Tri, budget et « seulement les disponibles » ont été retirés le 16/11 pour alléger.
 - **Doublons** : à l'ajout, alerte si le même lien (site + chemin) ou le même titre est déjà dans la liste visible.
 - **Partager l'invitation** : partage natif du téléphone, sinon message tout prêt copié.
 - **Profil en onglets** (une famille par onglet) : toujours sur mobile, au choix sur ordinateur (mémorisé). On peut lâcher une carte sur un autre onglet pour la déplacer.
@@ -242,3 +242,11 @@ Toutes livrées le 9 novembre 2026 : socle, familles, cadeaux et visibilité, r�
 
 - Transférer la gestion d'un compte géré à un autre adulte.
 - Secret Santa avec exclusions (ex. ne pas tirer son conjoint).
+
+## 15. Détails d'interface (24 novembre 2026)
+
+- **Pas de textes d'exemple évidents** dans les champs (« Ex. Famille Leroy », « vous@exemple.fr », « 0 »…) : l'étiquette suffit. Seuls restent ceux qui tiennent lieu d'étiquette (« Ajouter quelqu'un : son nom », « Adresse de l'image »).
+- **Création d'une famille** : « Date de l'événement », puis sur une ligne l'icône (sapin pour Noël, gâteau pour un anniversaire, calendrier sinon), « Pour Noël » et « Modifier ».
+- **Popup d'un souhait** : photo de 340 px de haut au plus (220 px sur téléphone), en entier.
+- **Illustrations** : fond uni (sans points), couleur par thème : bleu pour le numérique et l'électronique, vert pour la nature, rose pour la mode et la beauté, abricot pour la cuisine, lavande pour la lecture et les loisirs créatifs, turquoise pour les sorties, voyages et le sport, jaune pour les jeux, sable pour la maison.
+- **Pages sans session sur ordinateur** : bloc logo / famille dans le haut du panneau bordeaux, forêt collée en bas, sans la vague crème (gardée sur téléphone, où le panneau est au-dessus de la page).

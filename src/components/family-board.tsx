@@ -40,6 +40,8 @@ type Props = {
   openGiftId: string | null;
   /** Encart sur le côté (Secret Santa), en haut sur téléphone. */
   aside?: ReactNode;
+  /** Admin : bouton « Modifier les membres » au bout de la barre des membres */
+  membersEditor?: ReactNode;
 };
 
 /** Même calcul que le serveur : membres avec compte, hors destinataire ; puis on retire moi-même. */
@@ -51,7 +53,7 @@ function mentionPeople(sections: Section[], recipientId: string, meId: string): 
     .filter((p) => p.id !== meId);
 }
 
-export function FamilyBoard({ familyId, familySlug, viewerId, sections, openGiftId, aside }: Props) {
+export function FamilyBoard({ familyId, familySlug, viewerId, sections, openGiftId, aside, membersEditor }: Props) {
   const router = useRouter();
   const [mode, setMode] = useState<"cards" | "list">("cards");
   const [adding, setAdding] = useState<string | null>(null);
@@ -80,7 +82,8 @@ export function FamilyBoard({ familyId, familySlug, viewerId, sections, openGift
       <div className={aside ? "board board-with-aside" : "board"}>
       {aside && <aside className="board-aside" aria-label="Secret Santa">{aside}</aside>}
       <div className="board-main">
-      {/* BARRE D'OUTILS : membres à gauche, cartes / liste à droite */}
+      {/* BARRE : les membres (et, pour l'admin, « Modifier les membres »), puis à côté, cartes / liste */}
+      <div className="toolbar-row">
       <div className="panel toolbar">
         <nav aria-label="Aller à la liste de" className="toolbar-people">
           {sections.map((s) => (
@@ -91,6 +94,8 @@ export function FamilyBoard({ familyId, familySlug, viewerId, sections, openGift
             </a>
           ))}
         </nav>
+        {membersEditor}
+      </div>
         <div className="seg seg-sm" role="group" aria-label="Affichage">
           <button type="button" aria-pressed={mode === "cards"} onClick={() => pickMode("cards")} title="Cartes">
             <IconGrid /> <span className="seg-label">Cartes</span>
