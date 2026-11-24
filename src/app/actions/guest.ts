@@ -18,6 +18,7 @@ import { randomColor } from "@/lib/utils";
 import { mailEnabled } from "@/lib/mail";
 import { consumeCode, issueCode, looksLikeEmail, normalizeEmail } from "@/lib/email-codes";
 import type { ActionResult } from "./family";
+import { activity } from "@/lib/activity";
 
 // Entrer dans une famille depuis son lien, sans créer de compte :
 // on donne son prénom (compte « invité »), ou on choisit son nom parmi les membres sans compte.
@@ -49,6 +50,7 @@ export async function joinAsGuest(familyId: string, firstName: string, lastName 
       },
     });
     await createSession(user.id, { long: true });
+    activity("arrivée", `${user.firstName} rejoint ${family.name} (sans compte)`);
     slug = family.slug;
   } catch (e) {
     return fail(e);

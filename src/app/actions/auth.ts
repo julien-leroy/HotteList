@@ -16,6 +16,7 @@ import { clientIp, hit } from "@/lib/rate-limit";
 import { randomColor } from "@/lib/utils";
 import { mailEnabled } from "@/lib/mail";
 import { consumeCode, issueCode, looksLikeEmail, normalizeEmail } from "@/lib/email-codes";
+import { activity } from "@/lib/activity";
 
 /**
  * `values` : champs déjà saisis, réaffichés après une erreur (React vide le formulaire après envoi).
@@ -89,7 +90,10 @@ export async function signup(_: FormState, formData: FormData): Promise<FormStat
   const joinId = formData.get("joinFamilyId");
   if (typeof joinId === "string" && joinId) {
     const family = await db.family.findUnique({ where: { id: joinId } });
-    if (family) await db.membership.create({ data: { userId: user.id, familyId: family.id } });
+    if (family) {
+      await db.membership.create({ data: { userId: user.id, familyId: family.id } });
+      activity("arrivée", `${user.firstName} rejoint ${family.name} (nouveau compte)`);
+    }
   }
   await createSession(user.id);
   redirect(safeNext(formData.get("next")) ?? "/familles");

@@ -250,3 +250,17 @@ Toutes livrées le 9 novembre 2026 : socle, familles, cadeaux et visibilité, r�
 - **Popup d'un souhait** : photo de 340 px de haut au plus (220 px sur téléphone), en entier.
 - **Illustrations** : fond uni (sans points), couleur par thème : bleu pour le numérique et l'électronique, vert pour la nature, rose pour la mode et la beauté, abricot pour la cuisine, lavande pour la lecture et les loisirs créatifs, turquoise pour les sorties, voyages et le sport, jaune pour les jeux, sable pour la maison.
 - **Pages sans session sur ordinateur** : bloc logo / famille dans le haut du panneau bordeaux, forêt collée en bas, sans la vague crème (gardée sur téléphone, où le panneau est au-dessus de la page).
+
+## 16. Journal d'activité
+
+Une ligne courte dans la console du serveur à chaque événement marquant, à l'heure de Paris (`src/lib/activity.ts`), pour voir quand le site sert :
+
+```
+[24/11/2026 16:17] souhait  « Casque audio sans fil Sony WH-1000XM5 noir éditio… » pour Julien · Famille Leroy
+[24/11/2026 16:17] idée     « Coffret de thés » pour Maman · Famille Leroy (par Julien)
+[24/11/2026 16:17] famille  « Les cousins » créée par Julien
+[24/11/2026 16:17] arrivée  Sophie rejoint Famille Leroy (sans compte)
+[24/11/2026 16:17] arrivée  Tonton Marc ajouté·e à Famille Leroy par Julien
+```
+
+Seulement : souhait ou idée créés, famille créée, arrivée dans une famille (par le lien avec ou sans compte, à l'inscription, ou ajout par l'admin). Titres coupés à 50 caractères. Les lectures de liens gardent leur propre ligne `[apercu-lien]`.

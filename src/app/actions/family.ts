@@ -9,6 +9,7 @@ import { mailEnabled } from "@/lib/mail";
 import { requireAdmin, requireMember } from "@/lib/queries";
 import { defaultEventDate, parisDay, randomColor, randomToken, slugify } from "@/lib/utils";
 import type { FormState } from "./auth";
+import { activity } from "@/lib/activity";
 
 export type ActionResult = { ok: true; url?: string; message?: string } | { ok: false; error: string };
 
@@ -54,6 +55,7 @@ export async function createFamily(_: FormState, formData: FormData): Promise<Fo
       memberships: { create: { userId: user.id, role: "ADMIN" } },
     },
   });
+  activity("famille", `« ${family.name} » créée par ${user.firstName}`);
   redirect(`/f/${family.slug}`);
 }
 
@@ -61,6 +63,11 @@ export async function joinFamily(familyId: string, managedIds: string[] = []) {
   const user = await requireUser();
   const family = await db.family.findUniqueOrThrow({ where: { id: familyId } });
   const ids = [user.id, ...managedIds.filter((id) => user.managedIds.includes(id))];
+  const already = await db.membership.findUnique({ where: { userId_familyId: { userId: user.id, familyId } }, select: { id: true } });
+  if (!already) {
+    const extra = ids.length > 1 ? ` (+ ${ids.length - 1} compte${ids.length > 2 ? "s" : ""} géré${ids.length > 2 ? "s" : ""})` : "";
+    activity("arrivée", `${user.firstName} rejoint ${family.name}${extra}`);
+  }
   for (const userId of ids) {
     await db.membership.upsert({
       where: { userId_familyId: { userId, familyId } },
@@ -287,9 +294,11 @@ export async function addGuestMember(familyId: string, firstName: string, lastNa
       select: { id: true },
     });
     if (twin) throw new Error(`${first} est déjà dans la famille : choisissez un nom un peu différent (« ${first} B. », « Tata ${first} »…).`);
-    await db.user.create({
+    const added = await db.user.create({
       data: { firstName: first, lastName: last, guest: true, avatarColor: randomColor(), memberships: { create: { familyId } } },
+      select: { memberships: { select: { family: { select: { name: true } } } } },
     });
+    activity("arrivée", `${first} ajouté·e à ${added.memberships[0]?.family.name ?? "une famille"} par ${user.firstName}`);
     revalidatePath("/", "layout");
     return { ok: true };
   } catch (e) {

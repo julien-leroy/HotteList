@@ -13,6 +13,7 @@ import { encodeMentions, mentionIds, mentionLabels, toPlain } from "@/lib/mentio
 import { mailEnabled, sendMentionEmail } from "@/lib/mail";
 import { hit } from "@/lib/rate-limit";
 import type { ActionResult } from "./family";
+import { activity, short } from "@/lib/activity";
 
 function fail(e: unknown): ActionResult {
   if (e instanceof z.ZodError) return { ok: false, error: e.issues[0].message };
@@ -94,6 +95,7 @@ export async function createGift(
     await db.gift.create({
       data: { ...data, familyId, recipientId, kind: finalKind, createdById: user.id, position: (last._max.position ?? -1) + 1 },
     });
+    void logGift(finalKind, data.title, recipientId, familyId, user);
     return done();
   } catch (e) {
     return fail(e);
@@ -502,4 +504,17 @@ export async function markNotificationsRead(): Promise<ActionResult> {
   } catch (e) {
     return fail(e);
   }
+}
+
+/** Journal : « souhait « Casque » pour Maman · Famille Leroy (par Julien) ». */
+async function logGift(kind: "SOUHAIT" | "IDEE", title: string, recipientId: string, familyId: string, author: { id: string; firstName: string }) {
+  try {
+    const m = await db.membership.findUnique({
+      where: { userId_familyId: { userId: recipientId, familyId } },
+      select: { nickname: true, user: { select: { firstName: true } }, family: { select: { name: true } } },
+    });
+    if (!m) return;
+    const by = recipientId === author.id ? "" : ` (par ${author.firstName})`;
+    activity(kind === "SOUHAIT" ? "souhait" : "idée", `« ${short(title)} » pour ${m.nickname ?? m.user.firstName} · ${m.family.name}${by}`);
+  } catch {}
 }
