@@ -11,7 +11,7 @@ import { Avatar } from "./avatar";
 import { GiftVisual, SourceBadge, statusOf, tintFor, type Status } from "./gift-ui";
 import { AddGiftDialog } from "./gift-form";
 import { GiftDialog } from "./gift-dialog";
-import { IconBookmark, IconComment, IconGift, IconGrid, IconGroup, IconList, IconPlus, IconHidden } from "./icons";
+import { IconBookmark, IconComment, IconGift, IconGrid, IconGroup, IconList, IconPlus, IconHidden, IconStar } from "./icons";
 import { useAction } from "./toaster";
 import { mentionLabels } from "@/lib/mentions";
 import type { MentionPerson } from "./comment-box";
@@ -337,7 +337,7 @@ function GiftCard({ gift, onOpen }: { gift: VisibleGift; onOpen: () => void }) {
           {gift.description && <span className="gift-desc">{gift.description}</span>}
           <span className="flex items-center justify-between gap-2">
             <span className="tag">{formatPrice(gift.price)}</span>
-            {gift.favorite && <span className="text-xs font-bold text-rouge">Coup de cœur</span>}
+            {gift.favorite && <span className="fav-badge"><IconStar size={12} /> Coup de cœur</span>}
           </span>
           {gift.secret?.changedSinceMine && <span className="text-xs font-semibold text-[#8A6516]">Modifié depuis votre réservation</span>}
         </span>

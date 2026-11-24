@@ -27,7 +27,7 @@ import { formatPrice } from "@/lib/format";
 import { copyWish, moveWish, reorderWishes } from "@/app/actions/gifts";
 import { GiftVisual, statusOf } from "./gift-ui";
 import { AddGiftDialog } from "./gift-form";
-import { IconComment, IconDots, IconGrip, IconHidden, IconMove, IconPlus } from "./icons";
+import { IconComment, IconDots, IconGrip, IconHidden, IconMove, IconPlus, IconStar } from "./icons";
 import { useAction } from "./toaster";
 
 /** Un onglet de famille sous le pointeur gagne toujours ; sinon, la cible la plus proche. */
@@ -420,7 +420,7 @@ function ItemBody({
         <span className="overflow-hidden text-[15px] leading-tight font-semibold text-ellipsis whitespace-nowrap">{gift.title}</span>
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="tag">{formatPrice(gift.price)}</span>
-          {gift.favorite && <span className="text-xs font-bold text-rouge">Coup de cœur</span>}
+          {gift.favorite && <span className="fav-badge"><IconStar size={12} /> Coup de cœur</span>}
           {!isSelf && st.kind === "OTHER" && <span className="pill" style={{ background: "#F6DCDD", color: "#7E1621", minHeight: 24 }}>Réservé · {st.by}</span>}
           {!isSelf && st.kind === "MINE" && <span className="pill" style={{ background: "#DCEDE2", color: "#14492F", minHeight: 24 }}>Réservé par vous</span>}
           {!isSelf && st.kind === "GROUP" && <span className="pill" style={{ background: "#F6E7C1", color: "#5C4214", minHeight: 24 }}>À plusieurs</span>}

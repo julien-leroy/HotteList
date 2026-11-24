@@ -361,9 +361,11 @@ textarea.gf-desc { min-height: 96px; }
   /* Sur téléphone, les boutons restent collés en bas de la popup : pas besoin de faire défiler */
   .add-modal .gf-actions {
     position: sticky;
-    bottom: 0;
+    /* collée au bord bas de la popup (qui a 20 px de marge intérieure), sans mordre sur le formulaire */
+    bottom: -20px;
     z-index: 2;
-    margin: 0 -20px -20px;
+    /* de l'air entre la fin du formulaire et la barre */
+    margin: 14px -20px -20px;
     padding: 12px 20px calc(12px + env(safe-area-inset-bottom));
     background: var(--color-papier);
     border-top: 1px solid var(--color-sable);
@@ -473,3 +475,21 @@ textarea.gf-desc { min-height: 96px; }
 /* Photo d'un souhait (popup) : taille contenue, la photo entière reste visible */
 .ph.gd-photo { flex: 1 1 280px; min-width: 0; max-width: 380px; aspect-ratio: auto; height: 340px; align-self: flex-start; }
 @media (max-width: 700px) { .ph.gd-photo { flex-basis: 100%; max-width: none; height: 220px; } }
+
+/* Étoile « coup de cœur » (en-tête de la popup de création, ou à côté du titre) */
+.gf-star {
+  display: inline-grid; place-items: center; width: 44px; height: 44px; flex: none;
+  border: 1.5px solid #D8C9A8; border-radius: 50%; background: var(--color-papier);
+  color: #CDBF9E; cursor: pointer; transition: all .18s;
+}
+.gf-star:hover { border-color: var(--color-or); color: #D9A93E; }
+.gf-star:focus-visible { outline: 2px solid var(--color-encre); outline-offset: 2px; }
+.gf-star[aria-pressed="true"] { background: #FFF3CC; border-color: var(--color-or); color: #E0A800; }
+.gf-star[aria-pressed="true"] svg { animation: gf-star-pop .3s ease-out; }
+.gf-star-sm { width: 30px; height: 30px; border-width: 1px; }
+@keyframes gf-star-pop { 0% { transform: scale(.6) rotate(-20deg); } 70% { transform: scale(1.2) rotate(6deg); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .gf-star[aria-pressed="true"] svg { animation: none; } }
+
+/* Souhait coup de cœur : petite étoile dorée */
+.fav-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px 2px 6px; border-radius: 999px; background: #FFF3CC; color: #7A5410; font: 700 12px/1.6 var(--font-sans); white-space: nowrap; }
+.fav-badge svg { color: #E0A800; }

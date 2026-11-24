@@ -30,6 +30,9 @@ type Props =
       recipientName?: string;
       /** lien et titre reçus par « Partager » : le lien est lu dès l'ouverture */
       prefill?: { url: string; title: string };
+      /** coup de cœur piloté par la popup (étoile dans son en-tête) */
+      favorite?: boolean;
+      onFavorite?: (v: boolean) => void;
     }
   | {
       mode: "edit";
@@ -114,6 +117,10 @@ export function GiftForm(props: Props) {
   // un titre partagé peut être remplacé par celui de la page, plus propre
   const autoFilled = useRef({ title: prefill?.title ?? "", price: "" });
   const { pending, run } = useAction();
+  // Coup de cœur : dans l'en-tête de la popup de création, sinon à côté du titre
+  const favInHeader = props.mode === "create" && Boolean(props.onFavorite);
+  const favorite = favInHeader && props.mode === "create" ? Boolean(props.favorite) : d.favorite;
+  const toggleFavorite = () => (favInHeader && props.mode === "create" ? props.onFavorite!(!favorite) : setD((x) => ({ ...x, favorite: !x.favorite })));
   /** idée cachée à la personne (par défaut) ; décochée, elle devient un souhait de sa liste, visible de tous */
   const [discreet, setDiscreet] = useState(true);
   const name = props.mode === "create" ? (props.recipientName ?? "La personne") : "";
@@ -203,7 +210,7 @@ export function GiftForm(props: Props) {
       price: d.price.trim() || null,
       description: d.description.trim() || null,
       imageUrl: imageUrl || null,
-      favorite: d.favorite,
+      favorite,
     };
     if (props.mode === "create") {
       run(
@@ -303,7 +310,10 @@ export function GiftForm(props: Props) {
         {/* 2. Titre et prix */}
         <div className="flex flex-wrap gap-3">
           <div className="flex flex-[3_1_200px] flex-col gap-1.5">
-            <label className="label" htmlFor={`${idBase}-t`}>Titre</label>
+            <span className="flex items-center justify-between gap-2">
+              <label className="label" htmlFor={`${idBase}-t`}>Titre</label>
+              {props.kind === "SOUHAIT" && !favInHeader && <FavoriteToggle on={favorite} onToggle={toggleFavorite} small />}
+            </span>
             <input
               className={`input${looking && !d.title ? " gf-shimmer" : ""}`}
               id={`${idBase}-t`}
@@ -374,18 +384,6 @@ export function GiftForm(props: Props) {
           </p>
         )}
 
-        {props.kind === "SOUHAIT" && (
-          <button
-            type="button"
-            className="gf-fav self-start"
-            aria-pressed={d.favorite}
-            onClick={() => setD((x) => ({ ...x, favorite: !x.favorite }))}
-          >
-            <IconStar size={16} />
-            {d.favorite ? "Coup de cœur !" : "Coup de cœur ?"}
-          </button>
-        )}
-
         <div className="gf-actions">
           <button className="btn b-primary" type="submit" disabled={pending}>
             {pending ? "Enregistrement…" : props.mode === "edit" ? "Enregistrer" : asWish ? "Ajouter à sa liste" : props.kind === "IDEE" ? "Ajouter l'idée" : "Ajouter à la liste"}
@@ -416,7 +414,7 @@ export function GiftForm(props: Props) {
               <span className="text-[15px] font-semibold">{d.title || "Titre du cadeau"}</span>
               <span className="flex items-center gap-2">
                 <span className="tag self-start">{formatPrice(d.price)}</span>
-                {d.favorite && <IconStar size={15} style={{ color: "#D9A93E" }} />}
+                {favorite && <IconStar size={15} style={{ color: "#D9A93E" }} />}
               </span>
             </div>
           </div>
@@ -572,6 +570,22 @@ function Tile(props: { label: string; hint?: string; selected: boolean; onClick:
   );
 }
 
+/** Étoile « coup de cœur » : un bouton icône ; allumée, le souhait est mis en avant avec la petite étoile. */
+export function FavoriteToggle({ on, onToggle, small = false }: { on: boolean; onToggle: () => void; small?: boolean }) {
+  return (
+    <button
+      type="button"
+      className={`gf-star${small ? " gf-star-sm" : ""}`}
+      aria-pressed={on}
+      aria-label="Coup de cœur"
+      title={on ? "Coup de cœur : ce souhait est mis en avant" : "Coup de cœur : mettre ce souhait en avant"}
+      onClick={onToggle}
+    >
+      <IconStar size={small ? 15 : 19} />
+    </button>
+  );
+}
+
 /** Popup d'ajout d'un souhait ou d'une idée. */
 export function AddGiftDialog(props: {
   open: boolean;
@@ -584,8 +598,13 @@ export function AddGiftDialog(props: {
   existing?: { title: string; url: string | null }[];
   recipientName?: string;
 }) {
+  const [favorite, setFavorite] = useState(false);
+  const close = () => {
+    setFavorite(false);
+    props.onClose();
+  };
   return (
-    <Dialog.Root open={props.open} onOpenChange={(o) => !o && props.onClose()}>
+    <Dialog.Root open={props.open} onOpenChange={(o) => !o && close()}>
       <Dialog.Portal>
         <Dialog.Overlay className="veil">
           <Dialog.Content className="modal add-modal flex max-w-[860px] flex-col gap-4 p-5 sm:gap-5 sm:p-7" aria-describedby={undefined} onOpenAutoFocus={(e) => {
@@ -598,11 +617,14 @@ export function AddGiftDialog(props: {
                 <Dialog.Title className="font-display m-0 text-[22px] font-bold sm:text-[28px]">{props.title}</Dialog.Title>
                 <p className="m-0 hidden text-sm text-gris sm:block">{props.hint}</p>
               </div>
-              <Dialog.Close asChild>
-                <button className="btn b-soft b-icon" type="button" aria-label="Fermer" style={{ borderRadius: "50%", flex: "none" }}>
-                  <IconClose size={18} />
-                </button>
-              </Dialog.Close>
+              <span className="flex flex-none items-center gap-2">
+                {props.kind === "SOUHAIT" && <FavoriteToggle on={favorite} onToggle={() => setFavorite((v) => !v)} />}
+                <Dialog.Close asChild>
+                  <button className="btn b-soft b-icon" type="button" aria-label="Fermer" style={{ borderRadius: "50%", flex: "none" }}>
+                    <IconClose size={18} />
+                  </button>
+                </Dialog.Close>
+              </span>
             </div>
             {props.open && (
               <GiftForm
@@ -615,7 +637,9 @@ export function AddGiftDialog(props: {
                 hint={props.hint}
                 existing={props.existing}
                 recipientName={props.recipientName}
-                onDone={props.onClose}
+                favorite={favorite}
+                onFavorite={setFavorite}
+                onDone={close}
               />
             )}
           </Dialog.Content>

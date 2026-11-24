@@ -8,7 +8,7 @@ import { Avatar } from "./avatar";
 import { GiftVisual, SourceBadge, statusOf } from "./gift-ui";
 import { GiftForm } from "./gift-form";
 import { CommentBox, CommentText, type MentionPerson } from "./comment-box";
-import { IconClose, IconComment, IconExternal, IconHidden } from "./icons";
+import { IconClose, IconComment, IconExternal, IconHidden, IconStar } from "./icons";
 import { toast, useAction } from "./toaster";
 import { addComment, deleteComment, deleteGift, restoreGift, setPurchaseStatus, joinGroup, leaveGift, openToGroup, takeGift } from "@/app/actions/gifts";
 
@@ -95,7 +95,7 @@ export function GiftDialog({
                     <Dialog.Title className="font-display m-0 text-[32px] leading-[1.1] font-bold">{gift.title}</Dialog.Title>
                     <div className="flex flex-wrap items-center gap-3">
                       <span className="tag" style={{ fontSize: 15 }}>{formatPrice(gift.price)}</span>
-                      {gift.favorite && <span className="text-[13px] font-bold text-rouge">Coup de cœur</span>}
+                      {gift.favorite && <span className="fav-badge"><IconStar size={13} /> Coup de cœur</span>}
                     </div>
                     {gift.description && <p className="m-0 text-[15px] leading-relaxed whitespace-pre-line text-[#3E3B2E]">{gift.description}</p>}
                     {s?.changedSinceMine && (

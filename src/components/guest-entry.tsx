@@ -99,8 +99,8 @@ export function GuestEntry({ familyId, familyName, slug, claimable }: { familyId
       <form onSubmit={join} className="flex flex-col gap-[18px]">
         <div className="flex flex-col gap-1.5">
           <label className="label flex items-center gap-1" htmlFor="g-name">
-            {claimable.length > 0 ? "Je suis nouveau : ton nom" : "Ton nom"}
-            <InfoTip align="start">Pas besoin d&apos;e-mail ni de mot de passe. Tu pourras créer ton compte plus tard, depuis ton profil.</InfoTip>
+            {claimable.length > 0 ? "Je suis nouveau : votre nom" : "Votre nom"}
+            <InfoTip align="start">Pas besoin d&apos;e-mail ni de mot de passe. Vous pourrez créer votre compte plus tard, depuis votre profil.</InfoTip>
           </label>
           <input className="input" id="g-name" autoComplete="name" value={firstName} onChange={(e) => setFirstName(e.target.value)} maxLength={40} required />
         </div>
